@@ -2,3 +2,20 @@
   @tailwind components;
   @tailwind utilities;
   
+
+  @layer base {
+    .card-glass {
+      @apply  before:content-['']
+      before:absolute
+      before:z-[-2]
+      before:inset-0
+      before:block
+      /* before:opacity-25   */
+      /* before:bg-white/30 */
+      /* before:bg-gradient-to-r */
+      /* before:from-[#3A94B7] 
+      before:via-[#9EB649] 
+      before:to-[#3A94B7] */
+    } 
+
+  }
