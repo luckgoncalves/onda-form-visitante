@@ -27,7 +27,7 @@ export default function StepOne() {
             </div>
             <div>
               <label htmlFor="idade">Idade</label>
-              <Input id="idade" type="number" min={0} />
+              <Input id="idade" type="number" pattern="[0-9]*"  inputMode="numeric" accept="number" min={0} />
             </div>
             <div>
               <label htmlFor="bairro">Em que bairro mora ?</label>
@@ -36,7 +36,7 @@ export default function StepOne() {
             <div className="flex flex-col gap-2">
               <h2>Estado cívil ?</h2>
               <div className="flex gap-4">
-              <RadioGroup name="estadoCivil" className="flex flex-col sm:flex-row items-start sm:items-center">
+              <RadioGroup name="estadoCivil" className="flex flex-wrap items-start sm:items-center">
                 <div className="flex items-center gap-2">
                   <RadioGroupItem id="solteiro" className="checked:bg-[#503387] checked:active:bg-[#503387]" value="solteiro"/>
                   <label htmlFor="solteiro">Solteiro(a)</label>

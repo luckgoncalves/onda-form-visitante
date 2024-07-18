@@ -11,7 +11,7 @@ import { useState } from "react";
 export default function Home() {
   const [step, setStep ] = useState(0);
   return (
-    <main className="flex w-full h-[100%]  min-h-screen flex-col bg-gradient-to-r from-[#9562DC] to-[#FEF057] items-center gap-4 p-4">
+    <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-4">
       <h1>Ficha - visitantes</h1>
       <Card className="p-4 w-full backdrop-blur-sm bg-white/30  border-none card-glass">
         <form>
