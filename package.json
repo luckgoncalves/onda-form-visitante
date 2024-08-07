@@ -1,13 +1,4 @@
 {
-  "name": "onda-ficha-visita",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^5.18.0",
@@ -36,5 +27,15 @@
     "prisma": "^5.18.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
-  }
+  },
+  "name": "onda-ficha-visita",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "start": "next start"
+  },
+  "version": "0.1.0"
 }
