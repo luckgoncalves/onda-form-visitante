@@ -24,13 +24,13 @@ export default function StepTwo(props: any) {
             control={props.control}
             name="frequenta_igreja"
             render={({ field }) => (
-            <RadioGroup onValueChange={field.onChange} className="flex items-center">
+            <RadioGroup {...field} onValueChange={field.onChange} className="flex items-center">
                 <div className="flex items-center gap-2">
                   <RadioGroupItem  id="church-yes" key={"sim"} value="sim"/>
                   <label htmlFor="church-yes">Sim</label>
                 </div>
                 <div className="flex items-center gap-2">
-                  <RadioGroupItem id="church-no" key={"nao"} value="nao" />
+                  <RadioGroupItem id="church-no" key={"nao"} value="não" />
                   <label htmlFor="church-no">Não</label>
                 </div>
             </RadioGroup>

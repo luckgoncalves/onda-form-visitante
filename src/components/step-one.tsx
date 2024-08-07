@@ -1,6 +1,7 @@
 import { stepProps } from "@/types/step";
 import { Input } from "./ui/input";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Controller } from "react-hook-form";
 
 export default function StepOne(props: any) {
     return (
@@ -11,16 +12,22 @@ export default function StepOne(props: any) {
             </div>
             <div className="flex flex-col gap-2">
               <h2>Genêro</h2>
-              <RadioGroup {...props.register("genero")} className="flex items-center">
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem id="masculino" className="checked:bg-[#503387] checked:active:bg-[#503387]" value="masculino"/>
-                  <label htmlFor="masculino">Masculino</label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem id="femenino" value="femenino" />
-                  <label htmlFor="femenino">Femenino</label>
-                </div>
-              </RadioGroup>
+              <Controller
+                control={props.control}
+                name="genero"
+                render={({ field }) => (
+                  <RadioGroup {...field} onValueChange={field.onChange} className="flex items-center">
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem id="masculino" className="checked:bg-[#503387] checked:active:bg-[#503387]" value="masculino"/>
+                      <label htmlFor="masculino">Masculino</label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem id="femenino" value="femenino" />
+                      <label htmlFor="femenino">Femenino</label>
+                    </div>
+                  </RadioGroup>
+                )}
+               />
             </div>
             <div>
               <label htmlFor="phone">Telefone</label>
@@ -37,20 +44,26 @@ export default function StepOne(props: any) {
             <div className="flex flex-col gap-2">
               <h2>Estado cívil ?</h2>
               <div className="flex gap-4">
-              <RadioGroup {...props.register("estadoCivil")} className="flex flex-wrap items-start sm:items-center">
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem id="solteiro" className="checked:bg-[#503387] checked:active:bg-[#503387]" value="solteiro"/>
-                  <label htmlFor="solteiro">Solteiro(a)</label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem id="casado" value="casado" />
-                  <label htmlFor="casado">Casado(a)</label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem id="viuvo" value="viuvo" />
-                  <label htmlFor="viuvo">Víuvo(a)</label>
-                </div>
-              </RadioGroup>
+                <Controller
+                control={props.control}
+                name="estado_civil"
+                render={({field}) => (
+                  <RadioGroup {...field} onValueChange={field.onChange} className="flex flex-wrap items-start sm:items-center">
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem id="solteiro" className="checked:bg-[#503387] checked:active:bg-[#503387]" value="solteiro"/>
+                      <label htmlFor="solteiro">Solteiro(a)</label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem id="casado" value="casado" />
+                      <label htmlFor="casado">Casado(a)</label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem id="viuvo" value="viuvo" />
+                      <label htmlFor="viuvo">Víuvo(a)</label>
+                    </div>
+                  </RadioGroup>
+
+                )}/>
               </div>
             </div>
           </section>
