@@ -1,57 +1,55 @@
 'use client';
-
-import ButtonForm from "@/components/button-form";
-import StepOne from "@/components/step-one";
-import StepTwo from "@/components/step-two";
-import StepZero from "@/components/step-zero";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Form } from "@/components/ui/form";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Form, FormField, FormLabel } from "@/components/ui/form";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { save } from "./actions";
-import Done from "@/components/done";
-
-
+import ButtonForm from "@/components/button-form";
+import { Input } from "@/components/ui/input";
+import { redirect, useRouter } from "next/navigation";
 
 
 export default function Home() {
-  const form = useForm({
-    defaultValues:{
-      interesse_em_conhecer: [],
-    }
-  });
-  const [step, setStep ] = useState(0);
+  const form = useForm();
+  const router = useRouter();
+  const [showLogin, setShowLogin] = useState(false);
 
   const submitAction = form.handleSubmit(async (formData) => {
     console.log('formData',formData);
-    await save(formData);
-    setStep(step + 1);
+    router.push('/list');
   });
   return (
     <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-4">
-      <h1>Ficha - visitantes</h1>
-      <Card className="p-4 w-full backdrop-blur-sm bg-white/30  border-none card-glass">
-      <Form {...form}>
-        <form onSubmit={submitAction}>
-          {step === 0 && <StepZero {...form}/>}
-          {step === 1 && <StepOne {...form} />}
-          {step === 2 && <StepTwo {...form}/>}
-          {step === 3 && <Done />}
-      
-          <div className="flex gap-4">
-            {step > 0 && step < 3 && (
-              <ButtonForm type="button" onClick={() => setStep(step - 1)} label="Voltar"/>
-            )}
-            {step === 2 && (
-              <ButtonForm type="submit" label="Salvar"/>
-            )}
-            {step < 2 && (
-              <ButtonForm type="button" onClick={() => setStep(step + 1)} label="Próximo"/>
-            )}
-          </div>
-        </form>
+      <Card className="p-4 w-full backdrop-blur-sm bg-white/30 mt-10 border-none card-glass">
+      <CardHeader className="text-center">
+        <h1 className="text-3xl">Você deseja?</h1></CardHeader>
+      <CardContent>
+        {showLogin && (
+        <Form {...form}>
+          <form className="flex flex-col gap-4" onSubmit={submitAction}>
+            <FormLabel>Username:</FormLabel>
+            <FormField 
+              control={form.control} 
+              name="username" 
+              render={({ field }) => <Input {...field} />} />
+
+            <FormLabel>Password:</FormLabel>
+            <FormField 
+              control={form.control} 
+              name="password"
+              render={({ field }) => <Input type="password" {...field} />} />
+            
+            <ButtonForm type="submit" label="Entrar" />
+          </form>
         </Form>
+        )}
+      </CardContent>
+      <CardFooter className="w-full">
+        <div className="flex gap-4 w-full">
+          <ButtonForm type="button" className="w-full bg-transparent border-2 border-[#503387] text-[#503387] hover:bg-[#503387]/90 hover:text-white" onClick={() => router.push('/register')} label="Novo Visitante" />
+          {!showLogin && <ButtonForm className="w-full" type="button" onClick={() => setShowLogin(true)} label="Logar" />}
+        </div>
+      </CardFooter>
       </Card>
     </main>
   );
