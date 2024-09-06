@@ -22,7 +22,7 @@ export default function Home() {
     <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-4">
       <Card className="p-4 w-full backdrop-blur-sm bg-white/30 mt-10 border-none card-glass">
       <CardHeader className="text-center">
-        <h1 className="text-3xl">Você deseja?</h1></CardHeader>
+        <h1 className="text-3xl">Você deseja:</h1></CardHeader>
       <CardContent>
         {showLogin && (
         <Form {...form}>
@@ -45,9 +45,9 @@ export default function Home() {
         )}
       </CardContent>
       <CardFooter className="w-full">
-        <div className="flex gap-4 w-full">
-          <ButtonForm type="button" className="w-full bg-transparent border-2 border-[#503387] text-[#503387] hover:bg-[#503387]/90 hover:text-white" onClick={() => router.push('/register')} label="Novo Visitante" />
-          {!showLogin && <ButtonForm className="w-full" type="button" onClick={() => setShowLogin(true)} label="Logar" />}
+        <div className="flex flex-wrap md:flex-nowrap gap-4 w-full">
+          <ButtonForm type="button" className="w-full md:w-1/2 text-balance bg-transparent border-2 border-[#503387] text-[#503387] hover:bg-[#503387]/90 hover:text-white" onClick={() => router.push('/register')} label="Cadastrar novo Visitante" />
+          {!showLogin && <ButtonForm className="w-full md:w-1/2" type="button" onClick={() => setShowLogin(true)} label="Entrar" />}
         </div>
       </CardFooter>
       </Card>
