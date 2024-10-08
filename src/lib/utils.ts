@@ -8,3 +8,31 @@ export function cn(...inputs: ClassValue[]) {
 export function formatDate(date: Date) {
   return date.toISOString().split('T')[0].split('-').reverse().join('/');
 }
+
+export function formatPhone(input: string) {
+  // Remove todos os caracteres que não são números
+  let phone = input.replace(/\D/g, '');
+
+  // Limita o tamanho máximo em 11 dígitos
+  if (phone.length > 11) {
+    phone = phone.slice(0, 11);
+  }
+
+  // Aplica a máscara
+  if (phone.length > 10) {
+    // Máscara para celular com 9 dígitos: (XX) XXXXX-XXXX
+    phone = phone.replace(/^(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+  } else if (phone.length > 5) {
+    // Máscara para fixo: (XX) XXXX-XXXX
+    phone = phone.replace(/^(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+  } else if (phone.length > 2) {
+    // Parcial: (XX) XXXX ou (XX) XXX
+    phone = phone.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
+  } else if (phone.length > 0) {
+    // Apenas DDD
+    phone = phone.replace(/^(\d{0,2})/, "($1");
+  }
+
+  // Atualiza o valor do input
+  return phone;
+}

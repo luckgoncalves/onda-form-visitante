@@ -1,7 +1,7 @@
-import { stepProps } from "@/types/step";
 import { Input } from "./ui/input";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Controller } from "react-hook-form";
+import { formatPhone } from "@/lib/utils";
 
 export default function StepOne(props: any) {
     return (
@@ -31,7 +31,15 @@ export default function StepOne(props: any) {
             </div>
             <div>
               <label htmlFor="phone">Telefone</label>
-              <Input  {...props.register("telefone")} id="phone" type="tel"  />
+              <Input  
+              {...props.register("telefone")}
+              onChange={
+                (e) => {
+                  const mask  = formatPhone(e.target.value);
+                  props.setValue("telefone", mask);
+                }
+              }
+               id="phone" type="tel"  />
             </div>
             <div>
               <label htmlFor="idade">Idade</label>

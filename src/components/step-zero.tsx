@@ -4,6 +4,7 @@ import { stepProps } from "@/types/step";
 
 export default function StepZero(props: any) {
   console.log(props.watch('culto'))
+  console.log()
     return (
         <section className={`flex mb-4 flex-col gap-4`}>
             <h2>Culto</h2>
@@ -29,6 +30,7 @@ export default function StepZero(props: any) {
               )}
               />
             </div>
+            <p className="text-red-500">{props.formState.errors?.culto?.message}</p>
           </section>
     )
 }
