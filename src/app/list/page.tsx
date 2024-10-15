@@ -8,6 +8,7 @@ import ButtonForm from "@/components/button-form";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/utils";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 
 function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
@@ -36,41 +37,47 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
     </Card>
   )
 }
-  export default function List() {
-    const [isGridView, setIsGridView] = useState(false)
-    const [searchTerm, setSearchTerm] = useState('')
-    const [visitantes, setVisitantes] = useState<any>([]);
-    const [selectedItem, setSelectedItem] = useState(null)
-    const [ loading, setLoading] = useState(false);
-    const router = useRouter();
+export default function List() {
+  const [isGridView, setIsGridView] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [visitantes, setVisitantes] = useState<any>([]);
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [ loading, setLoading] = useState(false);
+  const router = useRouter();
 
-    useEffect(() => {
-        async function fetch() {
-            setLoading(true);
-            const users = await findAll(); 
-            setLoading(false);
-            setVisitantes(users);
-        }
-        
-        fetch();
-    },[])
+  useEffect(() => {
+    async function fetch() {
+      setLoading(true);
+      const users = await findAll(); 
+      setLoading(false);
+      setVisitantes(users);
+    }
     
-
-    const handleItemClick = (item: any) => {
-      setSelectedItem(item)
-    }
+    fetch();
+  },[])
   
-    const handleBackToList = () => {
-      setSelectedItem(null)
-    }
-  
-    if (selectedItem) {
-      return <DetailView item={selectedItem} onBack={handleBackToList} />
-    }
 
-    return (
-      <div className="p-4">
-        <div className="mb-4 flex flex-col-reverse sm:flex-row items-end sm:items-center justify-between gap-4">
+  const handleItemClick = (item: any) => {
+    setSelectedItem(item)
+  }
+  
+  const handleBackToList = () => {
+    setSelectedItem(null)
+  }
+
+  const handleWhatsAppClick = (phone: string, name: string) => {
+    const message = encodeURIComponent(`Olá ${name}, tudo bem? Aqui é da Igreja...`);
+    const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  }
+
+  if (selectedItem) {
+    return <DetailView item={selectedItem} onBack={handleBackToList} />
+  }
+
+  return (
+    <div className="p-4">
+      <div className="mb-4 flex flex-col-reverse sm:flex-row items-end sm:items-center justify-between gap-4">
         <div className="relative  w-full sm:w-64">
           <Input
             type="text"
@@ -94,22 +101,41 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
           <ButtonForm type="button" onClick={() => router.push('/register')} label={`Novo visitante`} />
         </div>
       </div>
-        <div className={`grid gap-4 ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-         {visitantes.map((visitante: any) => (
-          <Card key={visitante.nome} className="h-full" onClick={() => handleItemClick(visitante)}>
+      <div className={`grid gap-4 ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+        {visitantes.map((visitante: any) => (
+          <Card key={visitante.nome} className="h-full">
             <CardContent className="p-4">
-              <h2 className="text-xl font-semibold mb-2">{visitante.nome}</h2>
-              <div className="flex justify-between items-center">
+              <div onClick={() => handleItemClick(visitante)}>
+                <h2 className="text-xl font-semibold mb-2">{visitante.nome}</h2>
                 <p className="text-gray-600">{formatDate(visitante.created_at)}</p>
-                <Button className="z-10 rounded-full border w-50 h-50 border-green-300 bg-green-600">
-                  <MessageCircleMore color="white" />
-                </Button>
+              </div>
+              <div className="flex justify-end mt-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button className="z-10 rounded-full border w-50 h-50 border-green-300 bg-green-600">
+                      <MessageCircleMore color="white" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Enviar mensagem para {visitante.nome}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Isso abrirá o WhatsApp com uma mensagem pré-preenchida.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleWhatsAppClick(visitante.telefone, visitante.nome)}>
+                        Confirmar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
-          ))}
-          </div>
+        ))}
       </div>
-    )
-  }
-  
+    </div>
+  )
+}

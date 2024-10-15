@@ -36,8 +36,8 @@ export default function Home() {
   }, [form, form.formState.errors]);
 
   const submitAction = form.handleSubmit(async (formData) => {
-    console.log('formData',formData);
-    if (step < 3) {
+    console.log('formData',step);
+    if (step < 2) {
       setStep((prev) => prev + 1);
     } else {
       await save(formData);
