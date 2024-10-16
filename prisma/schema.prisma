@@ -27,3 +27,13 @@ model visitantes {
   qual_igreja String
   telefone String
 }
+
+model users {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
