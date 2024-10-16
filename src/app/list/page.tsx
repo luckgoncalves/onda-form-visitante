@@ -21,7 +21,7 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
         </Button>
         <h2 className="text-2xl font-bold mb-3">{item.nome}</h2>
         <div>
-        <h4 className="text-sm font-semibold">Estado civil</h4>
+        <h4 className="text-sm font-semibold">Estado cívil</h4>
         <p className="text-gray-600 mb-3"> {item.estado_civil}</p>
         </div>
         <div>
@@ -29,7 +29,7 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
           <p className="text-gray-600 mb-3"> {item.bairro}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Como chegou ate nos</h4>
+          <h4 className="text-sm font-semibold">Como chegou até nós</h4>
           <p className="text-gray-600 mb-3"> {item.como_chegou_ate_nos}</p>
         </div>
         <div>
@@ -37,7 +37,7 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
           <p className="text-gray-600 mb-3"> {item.frequenta_igreja ? 'Sim': 'Não'}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Genero</h4>
+          <h4 className="text-sm font-semibold">Gênero</h4>
           <p className="text-gray-600 mb-3"> {item.genero}</p>
         </div>
         <div>
@@ -46,7 +46,7 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
         </div>
         <div>
           <h4 className="text-sm font-semibold">Interesse em conhecer</h4>
-          <p className="text-gray-600 mb-3"> {item.interesse_em_conhecer}</p>
+          <p className="text-gray-600 mb-3"> {item.interesse_em_conhecer.join(', ')}</p>
         </div>
         <div>
           <h4 className="text-sm font-semibold">Observação</h4>
@@ -62,7 +62,7 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
         </div>
         <div>
           <h4 className="text-sm font-semibold">Visitou em</h4>
-          <p className="text-gray-600 mb-3"> {formatDate(item.created_at)}</p>
+          <p className="text-gray-600 mb-3"> {`${item.culto} - ${formatDate(item.created_at)}`}</p>
         </div>
       </CardContent>
     </Card>
@@ -170,7 +170,7 @@ export default function List() {
           filteredVisitantes.map((visitante: any) => (
             <Card key={`${visitante.id}`} className="h-full">
               <CardContent className="p-4">
-                <div onClick={() => handleItemClick(visitante)}>
+                <div className="cursor-pointer" onClick={() => handleItemClick(visitante)}>
                   <h2 className="text-xl font-semibold mb-2">{visitante.nome}</h2>
                   <p className="text-gray-600">{formatDate(visitante.created_at)}</p>
                 </div>
