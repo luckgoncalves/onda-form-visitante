@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ButtonForm from "@/components/button-form";
 import StepOne from "@/components/step-one";
 import StepTwo from "@/components/step-two";
 import StepZero from "@/components/step-zero";
 import { Card } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { save } from "../actions";
 import Done from "@/components/done";
@@ -20,10 +19,13 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [step, setStep] = useState(0);
   const router = useRouter();
+  const [formData, setFormData] = useState({});
+
   const form = useForm({
     resolver: zodResolver(step === 0 ? step1Schema : step === 1 ? step2Schema : step3Schema),
-    defaultValues:{
+    defaultValues: {
       interesse_em_conhecer: [],
+      ...formData, // Inicialize o formulário com os dados salvos
     },
     mode: 'onBlur'
   });
@@ -35,13 +37,16 @@ export default function Home() {
     }
   }, [form, form.formState.errors]);
 
-  const submitAction = form.handleSubmit(async (formData) => {
-    console.log('formData',step);
+  const submitAction = form.handleSubmit(async (stepData) => {
+    const updatedFormData = { ...formData, ...stepData };
+    setFormData(updatedFormData);
+    console.log('updatedFormData', updatedFormData);
+    
     if (step < 2) {
       setStep((prev) => prev + 1);
     } else {
-      await save(formData);
-      setStep((prev) =>  prev + 1);
+      await save(updatedFormData);
+      setStep((prev) => prev + 1);
     }
   });
 

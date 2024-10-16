@@ -11,5 +11,9 @@ export const save = async (data: any) => {
  }
 
  export const findAll = async () => {
-    return await prisma.visitantes.findMany();
+    return await prisma.visitantes.findMany({
+        orderBy: {
+            created_at: 'desc'
+        }
+    });
  }

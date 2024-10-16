@@ -9,6 +9,7 @@ export const step2Schema = z.object({
     nome: z.string({required_error: 'O nome é obrigatório'}).min(3, { message: 'O nome é muito curto' }),
     genero: z.string({required_error: 'Selecione um genêro'}).min(1, { message: 'Selecione um genêro' }),
     idade: z.string({required_error: 'O valor informado nao é um número'}).min(1, { message: 'A idade é obrigatório' }),
+    bairro: z.string({required_error: 'O bairro é obrigatório'}).min(1, { message: 'O bairro é obrigatório' }),
     estado_civil: z.string({required_error: 'Selecione um estado civil'}).min(1, { message: 'Selecione um estado civil' }),
     telefone: z.string({required_error: 'O telefone é obrigatório'}).min(1, { message: 'O telefone é obrigatório' })
 });
