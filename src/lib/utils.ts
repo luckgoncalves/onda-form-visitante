@@ -46,3 +46,13 @@ export const formatInteresse = (interesse: string) => {
   
   return formatMap[interesse] || interesse;
 };
+
+export const formatCulto = (culto: string) => {
+  const formatMap: { [key: string]: string } = {
+    sabado: 'Sábado',
+    'domingo-noite': 'Domingo à noite',
+    'domingo-manha': 'Domingo de manhã'
+  };
+  
+  return formatMap[culto] || culto;
+};

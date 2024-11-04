@@ -1,13 +1,13 @@
 'use client';
 import { useEffect, useState } from "react"
 import { findAll, checkAuth, updateMensagemEnviada } from "../actions"
-import { ArrowLeft, LayoutGrid, LayoutList, MessageCircle, MessageCircleMore, PlusCircle, Search, LogOut, User, ChevronDown } from "lucide-react";
+import { ArrowLeft, LayoutGrid, LayoutList, MessageCircle, MessageCircleMore, PlusCircle, Search, LogOut, User, ChevronDown, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ButtonForm from "@/components/button-form";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { formatDate, formatInteresse } from "@/lib/utils";
+import { formatCulto, formatDate, formatInteresse } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion, useMotionValue, useTransform } from "framer-motion";
@@ -151,21 +151,27 @@ function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusC
       onDragEnd={handleDragEnd}
       className="rounded-lg relative"
     >
-      <Card className={`h-full bg-transparent ${isUpdating ? 'opacity-50' : ''}`}>
+      <Card className={`h-full min-h-32 bg-transparent ${isUpdating ? 'opacity-50' : ''}`}>
         {isUpdating && (
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
           </div>
         )}
-        <CardContent className="p-4">
-          <div className="cursor-pointer" onClick={() => onItemClick(visitante)}>
-            <h2 className="text-xl font-semibold mb-2">{visitante.nome}</h2>
-            {visitante.mensagem_enviada && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Mensagem enviada
-              </span>
-            )}
-            <p className="text-gray-600 mt-2">{formatDate(visitante.created_at)}</p>
+        <CardContent className="p-4 h-full flex justify-between items-end">
+          <div className="cursor-pointer flex flex-col justify-between h-full" onClick={() => onItemClick(visitante)}>
+            <div>
+              <h2 className="text-xl font-semibold mb-2">{visitante.nome}</h2>
+              {visitante.mensagem_enviada && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Mensagem enviada
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2 items-center">
+              <MapPin className="w-4 h-4" />
+              <span className="text-gray-600"> {formatCulto(visitante.culto)}</span>
+              <span className="text-gray-600"> {formatDate(visitante.created_at)}</span>
+            </div>
           </div>
           <div className="flex justify-end mt-2">
             <AlertDialog>
@@ -218,7 +224,6 @@ export default function List() {
   const [filteredVisitantes, setFilteredVisitantes] = useState<any>([]);
   const [userName, setUserName] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [contactedVisitors, setContactedVisitors] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function fetchData() {
