@@ -169,9 +169,8 @@ export default function List() {
   }
 
   const handleWhatsAppClick = (phone: string, name: string) => {
-    // Remove all non-digit characters from the phone number
     const cleanedPhone = phone.replace(/\D/g, '');
-    const message = encodeURIComponent(`Olá ${name}, tudo bem? Aqui é da Igreja...`);
+    const message = encodeURIComponent(`Oii ${name}, tudo bem? Aqui é da Igreja Onda Dura Curitiba. Gostaria de dizer que ficamos muito felizes com sua visita na nossa igreja nesse último final de semana.\n\nCremos que Deus tem um propósito com tudo isso!\n\nGostaria muito de saber: como foi para você participar do nosso culto? E você gostaria de conhecer um pouco mais do que nós vivemos como igreja?\n\nDeus te abençoe!`);
     const whatsappUrl = `https://wa.me/${cleanedPhone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   }
