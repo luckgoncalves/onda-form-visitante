@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from "react"
-import { findAll, checkAuth } from "../actions"
+import { findAll, checkAuth, updateMensagemEnviada } from "../actions"
 import { ArrowLeft, LayoutGrid, LayoutList, MessageCircle, MessageCircleMore, PlusCircle, Search, LogOut, User, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -125,6 +125,7 @@ export default function List() {
   const [filteredVisitantes, setFilteredVisitantes] = useState<any>([]);
   const [userName, setUserName] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [contactedVisitors, setContactedVisitors] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function fetchData() {
@@ -170,11 +171,17 @@ export default function List() {
     setSelectedItem(null)
   }
 
-  const handleWhatsAppClick = (phone: string, name: string) => {
+  const handleWhatsAppClick = async (phone: string, name: string, visitorId: string) => {
     const cleanedPhone = phone.replace(/\D/g, '');
-    const message = encodeURIComponent(`Oii ${name}, tudo bem? Aqui é da Igreja Onda Dura Curitiba. Gostaria de dizer que ficamos muito felizes com sua visita na nossa igreja nesse último final de semana.\n\nCremos que Deus tem um propósito com tudo isso!\n\nGostaria muito de saber: como foi para você participar do nosso culto? E você gostaria de conhecer um pouco mais do que nós vivemos como igreja?\n\nDeus te abençoe!`);
+    const message = encodeURIComponent(`Oii ${name}, tudo bem?...`);
     const whatsappUrl = `https://wa.me/${cleanedPhone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
+    
+    await updateMensagemEnviada(visitorId);
+    
+    setVisitantes(visitantes.map((v: any) => 
+      v.id === visitorId ? {...v, mensagem_enviada: !v.mensagem_enviada} : v
+    ));
   }
 
   // Add this skeleton component
@@ -247,25 +254,42 @@ export default function List() {
                 <CardContent className="p-4">
                   <div className="cursor-pointer" onClick={() => handleItemClick(visitante)}>
                     <h2 className="text-xl font-semibold mb-2">{visitante.nome}</h2>
-                    <p className="text-gray-600">{formatDate(visitante.created_at)}</p>
+                    {visitante.mensagem_enviada && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Mensagem enviada
+                      </span>
+                    )}
+                    <p className="text-gray-600 mt-2">{formatDate(visitante.created_at)}</p>
                   </div>
                   <div className="flex justify-end mt-2">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button className="z-10 rounded-full border w-50 h-50 border-green-300 bg-green-600">
-                          <MessageCircleMore color="white" />
+                        <Button 
+                          className={`z-10 rounded-full border w-50 h-50 border-green-300 bg-green-600`}
+                        >
+                          <MessageCircleMore 
+                            color={'white'} 
+                          />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Enviar mensagem para {visitante.nome}?</AlertDialogTitle>
+                          <AlertDialogTitle>
+                            {visitante.mensagem_enviada 
+                              ? 'Desmarcar mensagem enviada para' 
+                              : 'Enviar mensagem para'} {visitante.nome}?
+                          </AlertDialogTitle>
                           <AlertDialogDescription>
-                            Isso abrirá o WhatsApp com uma mensagem pré-preenchida.
+                            {visitante.mensagem_enviada
+                              ? 'Isso irá desmarcar o contato como já contatado.'
+                              : 'Isso abrirá o WhatsApp com uma mensagem pré-preenchida.'}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleWhatsAppClick(visitante.telefone, visitante.nome)}>
+                          <AlertDialogAction 
+                            onClick={() => handleWhatsAppClick(visitante.telefone, visitante.nome, visitante.id)}
+                          >
                             Confirmar
                           </AlertDialogAction>
                         </AlertDialogFooter>

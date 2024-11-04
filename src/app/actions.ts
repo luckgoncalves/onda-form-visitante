@@ -78,3 +78,18 @@ export async function checkAuth() {
     return { isAuthenticated: false };
   }
 }
+
+export async function updateMensagemEnviada(id: string) {
+  const visitante = await prisma.visitantes.findUnique({
+    where: { id }
+  });
+  
+  const updatedVisitante = await prisma.visitantes.update({
+    where: { id },
+    data: {
+      mensagem_enviada: !visitante?.mensagem_enviada
+    }
+  });
+
+  return updatedVisitante;
+}
