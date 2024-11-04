@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { formatDate, formatInteresse } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
+import { motion, useMotionValue, useTransform } from "framer-motion";
 
 
 function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
@@ -115,6 +116,98 @@ function Header({ userName, onLogout }: { userName: string, onLogout: () => void
   )
 }
 
+// Add this new component before the List component
+function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusChange }: { 
+  visitante: any, 
+  onItemClick: (visitante: any) => void,
+  onWhatsAppClick: (phone: string, name: string, id: string) => void,
+  onMessageStatusChange: (id: string) => void 
+}) {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const x = useMotionValue(0);
+  const background = useTransform(
+    x,
+    [-100, 0, 100],
+    ["rgb(34, 197, 94)", "rgb(255, 255, 255)", "rgb(34, 197, 94)"]
+  );
+
+  const handleDragEnd = async (event: any, info: any) => {
+    if (Math.abs(info.offset.x) > 100) {
+      try {
+        setIsUpdating(true);
+        await updateMensagemEnviada(visitante.id);
+        onMessageStatusChange(visitante.id);
+      } finally {
+        setIsUpdating(false);
+      }
+    }
+  };
+
+  return (
+    <motion.div
+      style={{ x, background }}
+      drag={!isUpdating ? "x" : false}
+      dragConstraints={{ left: 0, right: 0 }}
+      onDragEnd={handleDragEnd}
+      className="rounded-lg relative"
+    >
+      <Card className={`h-full bg-transparent ${isUpdating ? 'opacity-50' : ''}`}>
+        {isUpdating && (
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+          </div>
+        )}
+        <CardContent className="p-4">
+          <div className="cursor-pointer" onClick={() => onItemClick(visitante)}>
+            <h2 className="text-xl font-semibold mb-2">{visitante.nome}</h2>
+            {visitante.mensagem_enviada && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Mensagem enviada
+              </span>
+            )}
+            <p className="text-gray-600 mt-2">{formatDate(visitante.created_at)}</p>
+          </div>
+          <div className="flex justify-end mt-2">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  className={`z-10 rounded-full border w-50 h-50 border-green-300 bg-green-600`}
+                >
+                  <MessageCircleMore 
+                    color={'white'} 
+                  />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {visitante.mensagem_enviada 
+                      ? 'Desmarcar mensagem enviada para' 
+                      : 'Enviar mensagem para'} {visitante.nome}?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {visitante.mensagem_enviada
+                      ? 'Isso irá desmarcar o contato como já contatado.'
+                      : 'Isso abrirá o WhatsApp com uma mensagem pré-preenchida.'}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => onWhatsAppClick(visitante.telefone, visitante.nome, visitante.id)}
+                  >
+                    Confirmar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
 export default function List() {
   const [isGridView, setIsGridView] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -203,6 +296,13 @@ export default function List() {
     // For example: router.push('/login');
   }
 
+  // Adicione este componente antes do return principal
+  const SwipeInstruction = () => (
+    <div className="text-center text-sm text-gray-500 mb-4">
+      ← Arraste os cards para marcar/desmarcar mensagens como enviadas →
+    </div>
+  );
+
   if (selectedItem) {
     return (
       <>
@@ -240,6 +340,7 @@ export default function List() {
             <ButtonForm type="button" onClick={() => router.push('/register')} label={`Novo visitante`} />
           </div>
         </div>
+        <SwipeInstruction />
         {loading ? (
           // Show skeleton cards while loading
           <div className={`grid gap-4 ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
@@ -250,54 +351,17 @@ export default function List() {
         ) : filteredVisitantes.length > 0 ? (
           <div className={`grid gap-4 ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
             {filteredVisitantes.map((visitante: any) => (
-              <Card key={`${visitante.id}`} className="h-full">
-                <CardContent className="p-4">
-                  <div className="cursor-pointer" onClick={() => handleItemClick(visitante)}>
-                    <h2 className="text-xl font-semibold mb-2">{visitante.nome}</h2>
-                    {visitante.mensagem_enviada && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Mensagem enviada
-                      </span>
-                    )}
-                    <p className="text-gray-600 mt-2">{formatDate(visitante.created_at)}</p>
-                  </div>
-                  <div className="flex justify-end mt-2">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          className={`z-10 rounded-full border w-50 h-50 border-green-300 bg-green-600`}
-                        >
-                          <MessageCircleMore 
-                            color={'white'} 
-                          />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            {visitante.mensagem_enviada 
-                              ? 'Desmarcar mensagem enviada para' 
-                              : 'Enviar mensagem para'} {visitante.nome}?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {visitante.mensagem_enviada
-                              ? 'Isso irá desmarcar o contato como já contatado.'
-                              : 'Isso abrirá o WhatsApp com uma mensagem pré-preenchida.'}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => handleWhatsAppClick(visitante.telefone, visitante.nome, visitante.id)}
-                          >
-                            Confirmar
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </CardContent>
-              </Card>
+              <VisitorCard 
+                key={visitante.id}
+                visitante={visitante}
+                onItemClick={handleItemClick}
+                onWhatsAppClick={handleWhatsAppClick}
+                onMessageStatusChange={(id) => {
+                  setVisitantes(visitantes.map((v: any) => 
+                    v.id === id ? {...v, mensagem_enviada: !v.mensagem_enviada} : v
+                  ));
+                }}
+              />
             ))}
           </div>
         ) : (
