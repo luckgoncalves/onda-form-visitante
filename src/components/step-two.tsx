@@ -121,6 +121,20 @@ export default function StepTwo({ form }: any) {
                       </FormControl>
                       <Label htmlFor="familiarizando">Familiarizando</Label>
                     </FormItem>
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          id="nao_tem_interesse"
+                          checked={field.value?.includes("nao_tem_interesse")}
+                          onCheckedChange={(checked) => {
+                            return checked
+                              ? field.onChange([...field.value, "nao_tem_interesse"])
+                              : field.onChange(field.value.filter((value: string) => value !== "nao_tem_interesse"))
+                          }}
+                        />
+                      </FormControl>
+                      <Label htmlFor="nao_tem_interesse">Não tem interesse</Label>
+                    </FormItem>
                   </div>
                 </FormControl>
                 <FormMessage />

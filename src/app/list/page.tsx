@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import ButtonForm from "@/components/button-form";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatInteresse } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -46,7 +46,9 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
         </div>
         <div>
           <h4 className="text-sm font-semibold">Interesse em conhecer</h4>
-          <p className="text-gray-600 mb-3"> {item.interesse_em_conhecer.join(', ')}</p>
+          <p className="text-gray-600 mb-3">
+            {item.interesse_em_conhecer.map((interesse: string) => formatInteresse(interesse)).join(', ')}
+          </p>
         </div>
         <div>
           <h4 className="text-sm font-semibold">Observação</h4>

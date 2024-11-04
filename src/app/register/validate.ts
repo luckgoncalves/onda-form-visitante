@@ -16,9 +16,9 @@ export const step2Schema = z.object({
 
 export const step3Schema = z.object({
     como_nos_conheceu: z.string({required_error: 'Campo obrigatório'}).min(1, { message: 'Campo obrigatório' }),
-    como_chegou_ate_nos: z.string({required_error: 'Campo obrigatório'}).min(1, { message: 'Campo obrigatório' }),
-    frequenta_igreja: z.string({required_error: 'Selecione uma opção'}).min(1, { message: 'Selecione uma opção' }),
-    qual_igreja: z.string({required_error: 'Selecione uma opção'}).min(1, { message: 'Selecione uma opção' }),
+    como_chegou_ate_nos: z.string().optional(),
+    frequenta_igreja: z.string().optional(),
+    qual_igreja: z.string().optional(),
     interesse_em_conhecer: z.array(z.string({required_error: 'Selecione pelo menos uma opção'}))
     .min(1, { message: 'Selecione pelo menos uma opção' }),
     observacao: z.string({required_error: 'O campo é obrigatório'}).min(1, { message: 'O campo é obrigatório' }),

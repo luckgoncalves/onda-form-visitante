@@ -36,3 +36,13 @@ export function formatPhone(input: string) {
   // Atualiza o valor do input
   return phone;
 }
+
+export const formatInteresse = (interesse: string) => {
+  const formatMap: { [key: string]: string } = {
+    GP: 'GP',
+    Familizarizando: 'Familiarizando',
+    nao_tem_interesse: 'Não tem interesse'
+  };
+  
+  return formatMap[interesse] || interesse;
+};
