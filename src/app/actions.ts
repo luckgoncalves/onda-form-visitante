@@ -2,6 +2,8 @@
 import prisma from '@/lib/prisma';
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt'
+import { sign, verify } from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 
 const prismaClient = new PrismaClient()
 
@@ -24,25 +26,55 @@ export const save = async (data: any) => {
  }
 
  export async function login(email: string, password: string) {
-  const user = await prismaClient.users.findUnique({
-    where: { email, password },
-  })
+  // const hashedPassword = await bcrypt.hash(password, 10);
 
-  if (!user) {
-    return { success: false, message: 'Credenciais inválidas' }
+  const user = await prismaClient.users.findUnique({
+    where: { email },
+  });
+
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return { success: false, message: 'Credenciais inválidas' };
   }
 
-  return { success: true, user: { id: user.id, name: user.name, email: user.email } }
+  const token = sign(
+    { userId: user.id, email: user.email },
+    process.env.JWT_SECRET!,
+    { expiresIn: '1d' }
+  );
+
+  cookies().set('authToken', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 86400, // 1 day in seconds
+    path: '/',
+  });
+
+  return { success: true, user: { id: user.id, name: user.name, email: user.email } };
 }
 
 export async function checkAuth() {
-  // Aqui você deve implementar a lógica para verificar se o usuário está autenticado
-  // Por exemplo, você pode verificar se há um token válido na sessão ou no cookie
-  // Por enquanto, vamos simular isso retornando um valor booleano
-  
-  // Simule uma verificação de autenticação (substitua isso pela sua lógica real)
-  const isAuthenticated = Math.random() < 0.5; // 50% de chance de estar autenticado
-//   const isAuthenticated = Math.random() < 0.5; // 50% de chance de estar autenticado
-  
-  return { isAuthenticated };
+  const authToken = cookies().get('authToken')?.value;
+
+  if (!authToken) {
+    return { isAuthenticated: false };
+  }
+
+  try {
+    const decoded = verify(authToken, process.env.JWT_SECRET!) as { userId: string, email: string };
+    
+    // Fetch the user from the database
+    const user = await prismaClient.users.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, name: true, email: true }
+    });
+
+    if (!user) {
+      return { isAuthenticated: false };
+    }
+
+    return { isAuthenticated: true, user };
+  } catch (error) {
+    return { isAuthenticated: false };
+  }
 }
