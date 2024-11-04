@@ -33,7 +33,7 @@ export default function StepTwo({ form }: any) {
               <FormItem>
                 <Label htmlFor="como_chegou_ate_nos">Como chegou até nós?</Label>
                 <FormControl>
-                  <Input id="como_chegou_ate_nos" {...field} />
+                  <Input id="como_chegou_ate_nos" defaultValue={""} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
