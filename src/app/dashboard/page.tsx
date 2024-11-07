@@ -12,6 +12,32 @@ import { startOfMonth, endOfMonth, format } from "date-fns";
 import { Header } from "@/components/header";
 import { logout } from "../actions";
 
+// Add this custom tooltip component before the Dashboard function
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const total = payload.reduce((sum: number, entry: any) => sum + entry.value, 0);
+    
+    return (
+      <div className="bg-white p-3 rounded-lg shadow-lg border">
+        <p className="font-medium mb-2">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} className="flex items-center gap-2 text-gray-500">
+            <span 
+              className="inline-block w-3 h-3 rounded-[2px]" 
+              style={{ backgroundColor: entry.color }}
+            />
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+        <p className="font-medium mt-2 border-t pt-2">
+          Total: {total}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function Dashboard() {
   const [stats, setStats] = useState<any>([]);
   const [loading, setLoading] = useState(true);
@@ -70,47 +96,53 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function fetchMonthlyStats() {
-      const firstDayOfMonth = startOfMonth(startDate);
-      const lastDayOfMonth = endOfMonth(startDate);
-      
-      const formattedStartDate = format(firstDayOfMonth, 'yyyy-MM-dd');
-      const formattedEndDate = format(lastDayOfMonth, 'yyyy-MM-dd');
+      const formattedStartDate = format(startDate, 'yyyy-MM-dd');
+      const formattedEndDate = format(endDate, 'yyyy-MM-dd');
       
       const data = await getVisitStats({
         startDate: formattedStartDate,
         endDate: formattedEndDate
       });
 
-      const monthlyData = Object.entries(data).reduce((acc: any, [date, counts]: [string, any]) => {
-        const [year, month] = date.split('-');
-        const monthYear = `${month}/${year}`;
-        
-        if (!acc[monthYear]) {
-          acc[monthYear] = {
-            'Sábado': 0,
-            'Domingo Manhã': 0,
-            'Domingo Noite': 0,
-            total: 0
-          };
-        }
+      // Sort the data by date to ensure consistent order
+      const formattedMonthlyData = Object.entries(data)
+        .reduce((acc: any, [date, counts]: [string, any]) => {
+          const [year, month] = date.split('-');
+          const monthYear = `${month}/${year}`;
+          
+          if (!acc[monthYear]) {
+            acc[monthYear] = {
+              'Sábado': 0,
+              'Domingo Manhã': 0,
+              'Domingo Noite': 0,
+              total: 0
+            };
+          }
 
-        acc[monthYear]['Sábado'] += counts['sabado'] || 0;
-        acc[monthYear]['Domingo Manhã'] += counts['domingo-manha'] || 0;
-        acc[monthYear]['Domingo Noite'] += counts['domingo-noite'] || 0;
-        acc[monthYear].total += counts.total || 0;
+          acc[monthYear]['Sábado'] += counts['sabado'] || 0;
+          acc[monthYear]['Domingo Manhã'] += counts['domingo-manha'] || 0;
+          acc[monthYear]['Domingo Noite'] += counts['domingo-noite'] || 0;
+          acc[monthYear].total += counts.total || 0;
 
-        return acc;
-      }, {});
+          return acc;
+        }, {});
 
-      const formattedMonthlyData = Object.entries(monthlyData).map(([date, counts]: [string, any]) => ({
-        date,
-        ...counts
-      }));
+      // Convert to array and sort by date
+      const sortedData = Object.entries(formattedMonthlyData)
+        .map(([date, counts]: [string, any]) => ({
+          date,
+          ...counts
+        }))
+        .sort((a, b) => {
+          const [monthA, yearA] = a.date.split('/');
+          const [monthB, yearB] = b.date.split('/');
+          return new Date(`${yearA}-${monthA}`).getTime() - new Date(`${yearB}-${monthB}`).getTime();
+        });
 
-      setMonthlyStats(formattedMonthlyData);
+      setMonthlyStats(sortedData);
     }
     fetchMonthlyStats();
-  }, [startDate]);
+  }, [startDate, endDate]);
 
   if (!mounted) {
     return null;
@@ -127,8 +159,8 @@ export default function Dashboard() {
   return (
     <>
       <Header userName={userName} onLogout={handleLogout} />
-      <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+      <div className="p-2 sm:p-6 mt-[72px]">
+        <div className="flex flex-col gap-2 sm:gap-4 justify-between mb-6">
           <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-0">Dashboard de Visitas</h1>
           
           {/* Date picker container */}
@@ -146,40 +178,34 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Cards em scroll horizontal no mobile */}
-        <div className="flex overflow-x-auto pb-4 sm:pb-0 sm:grid sm:grid-cols-3 gap-3 mb-6 snap-x snap-mandatory">
-          <div className="snap-center min-w-[250px] sm:min-w-0">
-            <Card className="h-full">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total de Visitas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalVisits}</div>
-              </CardContent>
-            </Card>
-          </div>
+        {/* Cards - Removido scroll horizontal e ajustado para empilhar */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          <Card className="h-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Visitas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalVisits}</div>
+            </CardContent>
+          </Card>
 
-          <div className="snap-center min-w-[250px] sm:min-w-0">
-            <Card className="h-full">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Média por Dia</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{averageVisitsPerDay.toFixed(1)}</div>
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="h-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Média por Dia</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{averageVisitsPerDay.toFixed(1)}</div>
+            </CardContent>
+          </Card>
 
-          <div className="snap-center min-w-[250px] sm:min-w-0">
-            <Card className="h-full">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Dias com Visitas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.length}</div>
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="h-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Dias com Visitas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.length}</div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Charts container */}
@@ -218,12 +244,8 @@ export default function Dashboard() {
                       tick={{ fontSize: 11 }}
                     />
                     <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: 'none',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                      }}
+                      content={<CustomTooltip />}
+                      cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
                     />
                     <Legend 
                       wrapperStyle={{ 
@@ -274,12 +296,8 @@ export default function Dashboard() {
                       tick={{ fontSize: 11 }}
                     />
                     <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: 'none',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                      }}
+                      content={<CustomTooltip />}
+                      cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
                     />
                     <Legend 
                       wrapperStyle={{ 
