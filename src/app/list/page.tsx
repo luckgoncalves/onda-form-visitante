@@ -134,10 +134,11 @@ function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusC
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button 
-                  className={`z-10 rounded-full border w-50 h-50 border-green-300 bg-green-600`}
+                  className={`z-10 rounded-full w-12 h-12 hover:bg-green-700 transition-colors
+                    bg-green-600 text-white`}
                 >
                   <MessageCircleMore 
-                    color={'white'} 
+                    className=""
                   />
                 </Button>
               </AlertDialogTrigger>
@@ -242,7 +243,7 @@ export default function List() {
   // Add this skeleton component
   const SkeletonCard = () => (
     <Card className="h-full">
-      <CardContent className="p-4">
+      <CardContent className="p-2 sm:px-6">
         <Skeleton className="h-6 w-3/4 mb-2" />
         <Skeleton className="h-4 w-1/2" />
         <div className="flex justify-end mt-2">
@@ -276,7 +277,7 @@ export default function List() {
   return (
     <>
       <Header userName={userName} onLogout={handleLogout} />
-      <div className="p-4 mt-[72px]">
+      <div className="p-2 sm:p-6 mt-[72px]">
         <div className="mb-4 flex flex-col-reverse sm:flex-row items-end sm:items-center justify-between gap-4">
           <div className="relative  w-full sm:w-64">
             <Input
