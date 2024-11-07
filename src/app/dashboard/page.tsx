@@ -213,7 +213,7 @@ export default function Dashboard() {
           {/* Daily chart */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base sm:text-lg">Visitas por Dia e Culto</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Visitas Dia / Culto</CardTitle>
             </CardHeader>
             <CardContent className="p-0 sm:p-4">
               <div className="h-[400px]">
@@ -265,7 +265,7 @@ export default function Dashboard() {
           {/* Monthly chart */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base sm:text-lg">Visitas Mensais por Culto</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Visitas Mês / Culto</CardTitle>
             </CardHeader>
             <CardContent className="p-0 sm:p-4">
               <div className="h-[400px]">
