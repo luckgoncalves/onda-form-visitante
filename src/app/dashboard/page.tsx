@@ -82,64 +82,85 @@ export default function Dashboard() {
   return (
     <>
       <Header userName={userName} onLogout={handleLogout} />
-      <div className="p-6 mt-[72px]">
-        <h1 className="text-2xl font-bold mb-6">Dashboard de Visitas</h1>
-        
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <DatePicker
-            date={startDate}
-            setDate={setStartDate}
-            placeholder="Data inicial"
-          />
-          <DatePicker
-            date={endDate}
-            setDate={setEndDate}
-            placeholder="Data final"
-          />
+      <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-0">Dashboard de Visitas</h1>
+          
+          {/* Date picker container */}
+          <div className="w-full flex flex-col sm:flex-row gap-2">
+            <DatePicker
+              date={startDate}
+              setDate={setStartDate}
+              placeholder="Data inicial"
+            />
+            <DatePicker
+              date={endDate}
+              setDate={setEndDate}
+              placeholder="Data final"
+            />
+          </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Visitas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalVisits}</div>
-            </CardContent>
-          </Card>
+        {/* Cards em scroll horizontal no mobile */}
+        <div className="flex overflow-x-auto pb-4 sm:pb-0 sm:grid sm:grid-cols-3 gap-3 mb-6 snap-x snap-mandatory">
+          <div className="snap-center min-w-[250px] sm:min-w-0">
+            <Card className="h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total de Visitas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{totalVisits}</div>
+              </CardContent>
+            </Card>
+          </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Média por Dia</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{averageVisitsPerDay.toFixed(1)}</div>
-            </CardContent>
-          </Card>
+          <div className="snap-center min-w-[250px] sm:min-w-0">
+            <Card className="h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Média por Dia</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{averageVisitsPerDay.toFixed(1)}</div>
+              </CardContent>
+            </Card>
+          </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Dias com Visitas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.length}</div>
-            </CardContent>
-          </Card>
+          <div className="snap-center min-w-[250px] sm:min-w-0">
+            <Card className="h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Dias com Visitas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.length}</div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
-        <Card className="p-4">
-          <CardHeader>
-            <CardTitle>Visitas por Dia e Culto</CardTitle>
+        {/* Gráfico com melhor responsividade */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base sm:text-lg">Visitas por Dia e Culto</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="h-[400px]">
+          <CardContent className="p-0 sm:p-4">
+            <div className="h-[400px] sm:h-[500px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats}>
+                <BarChart 
+                  data={stats}
+                  margin={{
+                    top: 20,
+                    right: 10,
+                    left: 0,
+                    bottom: 60
+                  }}
+                >
                   <XAxis 
                     dataKey="date"
-                    height={50}
-                    angle={0}
-                    textAnchor="middle"
+                    height={60}
+                    angle={-45}
+                    interval={0}
+                    textAnchor="end"
+                    tick={{ fontSize: 11 }}
                     stroke="#3F3F46"
                     style={{ fontWeight: 300 }}
                   />
@@ -147,12 +168,25 @@ export default function Dashboard() {
                     allowDecimals={false} 
                     stroke="#3F3F46"
                     style={{ fontWeight: 300 }}
+                    tick={{ fontSize: 11 }}
                   />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="Sábado" fill="#9562DC" />
-                  <Bar dataKey="Domingo Manhã" fill="#FFC857" />
-                  <Bar dataKey="Domingo Noite" fill="#B09FF3" />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                    }}
+                  />
+                  <Legend 
+                    wrapperStyle={{ 
+                      fontSize: '12px',
+                      paddingTop: '15px'
+                    }}
+                  />
+                  <Bar dataKey="Sábado" fill="#9562DC" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Domingo Manhã" fill="#FFC857" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Domingo Noite" fill="#B09FF3" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
