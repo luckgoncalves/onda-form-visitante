@@ -52,15 +52,15 @@ console.log({isLoading})
           <Image 
             src="/onda-logo.png" 
             alt="Onda Logo" 
-            width={200} 
-            height={80} 
+            width={150} 
+            height={60} 
             className="mx-auto"
           />
         </CardHeader>
         <CardContent>
           {showLogin && (
             <Form {...form}>
-              <form className="flex flex-col mx-auto w-1/2 gap-4" onSubmit={submitAction}>
+              <form className="flex flex-col mx-auto md:w-1/2 gap-4" onSubmit={submitAction}>
 
                 <FormLabel>Email:</FormLabel>
                 <FormField 
@@ -86,13 +86,20 @@ console.log({isLoading})
           )}
         </CardContent>
         <CardFooter className="w-full">
-          <div className="flex flex-wrap items-center justify-center gap-4 w-full">
+          <div className="flex flex-col items-center justify-center gap-4 w-full">
             <ButtonForm 
-            type="button" 
-            className={`w-1/2 text-balance bg-transparent border-2 border-[#503387] text-[#503387] hover:bg-[#503387]/90 hover:text-white`} 
-            onClick={() => router.push('/register')} 
-            label="Cadastrar novo Visitante" />
-            {!showLogin && <ButtonForm className="w-1/2" type="button" onClick={() => setShowLogin(true)} label="Entrar" />}
+              type="button" 
+              className="w-full sm:w-1/2 text-sm text-center bg-transparent border-2 border-[#503387] text-[#503387] hover:bg-[#503387]/90 hover:text-white" 
+              onClick={() => router.push('/register')} 
+              label="Cadastrar novo Visitante" />
+            {!showLogin && (
+              <ButtonForm 
+                className="w-full sm:w-1/2" 
+                type="button" 
+                onClick={() => setShowLogin(true)} 
+                label="Entrar" 
+              />
+            )}
           </div>
         </CardFooter>
       </Card>
