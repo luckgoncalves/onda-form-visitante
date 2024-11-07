@@ -98,3 +98,47 @@ export async function logout() {
   cookies().delete('authToken');
   return { success: true };
 }
+
+export async function getVisitStats({ startDate, endDate }: { startDate: string, endDate: string }) {
+  // Ajusta as datas para incluir o dia inteiro e considerar o fuso horário local
+  const start = new Date(`${startDate}T00:00:00`);
+  const end = new Date(`${endDate}T23:59:59.999`);
+
+  console.log('Query dates:', start, end); // Debug
+
+  const visits = await prisma.visitantes.findMany({
+    where: {
+      created_at: {
+        gte: start,
+        lte: end,
+      },
+    },
+    select: {
+      created_at: true,
+      culto: true,
+    },
+    orderBy: {
+      created_at: 'asc'
+    }
+  });
+
+  console.log('Found visits:', visits.length); // Debug
+
+  // Group by date and culto
+  const stats = visits.reduce((acc: any, visit) => {
+    const date = visit.created_at.toISOString().split('T')[0];
+    if (!acc[date]) {
+      acc[date] = {
+        'sabado': 0,
+        'domingo-manha': 0,
+        'domingo-noite': 0,
+        total: 0
+      };
+    }
+    acc[date][visit.culto]++;
+    acc[date].total++;
+    return acc;
+  }, {});
+
+  return stats;
+}
