@@ -100,11 +100,8 @@ export async function logout() {
 }
 
 export async function getVisitStats({ startDate, endDate }: { startDate: string, endDate: string }) {
-  // Ajusta as datas para incluir o dia inteiro e considerar o fuso horário local
   const start = new Date(`${startDate}T00:00:00`);
   const end = new Date(`${endDate}T23:59:59.999`);
-
-  console.log('Query dates:', start, end); // Debug
 
   const visits = await prisma.visitantes.findMany({
     where: {
@@ -122,21 +119,19 @@ export async function getVisitStats({ startDate, endDate }: { startDate: string,
     }
   });
 
-  console.log('Found visits:', visits.length); // Debug
-
-  // Group by date and culto
+  // Group by month and culto
   const stats = visits.reduce((acc: any, visit) => {
-    const date = visit.created_at.toISOString().split('T')[0];
-    if (!acc[date]) {
-      acc[date] = {
+    const monthYear = visit.created_at.toISOString().slice(0, 7); // Gets YYYY-MM format
+    if (!acc[monthYear]) {
+      acc[monthYear] = {
         'sabado': 0,
         'domingo-manha': 0,
         'domingo-noite': 0,
         total: 0
       };
     }
-    acc[date][visit.culto]++;
-    acc[date].total++;
+    acc[monthYear][visit.culto]++;
+    acc[monthYear].total++;
     return acc;
   }, {});
 

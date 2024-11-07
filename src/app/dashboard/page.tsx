@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [startDate, setStartDate] = useState(startOfMonth(new Date()));
   const [endDate, setEndDate] = useState(endOfMonth(new Date()));
   const [userName, setUserName] = useState("");
+  const [monthlyStats, setMonthlyStats] = useState<any>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -66,6 +67,50 @@ export default function Dashboard() {
     }
     fetchStats();
   }, [startDate, endDate]);
+
+  useEffect(() => {
+    async function fetchMonthlyStats() {
+      const firstDayOfMonth = startOfMonth(startDate);
+      const lastDayOfMonth = endOfMonth(startDate);
+      
+      const formattedStartDate = format(firstDayOfMonth, 'yyyy-MM-dd');
+      const formattedEndDate = format(lastDayOfMonth, 'yyyy-MM-dd');
+      
+      const data = await getVisitStats({
+        startDate: formattedStartDate,
+        endDate: formattedEndDate
+      });
+
+      const monthlyData = Object.entries(data).reduce((acc: any, [date, counts]: [string, any]) => {
+        const [year, month] = date.split('-');
+        const monthYear = `${month}/${year}`;
+        
+        if (!acc[monthYear]) {
+          acc[monthYear] = {
+            'Sábado': 0,
+            'Domingo Manhã': 0,
+            'Domingo Noite': 0,
+            total: 0
+          };
+        }
+
+        acc[monthYear]['Sábado'] += counts['sabado'] || 0;
+        acc[monthYear]['Domingo Manhã'] += counts['domingo-manha'] || 0;
+        acc[monthYear]['Domingo Noite'] += counts['domingo-noite'] || 0;
+        acc[monthYear].total += counts.total || 0;
+
+        return acc;
+      }, {});
+
+      const formattedMonthlyData = Object.entries(monthlyData).map(([date, counts]: [string, any]) => ({
+        date,
+        ...counts
+      }));
+
+      setMonthlyStats(formattedMonthlyData);
+    }
+    fetchMonthlyStats();
+  }, [startDate]);
 
   if (!mounted) {
     return null;
@@ -137,61 +182,120 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Gráfico com melhor responsividade */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base sm:text-lg">Visitas por Dia e Culto</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 sm:p-4">
-            <div className="h-[400px] sm:h-[500px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={stats}
-                  margin={{
-                    top: 20,
-                    right: 10,
-                    left: 0,
-                    bottom: 60
-                  }}
-                >
-                  <XAxis 
-                    dataKey="date"
-                    height={60}
-                    angle={-45}
-                    interval={0}
-                    textAnchor="end"
-                    tick={{ fontSize: 11 }}
-                    stroke="#3F3F46"
-                    style={{ fontWeight: 300 }}
-                  />
-                  <YAxis 
-                    allowDecimals={false} 
-                    stroke="#3F3F46"
-                    style={{ fontWeight: 300 }}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: 'none',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+        {/* Charts container */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Daily chart */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base sm:text-lg">Visitas por Dia e Culto</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 sm:p-4">
+              <div className="h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
+                    data={stats}
+                    margin={{
+                      top: 20,
+                      right: 10,
+                      left: 0,
+                      bottom: 60
                     }}
-                  />
-                  <Legend 
-                    wrapperStyle={{ 
-                      fontSize: '12px',
-                      paddingTop: '15px'
+                  >
+                    <XAxis 
+                      dataKey="date"
+                      height={60}
+                      angle={-45}
+                      interval={0}
+                      textAnchor="end"
+                      tick={{ fontSize: 11 }}
+                      stroke="#3F3F46"
+                      style={{ fontWeight: 300 }}
+                    />
+                    <YAxis 
+                      allowDecimals={false} 
+                      stroke="#3F3F46"
+                      style={{ fontWeight: 300 }}
+                      tick={{ fontSize: 11 }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                      }}
+                    />
+                    <Legend 
+                      wrapperStyle={{ 
+                        fontSize: '12px',
+                        paddingTop: '15px'
+                      }}
+                    />
+                    <Bar dataKey="Sábado" fill="#9562DC" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Domingo Manhã" fill="#FFC857" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Domingo Noite" fill="#B09FF3" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Monthly chart */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base sm:text-lg">Visitas Mensais por Culto</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 sm:p-4">
+              <div className="h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
+                    data={monthlyStats}
+                    margin={{
+                      top: 20,
+                      right: 10,
+                      left: 0,
+                      bottom: 40
                     }}
-                  />
-                  <Bar dataKey="Sábado" fill="#9562DC" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Domingo Manhã" fill="#FFC857" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Domingo Noite" fill="#B09FF3" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+                  >
+                    <XAxis 
+                      dataKey="date"
+                      height={40}
+                      angle={-45}
+                      interval={0}
+                      textAnchor="end"
+                      tick={{ fontSize: 11 }}
+                      stroke="#3F3F46"
+                      style={{ fontWeight: 300 }}
+                    />
+                    <YAxis 
+                      allowDecimals={false} 
+                      stroke="#3F3F46"
+                      style={{ fontWeight: 300 }}
+                      tick={{ fontSize: 11 }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                      }}
+                    />
+                    <Legend 
+                      wrapperStyle={{ 
+                        fontSize: '12px',
+                        paddingTop: '15px'
+                      }}
+                    />
+                    <Bar dataKey="Sábado" fill="#9562DC" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Domingo Manhã" fill="#FFC857" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Domingo Noite" fill="#B09FF3" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </>
   );
