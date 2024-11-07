@@ -93,3 +93,8 @@ export async function updateMensagemEnviada(id: string) {
 
   return updatedVisitante;
 }
+
+export async function logout() {
+  cookies().delete('authToken');
+  return { success: true };
+}

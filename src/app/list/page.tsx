@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from "react"
-import { findAll, checkAuth, updateMensagemEnviada } from "../actions"
+import { findAll, checkAuth, updateMensagemEnviada, logout } from "../actions"
 import { ArrowLeft, LayoutGrid, LayoutList, MessageCircle, MessageCircleMore, PlusCircle, Search, LogOut, User, ChevronDown, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,13 +11,14 @@ import { formatCulto, formatDate, formatInteresse } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion, useMotionValue, useTransform } from "framer-motion";
+import Image from "next/image";
 
 
 function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
   return (
-    <Card className="w-full m-6 max-w-2xl mx-auto">
+    <Card className="w-full m-6 max-w-2xl mx-auto mt-[80px]">
       <CardContent className="p-6">
-        <Button variant="ghost" onClick={onBack} className="mb-4">
+        <Button variant="ghost" onClick={onBack} className="pl-0 mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
         </Button>
         <h2 className="text-2xl font-bold mb-3">{item.nome}</h2>
@@ -31,7 +32,7 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
         </div>
         <div>
           <h4 className="text-sm font-semibold">Como chegou até nós</h4>
-          <p className="text-gray-600 mb-3"> {item.como_chegou_ate_nos}</p>
+          <p className="text-gray-600 mb-3"> {item?.como_chegou_ate_nos || '-'}</p>
         </div>
         <div>
           <h4 className="text-sm font-semibold">Frequenta igreja</h4>
@@ -39,11 +40,11 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
         </div>
         <div>
           <h4 className="text-sm font-semibold">Gênero</h4>
-          <p className="text-gray-600 mb-3"> {item.genero}</p>
+          <p className="text-gray-600 mb-3"> {item?.genero || '-'}</p>
         </div>
         <div>
           <h4 className="text-sm font-semibold">Idade</h4>
-          <p className="text-gray-600 mb-3"> {item.idade}</p>
+          <p className="text-gray-600 mb-3"> {item?.idade || '-'}</p>
         </div>
         <div>
           <h4 className="text-sm font-semibold">Interesse em conhecer</h4>
@@ -53,19 +54,19 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
         </div>
         <div>
           <h4 className="text-sm font-semibold">Observação</h4>
-          <p className="text-gray-600 mb-3"> {item.observacao}</p>
+          <p className="text-gray-600 mb-3"> {item?.observacao || '-'}</p>
         </div>
         <div>
           <h4 className="text-sm font-semibold">Telefone</h4>
-          <p className="text-gray-600 mb-3"> {item.telefone}</p>
+          <p className="text-gray-600 mb-3"> {item?.telefone || '-'}</p>
         </div>
         <div>
           <h4 className="text-sm font-semibold">Qual igreja</h4>
-          <p className="text-gray-600 mb-3"> {item.qual_igreja}</p>
+          <p className="text-gray-600 mb-3"> {item?.qual_igreja || '-'}</p>
         </div>
         <div>
           <h4 className="text-sm font-semibold">Visitou em</h4>
-          <p className="text-gray-600 mb-3"> {`${item.culto} - ${formatDate(item.created_at)}`}</p>
+          <p className="text-gray-600 mb-3"> {`${formatCulto(item?.culto) || '-'} - ${formatDate(item?.created_at || '')}`}</p>
         </div>
       </CardContent>
     </Card>
@@ -76,14 +77,15 @@ function Header({ userName, onLogout }: { userName: string, onLogout: () => void
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white shadow-sm">
-      <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <header className="bg-gradient-to-r from-[#9562DC] to-[#FEF057] shadow-lg fixed top-0 left-0 right-0 z-50">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          {/* Replace with your actual logo */}
-          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold text-xl mr-4">
-            L
-          </div>
-          <h1 className="hidden sm:block text-xl font-semibold text-gray-900">Onda Dura</h1>
+          <Image
+            src="/onda-logo-header.png" 
+            alt="Onda Logo" 
+            width={150}
+            height={100}
+          />
         </div>
         <div className="relative">
           <Button
@@ -229,7 +231,7 @@ export default function List() {
     async function fetchData() {
       const { isAuthenticated, user } = await checkAuth();
       if (!isAuthenticated) {
-        router.push('/login'); // Redirect to login if not authenticated
+        router.push('/'); // Redirect to login if not authenticated
       } else if (user) {
         setUserName(user.name);
         setIsAuthenticated(true);
@@ -295,10 +297,9 @@ export default function List() {
     </Card>
   );
 
-  const handleLogout = () => {
-    // Implement logout logic here
-    console.log("Logout clicked");
-    // For example: router.push('/login');
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
   }
 
   // Adicione este componente antes do return principal
@@ -320,7 +321,7 @@ export default function List() {
   return (
     <>
       <Header userName={userName} onLogout={handleLogout} />
-      <div className="p-4">
+      <div className="p-4 mt-[72px]">
         <div className="mb-4 flex flex-col-reverse sm:flex-row items-end sm:items-center justify-between gap-4">
           <div className="relative  w-full sm:w-64">
             <Input

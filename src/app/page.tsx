@@ -8,6 +8,7 @@ import ButtonForm from "@/components/button-form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import Image from 'next/image';
 
 export default function Home() {
   const form = useForm();
@@ -48,12 +49,19 @@ console.log({isLoading})
     <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-4">
       <Card className="p-4 w-full backdrop-blur-sm bg-white/30 mt-10 border-none card-glass">
         <CardHeader className="text-center">
-          <h1 className="text-3xl">Você deseja:</h1>
+          <Image 
+            src="/onda-logo.png" 
+            alt="Onda Logo" 
+            width={200} 
+            height={80} 
+            className="mx-auto"
+          />
         </CardHeader>
         <CardContent>
           {showLogin && (
             <Form {...form}>
-              <form className="flex flex-col gap-4" onSubmit={submitAction}>
+              <form className="flex flex-col mx-auto w-1/2 gap-4" onSubmit={submitAction}>
+
                 <FormLabel>Email:</FormLabel>
                 <FormField 
                   control={form.control} 
@@ -72,19 +80,19 @@ console.log({isLoading})
                   </Alert>
                 )}
                 
-                <ButtonForm type="submit" label={isLoading ? 'Carregando...' : 'Entrar'} disabled={isLoading} />
+                <ButtonForm className="w-full mx-auto" type="submit" label={isLoading ? 'Carregando...' : 'Entrar'} disabled={isLoading} />
               </form>
             </Form>
           )}
         </CardContent>
         <CardFooter className="w-full">
-          <div className="flex flex-wrap md:flex-nowrap gap-4 w-full">
+          <div className="flex flex-wrap items-center justify-center gap-4 w-full">
             <ButtonForm 
             type="button" 
-            className={`${showLogin ? 'w-full' : 'w-full md:w-1/2'} text-balance bg-transparent border-2 border-[#503387] text-[#503387] hover:bg-[#503387]/90 hover:text-white`} 
+            className={`w-1/2 text-balance bg-transparent border-2 border-[#503387] text-[#503387] hover:bg-[#503387]/90 hover:text-white`} 
             onClick={() => router.push('/register')} 
             label="Cadastrar novo Visitante" />
-            {!showLogin && <ButtonForm className="w-full md:w-1/2" type="button" onClick={() => setShowLogin(true)} label="Entrar" />}
+            {!showLogin && <ButtonForm className="w-1/2" type="button" onClick={() => setShowLogin(true)} label="Entrar" />}
           </div>
         </CardFooter>
       </Card>
