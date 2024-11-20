@@ -92,16 +92,17 @@ console.log({isLoading})
           <div className="flex flex-col items-center justify-center gap-4 w-full">
             <ButtonForm 
               type="button" 
-              className="w-full sm:w-1/2 text-sm text-center bg-transparent border-2 border-[#503387] text-[#503387] hover:bg-[#503387]/90 hover:text-white" 
+              className={!showLogin ? "w-full sm:w-1/2" : "text-[#503387] hover:bg-transparent hover:underline bg-transparent border-none cursor-pointer p-0"} 
               onClick={() => router.push('/register')} 
               label="Cadastrar novo Visitante" />
             {!showLogin && (
-              <ButtonForm 
-                className="w-full sm:w-1/2" 
+              <button 
+                className="text-[#503387] hover:underline bg-transparent border-none cursor-pointer p-0" 
                 type="button" 
-                onClick={() => setShowLogin(true)} 
-                label="Entrar" 
-              />
+                onClick={() => setShowLogin(true)}
+              >
+                Entrar
+              </button>
             )}
           </div>
         </CardFooter>
