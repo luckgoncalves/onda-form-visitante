@@ -20,6 +20,7 @@ export default function Home() {
   const [step, setStep] = useState(0);
   const router = useRouter();
   const [formData, setFormData] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(step === 0 ? step1Schema : step === 1 ? step2Schema : step3Schema),
@@ -40,13 +41,20 @@ export default function Home() {
   const submitAction = form.handleSubmit(async (stepData) => {
     const updatedFormData = { ...formData, ...stepData };
     setFormData(updatedFormData);
-    console.log('updatedFormData', updatedFormData);
     
     if (step < 2) {
       setStep((prev) => prev + 1);
     } else {
-      await save(updatedFormData);
-      setStep((prev) => prev + 1);
+      try {
+        setIsSubmitting(true);
+        await save(updatedFormData);
+        setStep((prev) => prev + 1);
+      } catch (error) {
+        console.error('Error saving data:', error);
+        // You might want to show an error message to the user here
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   });
 
@@ -69,7 +77,11 @@ export default function Home() {
                 <ButtonForm className="w-full" type="button" onClick={() => setStep(step - 1)} label="Voltar"/>
               )}
               {step < 3 && (
-                <ButtonForm type="submit" label={step < 2 ? "Próximo" : "Salvar"}/>
+                <ButtonForm 
+                  type="submit" 
+                  label={step < 2 ? "Próximo" : "Salvar"}
+                  disabled={isSubmitting}
+                />
               )}
             </div>
           </form>
