@@ -3,9 +3,14 @@ import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { formatPhone } from "@/lib/utils";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { Label } from "./ui/label";
+import { useEffect } from "react";
 
 export default function StepOne({ form }: any) {
-  console.log(form.formState.errors.nome)
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}, []);
+
   return (
     <section className={`flex mb-4 flex-col gap-4`}>
       <FormField

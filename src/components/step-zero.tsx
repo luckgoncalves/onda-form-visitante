@@ -1,9 +1,13 @@
-import { Controller } from "react-hook-form";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { FormControl, FormField, FormItem, FormLabel } from "./ui/form";
+import { FormControl, FormField, FormItem } from "./ui/form";
+import { useEffect } from "react";
 
 export default function StepZero({ form }: any) {
-  console.log(form.formState.errors)
+  
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+  
   return (
     <section className={`flex mb-4 flex-col gap-4`}>
       <h2>Culto</h2>
