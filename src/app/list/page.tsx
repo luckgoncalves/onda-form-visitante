@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from "react"
-import { findAll, checkAuth, updateMensagemEnviada, logout } from "../actions"
+import { findAll, checkAuth, updateMensagemEnviada, logout, deleteVisitante } from "../actions"
 import { ArrowLeft, LayoutGrid, LayoutList, MessageCircle, MessageCircleMore, PlusCircle, Search, LogOut, User, ChevronDown, MapPin, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,16 +11,69 @@ import { formatCulto, formatDate, formatInteresse } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import Image from "next/image";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster"
 import { Header } from "@/components/header";
 
-function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
+function DetailView({ item, onBack, onDelete }: { 
+  item: any, 
+  onBack: () => void,
+  onDelete: (id: string) => Promise<void> 
+}) {
+  const { toast } = useToast()
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+   
+    try {
+      await deleteVisitante(item.id);
+      await onDelete(item.id);
+      onBack(); // Return to list view after successful deletion
+    } catch (error) {
+      console.error('Error deleting visitor:', error);
+      toast({
+        variant: "destructive",
+          title: "Erro ao excluir",
+          description: "Erro ao excluir o visitante. Por favor, tente novamente mais tarde.",
+      });
+      
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Card className="w-full m-6 max-w-2xl mx-auto mt-[80px]">
       <CardContent className="p-6">
         <Button variant="ghost" onClick={onBack} className="pl-0 mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
         </Button>
+        <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Excluindo..." : "Excluir"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>
+                    Confirmar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
         <h2 className="text-2xl font-bold mb-3">{item.nome}</h2>
         <div>
         <h4 className="text-sm font-semibold">Estado cívil</h4>
@@ -69,6 +122,7 @@ function DetailView({ item, onBack }: { item: any, onBack: () => void }) {
           <p className="text-gray-600 mb-3"> {`${formatCulto(item?.culto) || '-'} - ${formatDate(item?.created_at || '')}`}</p>
         </div>
       </CardContent>
+      <Toaster />
     </Card>
   )
 }
@@ -265,11 +319,24 @@ export default function List() {
     </div>
   );
 
+  const handleDeleteVisitor = async (id: string) => {
+    setVisitantes((prevVisitantes: any[]) => 
+      prevVisitantes.filter((visitante: any) => visitante.id !== id)
+    );
+    setFilteredVisitantes((prevFiltered: any) => 
+      prevFiltered.filter((visitante: any) => visitante.id !== id)
+    );
+  };
+
   if (selectedItem) {
     return (
       <>
         <Header userName={userName} onLogout={handleLogout} />
-        <DetailView item={selectedItem} onBack={handleBackToList} />
+        <DetailView 
+          item={selectedItem} 
+          onBack={handleBackToList}
+          onDelete={handleDeleteVisitor}
+        />
       </>
     )
   }

@@ -138,3 +138,15 @@ export async function getVisitStats({ startDate, endDate }: { startDate: string,
 
   return stats;
 }
+
+export async function deleteVisitante(id: string) {
+  try {
+    await prisma.visitantes.delete({
+      where: { id }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting visitante:', error);
+    return { success: false };
+  }
+}
