@@ -23,6 +23,10 @@ function DetailView({ item, onBack, onDelete }: {
   const { toast } = useToast()
   const [isDeleting, setIsDeleting] = useState(false);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const handleDelete = async () => {
     setIsDeleting(true);
    
