@@ -157,9 +157,18 @@ export async function getVisitStatsDetailed(params: { startDate: string, endDate
       SELECT 
         id,
         nome,
+        bairro,
         idade,
+        genero,
+        estado_civil,
         telefone,
         culto,
+        como_nos_conheceu,
+        como_chegou_ate_nos,
+        frequenta_igreja,
+        qual_igreja,
+        interesse_em_conhecer,
+        observacao,
         mensagem_enviada,
         created_at - INTERVAL '3 hours' as created_at
       FROM visitantes 
