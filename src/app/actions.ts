@@ -150,3 +150,27 @@ export async function deleteVisitante(id: string) {
     return { success: false };
   }
 }
+
+export async function getVisitStatsDetailed(params: { startDate: string, endDate: string }) {
+  try {
+    const visits = await prisma.$queryRaw`
+      SELECT 
+        id,
+        nome,
+        idade,
+        telefone,
+        culto,
+        mensagem_enviada,
+        created_at - INTERVAL '3 hours' as created_at
+      FROM visitantes 
+      WHERE created_at - INTERVAL '3 hours' >= ${params.startDate}::timestamp
+      AND created_at - INTERVAL '3 hours' <= ${params.endDate}::timestamp
+      ORDER BY created_at ASC
+    `;
+    
+    return visits;
+  } catch (error) {
+    console.error('Erro ao buscar estatísticas:', error);
+    return [];
+  }
+}

@@ -6,6 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(date: Date) {
+  date.setHours(date.getHours() - 3);
   return date.toISOString().split('T')[0].split('-').reverse().join('/');
 }
 
