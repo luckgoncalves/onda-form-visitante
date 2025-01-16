@@ -88,49 +88,49 @@ function DetailView({ item, onBack, onDelete }: {
         </div>
         <h2 className="text-2xl font-bold mb-3">{item.nome}</h2>
         <div>
-        <h4 className="text-sm font-semibold">Estado cívil</h4>
+        <h4 className="text-base font-semibold">Estado cívil</h4>
         <p className="text-gray-600 mb-3"> {item.estado_civil}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Bairro</h4>
+          <h4 className="text-base font-semibold">Bairro</h4>
           <p className="text-gray-600 mb-3"> {item.bairro}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Como chegou até nós</h4>
+          <h4 className="text-base font-semibold">Como chegou até nós</h4>
           <p className="text-gray-600 mb-3"> {item?.como_chegou_ate_nos || '-'}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Frequenta igreja</h4>
+          <h4 className="text-base font-semibold">Frequenta igreja</h4>
           <p className="text-gray-600 mb-3"> {item.frequenta_igreja ? 'Sim': 'Não'}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Gênero</h4>
+          <h4 className="text-base font-semibold">Gênero</h4>
           <p className="text-gray-600 mb-3"> {item?.genero || '-'}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Idade</h4>
+          <h4 className="text-base font-semibold">Idade</h4>
           <p className="text-gray-600 mb-3"> {item?.idade || '-'}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Interesse em conhecer</h4>
+          <h4 className="text-base font-semibold">Interesse em conhecer</h4>
           <p className="text-gray-600 mb-3">
             {item.interesse_em_conhecer.map((interesse: string) => formatInteresse(interesse)).join(', ')}
           </p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Observação</h4>
+          <h4 className="text-base font-semibold">Observação</h4>
           <p className="text-gray-600 mb-3"> {item?.observacao || '-'}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Telefone</h4>
+          <h4 className="text-base font-semibold">Telefone</h4>
           <p className="text-gray-600 mb-3"> {item?.telefone || '-'}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Qual igreja</h4>
+          <h4 className="text-base font-semibold">Qual igreja</h4>
           <p className="text-gray-600 mb-3"> {item?.qual_igreja || '-'}</p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Visitou em</h4>
+          <h4 className="text-base font-semibold">Visitou em</h4>
           <p className="text-gray-600 mb-3"> {`${formatCulto(item?.culto) || '-'} - ${formatDate(item?.created_at || '')}`}</p>
         </div>
       </CardContent>
@@ -326,7 +326,7 @@ export default function List() {
 
   // Adicione este componente antes do return principal
   const SwipeInstruction = () => (
-    <div className="text-center text-sm text-gray-500 mb-4">
+    <div className="text-center text-base text-gray-500 mb-4">
       ← Arraste os cards para marcar/desmarcar mensagens como enviadas →
     </div>
   );
@@ -408,8 +408,8 @@ export default function List() {
         ) : (
           <div className="text-center py-10">
             <MessageCircle className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-semibold text-gray-900">Nenhum visitante encontrado</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-base font-semibold text-gray-900">Nenhum visitante encontrado</h3>
+            <p className="mt-1 text-base text-gray-500">
               Não há visitantes para exibir no momento.
             </p>
             <div className="mt-6">

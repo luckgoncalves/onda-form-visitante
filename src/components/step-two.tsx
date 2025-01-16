@@ -23,7 +23,7 @@ export default function StepTwo({ form }: any) {
                   <Input id="como_nos_conheceu" {...field} />
                 </FormControl>
                 {fieldState.error && (
-                  <p className="text-red-500 text-sm mt-1">{fieldState.error.message}</p>
+                  <p className="text-red-500 text-base mt-1">{fieldState.error.message}</p>
                 )}
               </FormItem>
             )}

@@ -332,7 +332,7 @@ export default function Dashboard() {
             
             <button
               onClick={exportToExcel}
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed gap-2 shadow-sm"
+              className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-base font-medium text-white hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed gap-2 shadow-sm"
               disabled={loading || stats.length === 0 || isExporting}
             >
               {isExporting ? (
@@ -389,7 +389,7 @@ export default function Dashboard() {
             <>
               <Card className="h-full">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total de Visitas</CardTitle>
+                  <CardTitle className="text-base font-medium text-muted-foreground">Total de Visitas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{totalVisits}</div>
@@ -398,7 +398,7 @@ export default function Dashboard() {
 
               <Card className="h-full">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Média por Dia</CardTitle>
+                  <CardTitle className="text-base font-medium text-muted-foreground">Média por Dia</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{averageVisitsPerDay.toFixed(1)}</div>
@@ -407,7 +407,7 @@ export default function Dashboard() {
 
               <Card className="h-full">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Dias com Visitas</CardTitle>
+                  <CardTitle className="text-base font-medium text-muted-foreground">Dias com Visitas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.length}</div>
