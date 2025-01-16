@@ -21,7 +21,7 @@ model visitantes {
   idade                 Int
   interesse_em_conhecer String[]
   nome                  String
-  observacao            String
+  observacao            String?
   qual_igreja           String?
   telefone              String
   mensagem_enviada      Boolean  @default(false)

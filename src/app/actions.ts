@@ -8,10 +8,10 @@ import { cookies } from 'next/headers';
 const prismaClient = new PrismaClient()
 
 export const save = async (data: any) => {
-    console.log(data)
    const user = await prisma.visitantes.create({
      data: {
         ...data, 
+        observacao: data.observacao || '',
         idade: Number(data.idade),
     }
    })
