@@ -12,8 +12,6 @@ import { save } from "../actions";
 import Done from "@/components/done";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step1Schema, step2Schema, step3Schema } from "./validate";
-import Link from 'next/link';
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
