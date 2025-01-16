@@ -12,9 +12,10 @@ CREATE TABLE "visitantes" (
     "idade" INTEGER NOT NULL,
     "interesse_em_conhecer" TEXT[],
     "nome" TEXT NOT NULL,
-    "observacao" TEXT NOT NULL,
+    "observacao" TEXT,
     "qual_igreja" TEXT NOT NULL,
     "telefone" TEXT NOT NULL,
+    "mensagem_enviada" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "visitantes_pkey" PRIMARY KEY ("id")
 );
