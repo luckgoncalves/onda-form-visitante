@@ -8,12 +8,23 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+model bairros {
+  id        String     @id @default(cuid())
+  nome      String
+  cidadeId  String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+}
+
 model visitantes {
   id                    String   @id @default(cuid())
-  bairro                String
+  estado                String?
+  cidade                String?
+  bairro                String?
   created_at            DateTime @default(now())
   como_chegou_ate_nos   String?
-  como_nos_conheceu     String
+  como_nos_conheceu     String?
   culto                 String
   estado_civil          String
   frequenta_igreja      String?

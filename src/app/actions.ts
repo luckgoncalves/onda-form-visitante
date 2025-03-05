@@ -8,9 +8,13 @@ import { cookies } from 'next/headers';
 const prismaClient = new PrismaClient()
 
 export const save = async (data: any) => {
+
    const user = await prisma.visitantes.create({
      data: {
-        ...data, 
+        ...data,
+        estado: data.estado,
+        cidade: data.cidade,
+        bairro: data.bairro, // Se for Curitiba, será o ID do bairro, caso contrário será o nome digitado
         observacao: data.observacao || '',
         idade: Number(data.idade),
     }
@@ -21,6 +25,21 @@ export const save = async (data: any) => {
     return await prisma.visitantes.findMany({
         orderBy: {
             created_at: 'desc'
+        }
+    });
+ }
+
+ export const getBairrosCuritiba = async () => {
+    return await prisma.bairros.findMany({
+        where: {
+            cidadeId: '4106902'
+        },
+        orderBy: {
+            nome: 'asc'
+        },
+        select: {
+            id: true,
+            nome: true
         }
     });
  }
