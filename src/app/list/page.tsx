@@ -16,12 +16,14 @@ interface Visitante {
   id: string;
   nome: string;
   telefone: string;
-  bairro: string;
+  estado?: string | null;
+  cidade?: string | null;
+  bairro?: string | null;
   idade: number;
   genero: string;
   estado_civil: string;
   culto: string;
-  como_nos_conheceu: string;
+  como_nos_conheceu?: string | null;
   como_chegou_ate_nos?: string | null;
   frequenta_igreja?: string | null;
   qual_igreja?: string | null;
