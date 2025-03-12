@@ -202,3 +202,98 @@ export async function getVisitStatsDetailed(params: { startDate: string, endDate
     return [];
   }
 }
+
+export async function getGenderStats({ startDate, endDate }: { startDate: string; endDate: string }) {
+  try {
+    const visits = await prisma.visitantes.groupBy({
+      by: ['culto', 'genero'],
+      where: {
+        created_at: {
+          gte: new Date(startDate),
+          lte: new Date(endDate)
+        }
+      },
+      _count: {
+        id: true
+      }
+    });
+
+    const stats: any = {
+      'sabado': { masculino: 0, feminino: 0 },
+      'domingo-manha': { masculino: 0, feminino: 0 },
+      'domingo-noite': { masculino: 0, feminino: 0 }
+    };
+
+    visits.forEach((visit) => {
+      const generoKey = visit.genero.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+      if (stats[visit.culto]) {
+        stats[visit.culto][generoKey] = visit._count.id;
+      }
+    });
+
+    return stats;
+  } catch (error) {
+    console.error('Error fetching gender stats:', error);
+    throw error;
+  }
+}
+
+export async function getAgeStats({ startDate, endDate }: { startDate: string; endDate: string }) {
+  try {
+    const visits = await prisma.visitantes.findMany({
+      where: {
+        created_at: {
+          gte: new Date(startDate),
+          lte: new Date(endDate)
+        }
+      },
+      select: {
+        idade: true,
+        culto: true
+      }
+    });
+
+    // Create age ranges (0-4, 5-9, 10-14, etc.)
+    const ageRanges: { [key: string]: { [key: string]: number } } = {};
+    
+    visits.forEach((visit) => {
+      // Calculate age range start (round down to nearest 5)
+      const rangeStart = Math.floor(visit.idade / 5) * 5;
+      const rangeKey = `${rangeStart}-${rangeStart + 4}`;
+      
+      // Initialize age range if it doesn't exist
+      if (!ageRanges[rangeKey]) {
+        ageRanges[rangeKey] = {
+          'sabado': 0,
+          'domingo-manha': 0,
+          'domingo-noite': 0,
+          total: 0
+        };
+      }
+      
+      // Increment counters
+      ageRanges[rangeKey][visit.culto]++;
+      ageRanges[rangeKey].total++;
+    });
+
+    // Convert to array and sort by age range
+    const formattedData = Object.entries(ageRanges)
+      .map(([range, counts]) => ({
+        range,
+        'Sábado': counts['sabado'],
+        'Domingo Manhã': counts['domingo-manha'],
+        'Domingo Noite': counts['domingo-noite'],
+        total: counts.total
+      }))
+      .sort((a, b) => {
+        const [aStart] = a.range.split('-').map(Number);
+        const [bStart] = b.range.split('-').map(Number);
+        return aStart - bStart;
+      });
+
+    return formattedData;
+  } catch (error) {
+    console.error('Error fetching age stats:', error);
+    throw error;
+  }
+}
