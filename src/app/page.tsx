@@ -19,9 +19,13 @@ export default function Home() {
 
   useEffect(() => {
     const checkAuthentication = async () => {
-      const { isAuthenticated } = await checkAuth();
+      const { isAuthenticated, user } = await checkAuth();
       if (isAuthenticated) {
-        router.push('/list');
+        if (user?.requirePasswordChange) {
+          router.push('/change-password');
+        } else {
+          router.push('/list');
+        }
       }
     };
 
@@ -34,9 +38,13 @@ export default function Home() {
     try {
       const result = await login(formData.email, formData.password);
       if (result.success) {
-        router.push('/list');
+        if (result.user?.requirePasswordChange) {
+          router.push('/change-password');
+        } else {
+          router.push('/list');
+        }
       } else {
-        setError(result.message || 'An error occurred');
+        setError(result.message || 'Ocorreu um erro');
       }
     } catch (error) {
       setError('Ocorreu um erro ao fazer login. Tente novamente.');

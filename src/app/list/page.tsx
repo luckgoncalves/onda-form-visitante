@@ -46,11 +46,17 @@ export default function List() {
   useEffect(() => {
     async function fetchData() {
       const { isAuthenticated, user } = await checkAuth();
-      if (!isAuthenticated) {
-        router.push('/'); // Redirect to login if not authenticated
-      } else if (user) {
-        setUserName(user.name);
+      if (!isAuthenticated || !user) {
+        router.push('/');
+        return;
       }
+      
+      if (user.requirePasswordChange) {
+        router.push('/change-password');
+        return;
+      }
+
+      setUserName(user.name);
     }
     fetchData();
   }, [router]);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from "react";
-import { checkAuth, logout } from "../actions";
+import { checkAuth, logout, checkIsAdmin } from "../actions";
 import { useRouter } from "next/navigation";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Header } from "@/components/header";
@@ -42,11 +42,19 @@ export default function Dashboard() {
   useEffect(() => {
     async function checkAuthentication() {
       const { isAuthenticated, user } = await checkAuth();
-      if (!isAuthenticated) {
+      const { isAdmin } = await checkIsAdmin();
+      
+      if (!isAuthenticated || !user) {
         router.push('/');
-      } else if (user) {
-        setUserName(user.name);
+        return;
       }
+
+      if (!isAdmin) {
+        router.push('/list');
+        return;
+      }
+
+      setUserName(user.name);
     }
     checkAuthentication();
   }, [router]);

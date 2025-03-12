@@ -56,7 +56,7 @@ export const save = async (data: any) => {
   }
 
   const token = sign(
-    { userId: user.id, email: user.email },
+    { userId: user.id, email: user.email, role: user.role },
     process.env.JWT_SECRET!,
     { expiresIn: '1d' }
   );
@@ -69,32 +69,46 @@ export const save = async (data: any) => {
     path: '/',
   });
 
-  return { success: true, user: { id: user.id, name: user.name, email: user.email } };
+  return { 
+    success: true, 
+    user: { 
+      id: user.id, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role,
+      requirePasswordChange: user.requirePasswordChange 
+    } 
+  };
 }
 
 export async function checkAuth() {
   const authToken = cookies().get('authToken')?.value;
 
   if (!authToken) {
-    return { isAuthenticated: false };
+    return { isAuthenticated: false, user: null };
   }
 
   try {
-    const decoded = verify(authToken, process.env.JWT_SECRET!) as { userId: string, email: string };
+    const decoded = verify(authToken, process.env.JWT_SECRET!) as { userId: string, email: string, role: string };
     
-    // Fetch the user from the database
     const user = await prismaClient.users.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, name: true, email: true }
+      select: { 
+        id: true, 
+        name: true, 
+        email: true, 
+        role: true,
+        requirePasswordChange: true 
+      }
     });
 
     if (!user) {
-      return { isAuthenticated: false };
+      return { isAuthenticated: false, user: null };
     }
 
     return { isAuthenticated: true, user };
   } catch (error) {
-    return { isAuthenticated: false };
+    return { isAuthenticated: false, user: null };
   }
 }
 
@@ -296,4 +310,95 @@ export async function getAgeStats({ startDate, endDate }: { startDate: string; e
     console.error('Error fetching age stats:', error);
     throw error;
   }
+}
+
+export async function checkIsAdmin() {
+  const { isAuthenticated, user } = await checkAuth();
+  
+  if (!isAuthenticated || !user) {
+    return { isAdmin: false };
+  }
+
+  return { isAdmin: user.role === 'admin' };
+}
+
+export async function createUser(data: { email: string; password?: string; name: string; role: string }) {
+  if (!data.password) {
+    throw new Error('Senha é obrigatória para criar um usuário');
+  }
+  
+  const hashedPassword = await bcrypt.hash(data.password, 10);
+  
+  const user = await prismaClient.users.create({
+    data: {
+      ...data,
+      password: hashedPassword,
+      requirePasswordChange: true
+    },
+  });
+
+  return { success: true, user: { 
+    id: user.id, 
+    name: user.name, 
+    email: user.email, 
+    role: user.role,
+    requirePasswordChange: user.requirePasswordChange 
+  } };
+}
+
+export async function listUsers() {
+  const users = await prismaClient.users.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+      requirePasswordChange: true,
+    },
+  });
+
+  return users;
+}
+
+export async function deleteUser(id: string) {
+  await prismaClient.users.delete({
+    where: { id },
+  });
+
+  return { success: true };
+}
+
+type UpdateUserData = {
+  email: string;
+  name: string;
+  role: string;
+  password?: string;
+  requirePasswordChange?: boolean;
+};
+
+export async function updateUser(id: string, data: UpdateUserData) {
+  const updateData: any = {
+    email: data.email,
+    name: data.name,
+    role: data.role,
+    requirePasswordChange: data.requirePasswordChange
+  };
+
+  if (data.password) {
+    updateData.password = await bcrypt.hash(data.password, 10);
+  }
+
+  const user = await prismaClient.users.update({
+    where: { id },
+    data: updateData,
+  });
+
+  return { success: true, user: { 
+    id: user.id, 
+    name: user.name, 
+    email: user.email, 
+    role: user.role,
+    requirePasswordChange: user.requirePasswordChange 
+  } };
 }
