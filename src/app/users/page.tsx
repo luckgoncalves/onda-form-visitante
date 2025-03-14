@@ -7,25 +7,18 @@ import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Trash2, Pencil, KeyRound } from "lucide-react";
-
-const userSchema = z.object({
-  name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),
-  email: z.string().email("Email inválido"),
-  role: z.string({
-    required_error: "Selecione um papel",
-  }).refine(value => ['user', 'admin'].includes(value), {
-    message: "Papel inválido"
-  })
-});
+import { userSchema } from "./validate";
+import { z } from "zod";
+import ButtonForm from "@/components/button-form";
 
 type User = {
   id: string;
@@ -47,6 +40,7 @@ export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const router = useRouter();
@@ -99,11 +93,18 @@ export default function Users() {
   }, [router]);
 
   async function fetchUsers() {
-    const fetchedUsers = await listUsers();
-    setUsers(fetchedUsers.map(user => ({
-      ...user,
-      createdAt: user.createdAt.toISOString()
-    })));
+    try {
+      setIsLoadingUsers(true);
+      const fetchedUsers = await listUsers();
+      setUsers(fetchedUsers.map(user => ({
+        ...user,
+        createdAt: user.createdAt.toISOString()
+      })));
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error);
+    } finally {
+      setIsLoadingUsers(false);
+    }
   }
 
   const handleLogout = async () => {
@@ -172,7 +173,7 @@ export default function Users() {
           <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Usuários</h1>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>Novo Usuário</Button>
+              <ButtonForm label="Novo Usuário" type="button" />
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -230,9 +231,7 @@ export default function Users() {
                     )}
                   />
                   <DialogFooter>
-                    <Button type="submit" disabled={isLoading}>
-                      {isLoading ? "Criando..." : "Criar Usuário"}
-                    </Button>
+                    <ButtonForm type="submit" disabled={isLoading} label={isLoading ? "Criando..." : "Criar Usuário"} />
                   </DialogFooter>
                 </form>
               </Form>
@@ -241,77 +240,99 @@ export default function Users() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {users.map((user) => (
-            <Card key={user.id} className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h3 className="font-semibold">{user.name}</h3>
-                  <p className="text-sm text-gray-500">{user.email}</p>
+          {isLoadingUsers ? (
+            Array.from({ length: 6 }).map((_, index) => (
+              <Card key={`skeleton-${index}`} className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="space-y-2 w-full">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                  <div className="flex gap-2">
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setEditingUser(user)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Forçar redefinição de senha"
-                      >
-                        <KeyRound className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Forçar redefinição de senha</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tem certeza que deseja forçar este usuário a redefinir sua senha no próximo login?
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleForcePasswordChange(user.id)}>
-                          Confirmar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>
-                          Confirmar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                <div className="flex justify-between mt-4">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-4 w-1/3" />
                 </div>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Papel: {user.role === 'admin' ? 'Administrador' : 'Usuário'}</span>
-                <span className="text-gray-500">
-                  Criado em: {new Date(user.createdAt).toLocaleDateString('pt-BR')}
-                </span>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+          ) : (
+            users.map((user) => (
+              <Card key={user.id} className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-semibold">{user.name}</h3>
+                    <p className="text-sm text-gray-500">{user.email}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingUser(user)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Forçar redefinição de senha"
+                        >
+                          <KeyRound className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Forçar redefinição de senha</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja forçar este usuário a redefinir sua senha no próximo login?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction className="bg-[#503387] hover:bg-[#503387]/90 text-white" onClick={() => handleForcePasswordChange(user.id)}>
+                            Confirmar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction className="bg-[#503387] hover:bg-[#503387]/90 text-white" onClick={() => handleDeleteUser(user.id)}>
+                            Confirmar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Papel: {user.role === 'admin' ? 'Administrador' : 'Usuário'}</span>
+                  <span className="text-gray-500">
+                    Criado em: {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+              </Card>
+            ))
+          )}
         </div>
       </div>
 
@@ -382,9 +403,7 @@ export default function Users() {
                 )}
               />
               <DialogFooter>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Salvando..." : "Salvar Alterações"}
-                </Button>
+                <ButtonForm type="submit" disabled={isLoading} label={isLoading ? "Salvando..." : "Salvar Alterações"} />
               </DialogFooter>
             </form>
           </Form>

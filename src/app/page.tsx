@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Form, FormField, FormLabel } from "@/components/ui/form";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { login, checkAuth } from "./actions";
+import { login, checkAuth, checkIsAdmin } from "./actions";
 import ButtonForm from "@/components/button-form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -20,11 +20,17 @@ export default function Home() {
   useEffect(() => {
     const checkAuthentication = async () => {
       const { isAuthenticated, user } = await checkAuth();
+      const { isAdmin } = await checkIsAdmin();
+      
       if (isAuthenticated) {
         if (user?.requirePasswordChange) {
           router.push('/change-password');
         } else {
+          if (isAdmin) {
           router.push('/list');
+          }else {
+            router.push('/register');
+          }
         }
       }
     };

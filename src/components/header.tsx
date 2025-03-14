@@ -59,14 +59,16 @@ export function Header({ userName, onLogout }: { userName: string, onLogout: () 
                     Dashboard
                   </Button>
                 )}
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
                   onClick={() => router.push('/list')}
                 >
                   <Users className="h-4 w-4 mr-2.5" />
                   Visitantes
-                </Button>
+                  </Button>
+                )}
                 {isAdmin && (
                   <Button
                     variant="ghost"

@@ -8,14 +8,16 @@ import StepZero from "@/components/step-zero";
 import { Card } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { save } from "../actions";
+import { checkAuth, logout, save } from "../actions";
 import Done from "@/components/done";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step1Schema, step2Schema, step3Schema } from "./validate";
 import { useRouter } from "next/navigation";
+import { Header } from "@/components/header";
 
 export default function Home() {
   const [step, setStep] = useState(0);
+  const [userName, setUserName] = useState("");
   const router = useRouter();
   const [formData, setFormData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,6 +30,16 @@ export default function Home() {
     },
     mode: 'onBlur'
   });
+
+  useEffect(() => {
+    async function checkAdminAccess() {
+      const { user } = await checkAuth();
+      if (user) {
+        setUserName(user.name);
+      }
+    }
+    checkAdminAccess();
+  }, []);
 
   useEffect(() => {
     const firstError = Object.keys(form.formState.errors)[0];
@@ -56,11 +68,17 @@ export default function Home() {
     }
   });
 
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
+
   return (
-    <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-4">
+    <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-2 sm:p-6 mt-[72px]">
+      <Header userName={userName} onLogout={handleLogout} />
       <div className="flex justify-between items-center w-full">
         <h1>Ficha - visitantes</h1>
-        <ButtonForm type="button" onClick={() => router.push('/')} label={`Logar`} />
+        {/* <ButtonForm type="button" onClick={() => router.push('/')} label={`Logar`} /> */}
       </div>
       <Card className="p-4 w-full backdrop-blur-sm bg-white/30  border-none card-glass">
         <Form {...form}>

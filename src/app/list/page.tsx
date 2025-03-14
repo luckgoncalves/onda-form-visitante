@@ -65,7 +65,6 @@ export default function List() {
     async function fetch() {
       setLoading(true);
       const users = await findAll(); 
-      console.log(users);
       setLoading(false);
       setVisitantes(users);
       setFilteredVisitantes(users);
