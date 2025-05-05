@@ -66,8 +66,8 @@ export default function List() {
       setLoading(true);
       const users = await findAll(); 
       setLoading(false);
-      setVisitantes(users);
-      setFilteredVisitantes(users);
+      setVisitantes(users as any);
+      setFilteredVisitantes(users as any);
     }
     
     fetch();
