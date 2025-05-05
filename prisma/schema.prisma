@@ -36,6 +36,10 @@ model visitantes {
   qual_igreja           String?
   telefone              String
   mensagem_enviada      Boolean  @default(false)
+
+  // Add relation to User
+  registeredById        String?
+  registeredBy          users?   @relation(fields: [registeredById], references: [id])
 }
 
 model users {
@@ -47,4 +51,7 @@ model users {
   requirePasswordChange Boolean  @default(true)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+
+  // Add relation to Visitantes
+  registeredVisitors visitantes[]
 }

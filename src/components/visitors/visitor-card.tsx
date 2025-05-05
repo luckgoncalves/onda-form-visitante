@@ -11,9 +11,22 @@ import { formatCulto } from "@/lib/utils";
 import { AlertDialog, AlertDialogCancel, AlertDialogDescription, AlertDialogTitle, AlertDialogHeader, AlertDialogContent, AlertDialogTrigger, AlertDialogFooter, AlertDialogAction } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
 
+// Define a more specific type for the visitante prop
+interface Visitor {
+  id: string;
+  nome: string;
+  telefone: string;
+  culto: string;
+  created_at: string | Date;
+  mensagem_enviada: boolean;
+  registeredBy?: { // Optional user relation
+    name: string;
+  } | null;
+}
+
 function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusChange }: { 
-    visitante: any, 
-    onItemClick: (visitante: any) => void,
+    visitante: Visitor, // Use the defined interface
+    onItemClick: (visitante: Visitor) => void,
     onWhatsAppClick: (phone: string, name: string, id: string) => void,
     onMessageStatusChange: (id: string) => void 
   }) {
@@ -61,10 +74,20 @@ function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusC
                   </span>
                 )}
               </div>
-              <div className="flex gap-2 items-center">
-                <MapPin className="w-4 h-4" />
-                <span className="text-gray-600"> {formatCulto(visitante.culto)}</span>
-                <span className="text-gray-600"> {formatDate(visitante.created_at)}</span>
+              <div className="flex gap-2 items-center text-sm text-gray-600 flex-wrap">
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  <span>{formatCulto(visitante.culto)}</span>
+                </div>
+                <span className="hidden sm:inline">•</span>
+                <span>{formatDate(new Date(visitante.created_at))}</span>
+                {/* Display registered user name if available */}
+                {visitante.registeredBy?.name && (
+                  <>
+                    <span className="hidden sm:inline">•</span>
+                    <span>Registrado por: {visitante.registeredBy.name}</span>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex justify-end mt-2">

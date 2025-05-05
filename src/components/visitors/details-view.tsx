@@ -8,8 +8,29 @@ import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
 
+// Define a more specific type for the item prop
+interface VisitorDetails {
+  id: string;
+  nome: string;
+  telefone: string;
+  estado_civil: string;
+  bairro?: string | null;
+  como_chegou_ate_nos?: string | null;
+  frequenta_igreja: string;
+  genero?: string | null;
+  idade?: number | null;
+  interesse_em_conhecer: string[];
+  observacao?: string | null;
+  qual_igreja?: string | null;
+  culto: string;
+  created_at: string | Date;
+  registeredBy?: { // Optional user relation
+    name: string;
+  } | null;
+}
+
 function DetailView({ item, onBack, onDelete }: { 
-    item: any, 
+    item: VisitorDetails, // Use the defined interface
     onBack: () => void,
     onDelete: (id: string) => Promise<void> 
   }) {
@@ -124,8 +145,14 @@ function DetailView({ item, onBack, onDelete }: {
           </div>
           <div>
             <h4 className="text-base font-semibold">Visitou em</h4>
-            <p className="text-gray-600 mb-3"> {`${formatCulto(item?.culto) || '-'} - ${formatDate(item?.created_at || '')}`}</p>
+            <p className="text-gray-600 mb-3"> {`${formatCulto(item?.culto) || '-'} - ${formatDate(new Date(item.created_at))}`}</p>
           </div>
+          {item.registeredBy?.name && (
+            <div>
+              <h4 className="text-base font-semibold">Registrado por</h4>
+              <p className="text-gray-600 mb-3">{item.registeredBy.name}</p>
+            </div>
+          )}
         </CardContent>
         <Toaster />
       </Card>

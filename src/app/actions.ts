@@ -8,23 +8,39 @@ import { cookies } from 'next/headers';
 const prismaClient = new PrismaClient()
 
 export const save = async (data: any) => {
+  const { user } = await checkAuth();
 
-   const user = await prisma.visitantes.create({
-     data: {
-        ...data,
-        estado: data.estado,
-        cidade: data.cidade,
-        bairro: data.bairro, // Se for Curitiba, será o ID do bairro, caso contrário será o nome digitado
-        observacao: data.observacao || '',
-        idade: Number(data.idade),
-    }
+  const createData: any = {
+    ...data,
+    estado: data.estado,
+    cidade: data.cidade,
+    bairro: data.bairro, // Se for Curitiba, será o ID do bairro, caso contrário será o nome digitado
+    observacao: data.observacao || '',
+    idade: Number(data.idade),
+  };
+
+  if (user) {
+    createData.registeredById = user.id;
+  }
+
+   const visitante = await prisma.visitantes.create({
+     data: createData,
    })
+
+   return visitante; // Return the created visitor object
  }
 
  export const findAll = async () => {
     return await prisma.visitantes.findMany({
         orderBy: {
             created_at: 'desc'
+        },
+        include: {
+            registeredBy: {
+                select: {
+                    name: true
+                }
+            }
         }
     });
  }
