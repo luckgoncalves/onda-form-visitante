@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  provider  = "mysql"
+  url       = env("MYSQL_HOST")
+  // directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model bairros {
@@ -30,7 +30,7 @@ model visitantes {
   frequenta_igreja      String?
   genero                String
   idade                 Int
-  interesse_em_conhecer String[]
+  interesse_em_conhecer Json
   nome                  String
   observacao            String?
   qual_igreja           String?
