@@ -16,7 +16,7 @@ interface VisitorDetails {
   estado_civil: string;
   bairro?: string | null;
   como_chegou_ate_nos?: string | null;
-  frequenta_igreja: string;
+  frequenta_igreja: string | null | undefined;
   genero?: string | null;
   idade?: number | null;
   interesse_em_conhecer: string[];

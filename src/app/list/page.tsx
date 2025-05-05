@@ -25,7 +25,7 @@ interface Visitante {
   culto: string;
   como_nos_conheceu?: string | null;
   como_chegou_ate_nos?: string | null;
-  frequenta_igreja?: string | null;
+  frequenta_igreja?: string | null | undefined;
   qual_igreja?: string | null;
   interesse_em_conhecer: string[];
   observacao?: string | null;
