@@ -22,6 +22,11 @@ interface Visitor {
   registeredBy?: { // Optional user relation
     name: string;
   } | null;
+  // Add missing properties from Visitante
+  idade: number;
+  genero: string;
+  estado_civil: string;
+  interesse_em_conhecer: string[];
 }
 
 function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusChange }: { 
