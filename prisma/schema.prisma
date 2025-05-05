@@ -5,7 +5,6 @@ generator client {
 datasource db {
   provider  = "mysql"
   url       = env("MYSQL_HOST")
-  // directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model bairros {
