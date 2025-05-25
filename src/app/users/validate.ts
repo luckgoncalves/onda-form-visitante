@@ -10,3 +10,6 @@ export const userSchema = z.object({
     })
   });
   
+export const editUserPageSchema = userSchema.extend({
+    password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres").optional().or(z.literal('')),
+  });

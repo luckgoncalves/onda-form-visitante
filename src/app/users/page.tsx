@@ -29,23 +29,15 @@ type User = {
   requirePasswordChange: boolean;
 };
 
-type EditUserFormData = {
-  name: string;
-  email: string;
-  role: string;
-  password?: string;
-};
-
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const router = useRouter();
 
-  const form = useForm({
+  const createUserForm = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
       name: "",
@@ -53,25 +45,6 @@ export default function Users() {
       role: "user",
     },
   });
-
-  const editForm = useForm<EditUserFormData>({
-    resolver: zodResolver(userSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      role: "user",
-    },
-  });
-
-  useEffect(() => {
-    if (editingUser) {
-      editForm.reset({
-        name: editingUser.name,
-        email: editingUser.email,
-        role: editingUser.role,
-      });
-    }
-  }, [editingUser, editForm]);
 
   useEffect(() => {
     async function checkAdminAccess() {
@@ -81,9 +54,9 @@ export default function Users() {
         return;
       }
 
-      const { user } = await checkAuth();
-      if (user) {
-        setUserName(user.name);
+      const authResult = await checkAuth();
+      if (authResult.user) {
+        setUserName(authResult.user.name);
       }
 
       fetchUsers();
@@ -112,13 +85,13 @@ export default function Users() {
     router.push('/');
   };
 
-  const onSubmit = async (data: z.infer<typeof userSchema>) => {
+  const onCreateUserSubmit = async (data: z.infer<typeof userSchema>) => {
     try {
       setIsLoading(true);
       await createUser({ ...data, password: 'ondadura' });
       await fetchUsers();
-      setIsDialogOpen(false);
-      form.reset();
+      setIsCreateUserDialogOpen(false);
+      createUserForm.reset();
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
     } finally {
@@ -135,26 +108,19 @@ export default function Users() {
     }
   };
 
-  const onSubmitEdit = async (data: z.infer<typeof userSchema>) => {
-    if (!editingUser) return;
-    
-    try {
-      setIsLoading(true);
-      await updateUser(editingUser.id, data);
-      await fetchUsers();
-      setEditingUser(null);
-    } catch (error) {
-      console.error('Erro ao atualizar usuário:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleForcePasswordChange = async (userId: string) => {
     try {
       setIsLoading(true);
+      const userToUpdate = users.find(u => u.id === userId);
+      if (!userToUpdate) {
+        console.error('User not found for password change');
+        setIsLoading(false);
+        return;
+      }
       await updateUser(userId, {
-        ...users.find(u => u.id === userId)!,
+        name: userToUpdate.name,
+        email: userToUpdate.email,
+        role: userToUpdate.role,
         requirePasswordChange: true
       });
       await fetchUsers();
@@ -171,7 +137,7 @@ export default function Users() {
       <div className="p-2 sm:p-6 mt-[72px]">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Usuários</h1>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
             <DialogTrigger asChild>
               <ButtonForm label="Novo Usuário" type="button" />
             </DialogTrigger>
@@ -182,10 +148,10 @@ export default function Users() {
                   Preencha os dados abaixo para criar um novo usuário.
                 </DialogDescription>
               </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <Form {...createUserForm}>
+                <form onSubmit={createUserForm.handleSubmit(onCreateUserSubmit)} className="space-y-4">
                   <FormField
-                    control={form.control}
+                    control={createUserForm.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
@@ -198,7 +164,7 @@ export default function Users() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={createUserForm.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -214,7 +180,7 @@ export default function Users() {
                     A senha inicial será &quot;ondadura&quot;. O usuário será solicitado a alterá-la no primeiro login.
                   </div>
                   <FormField
-                    control={form.control}
+                    control={createUserForm.control}
                     name="role"
                     render={({ field }) => (
                       <FormItem>
@@ -272,7 +238,8 @@ export default function Users() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setEditingUser(user)}
+                      onClick={() => router.push(`/users/${user.id}`)}
+                      title="Editar usuário"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -303,7 +270,7 @@ export default function Users() {
                     </AlertDialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" title="Excluir usuário">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
@@ -335,80 +302,6 @@ export default function Users() {
           )}
         </div>
       </div>
-
-      <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Usuário</DialogTitle>
-            <DialogDescription>
-              Altere os dados do usuário abaixo.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onSubmitEdit)} className="space-y-4">
-              <FormField
-                control={editForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Senha (deixe em branco para manter a atual)</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Papel</FormLabel>
-                    <select
-                      className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      {...field}
-                    >
-                      <option value="user">Usuário</option>
-                      <option value="admin">Administrador</option>
-                    </select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <ButtonForm type="submit" disabled={isLoading} label={isLoading ? "Salvando..." : "Salvar Alterações"} />
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
     </>
   );
 } 
