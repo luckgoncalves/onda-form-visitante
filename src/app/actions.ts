@@ -401,6 +401,10 @@ export async function updateUser(id: string, data: UpdateUserData) {
     requirePasswordChange: data.requirePasswordChange
   };
 
+  if(data.requirePasswordChange) {
+    updateData.password = await bcrypt.hash('ondadura', 10);
+  }
+  
   if (data.password) {
     updateData.password = await bcrypt.hash(data.password, 10);
   }

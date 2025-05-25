@@ -52,10 +52,10 @@
 ### 6. Testes (Manual)
 - [x] Testar a criação de novos usuários.
 - [x] Testar a navegação para a página de edição a partir da lista de usuários.
-- [ ] Testar a edição de todos os campos do usuário (nome, email, papel, senha).
-- [ ] Testar a edição sem alterar a senha.
+- [x] Testar a edição de todos os campos do usuário (nome, email, papel, senha).
+- [x] Testar a edição sem alterar a senha.
 - [x] Verificar se o usuário é redirecionado corretamente após a edição.
-- [ ] Testar a funcionalidade de "Forçar redefinição de senha".
+- [x] Testar a funcionalidade de "Forçar redefinição de senha".
 - [x] Testar a exclusão de usuários.
 - [ ] Verificar o comportamento em caso de erro (ex: falha na API).
 - [ ] Verificar se o acesso à página `/users` e `/users/[id]` é restrito a administradores, conforme a lógica em `checkIsAdmin`.
