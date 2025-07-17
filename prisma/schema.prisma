@@ -3,17 +3,39 @@ generator client {
 }
 
 datasource db {
-  provider  = "mysql"
-  url       = env("MYSQL_HOST")
+  provider = "mysql"
+  url      = env("MYSQL_HOST")
+}
+
+// Enums para o model Grupo
+enum CategoriaGrupo {
+  HOMENS
+  UNVT
+  MULHERES
+  MISTO
+  NEW
+  CASAIS
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
+  DOMINGO
 }
 
 model bairros {
-  id        String     @id @default(cuid())
+  id        String   @id @default(cuid())
   nome      String
   cidadeId  String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  // Relação com grupos
+  grupos grupo[]
 }
 
 model visitantes {
@@ -37,20 +59,38 @@ model visitantes {
   mensagem_enviada      Boolean  @default(false)
 
   // Add relation to User
-  registeredById        String?
-  registeredBy          users?   @relation(fields: [registeredById], references: [id])
+  registeredById String?
+  registeredBy   users?  @relation(fields: [registeredById], references: [id])
 }
 
 model users {
-  id                   String   @id @default(cuid())
-  email                String   @unique
-  password             String
-  name                 String
-  role                 String   @default("user")
+  id                    String   @id @default(cuid())
+  email                 String   @unique
+  password              String
+  name                  String
+  role                  String   @default("user")
   requirePasswordChange Boolean  @default(true)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   // Add relation to Visitantes
   registeredVisitors visitantes[]
+
+  // Relação com grupos liderados
+  gruposLiderados grupo[]
+}
+
+model grupo {
+  id        String         @id @default(cuid())
+  nome      String
+  categoria CategoriaGrupo
+  diaSemana DiaSemana
+  horario   String
+  bairroId  String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  // Relações
+  bairro  bairros? @relation(fields: [bairroId], references: [id])
+  lideres users[]
 }

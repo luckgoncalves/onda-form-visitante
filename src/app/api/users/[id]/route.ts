@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: Request, // Standard Request object
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // It's crucial to ensure that checkIsAdmin can work in an API route context.
@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const userId = (await params).id;
+    const userId = params.id;
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });

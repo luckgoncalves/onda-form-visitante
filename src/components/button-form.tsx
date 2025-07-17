@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 
 interface ButtonFormProps extends ButtonHTMLAttributes<HTMLButtonElement>{
     label: string;
+    icon?: React.ReactNode;
 }
 
 export default function ButtonForm(props: ButtonFormProps) {
@@ -14,7 +15,7 @@ export default function ButtonForm(props: ButtonFormProps) {
         <Button 
             {...props} 
             disabled={pending || props.disabled}
-            className={`bg-[#503387] hover:bg-[#503387]/90 text-white ${props.className}`}
+            className={`flex items-center gap-2 bg-[#503387] hover:bg-[#503387]/90 text-white ${props.className}`}
         >
             {props.disabled || pending ? (
                 <>
@@ -22,7 +23,10 @@ export default function ButtonForm(props: ButtonFormProps) {
                     Carregando
                 </>
             ) : (
-                props.label
+                <>
+                    {props.icon}
+                    {props.label}
+                </>
             )}
         </Button>
     );

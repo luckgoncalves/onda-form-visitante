@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Form, FormField, FormLabel } from "@/components/ui/form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { login, checkAuth, checkIsAdmin } from "./actions";
 import ButtonForm from "@/components/button-form";
@@ -13,7 +13,7 @@ import Image from 'next/image';
 export default function Home() {
   const form = useForm();
   const router = useRouter();
-  const [showLogin, setShowLogin] = useState(false);
+  const [isCheckingAuthentication, setIsCheckingAuthentication] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,17 +22,19 @@ export default function Home() {
       const { isAuthenticated, user } = await checkAuth();
       const { isAdmin } = await checkIsAdmin();
       
+      
       if (isAuthenticated) {
         if (user?.requirePasswordChange) {
           router.push('/change-password');
         } else {
           if (isAdmin) {
-          router.push('/list');
+            router.push('/list');
           }else {
             router.push('/register');
           }
         }
       }
+      setIsCheckingAuthentication(false);
     };
 
     checkAuthentication();
@@ -58,10 +60,32 @@ export default function Home() {
       setIsLoading(false);
     }
   });
-console.log({isLoading})
+
+  if (isCheckingAuthentication) {
+    return (
+      <main className="flex w-full h-[100%]  min-h-screen flex-col  justify-center items-center gap-4 p-4">
+        <div className="flex justify-center items-center h-full">
+          <Image 
+            src="/logo.svg" 
+            alt="Onda Logo" 
+            width={550} 
+            height={350} 
+            className="m-auto"
+          />
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-4">
       <Card className="p-4 w-full backdrop-blur-sm bg-white/30 mt-10 border-none card-glass">
+      {isCheckingAuthentication ? (
+        <div className="flex justify-center items-center h-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 dark:border-white"></div>
+        </div>
+      ) : (
+        <>
         <CardHeader className="text-center">
           <Image 
             src="/onda-logo.png" 
@@ -75,7 +99,7 @@ console.log({isLoading})
           />
         </CardHeader>
         <CardContent>
-          {showLogin && (
+          {/* {showLogin && ( */}
             <Form {...form}>
               <form className="flex flex-col mx-auto md:w-1/2 gap-4" onSubmit={submitAction}>
 
@@ -100,26 +124,21 @@ console.log({isLoading})
                 <ButtonForm className="w-full mx-auto" type="submit" label={isLoading ? 'Carregando...' : 'Entrar'} disabled={isLoading} />
               </form>
             </Form>
-          )}
+          {/* )} */}
         </CardContent>
-        <CardFooter className="w-full">
+        {/* <CardFooter className="w-full">
           <div className="flex flex-col items-center justify-center gap-4 w-full">
-            <ButtonForm 
+            {!showLogin && (
+              <ButtonForm 
               type="button" 
               className={!showLogin ? "w-full sm:w-1/2" : "text-[#503387] hover:bg-transparent hover:underline bg-transparent border-none cursor-pointer p-0"} 
-              onClick={() => router.push('/register')} 
-              label="Cadastrar novo Visitante" />
-            {!showLogin && (
-              <button 
-                className="text-[#503387] hover:underline bg-transparent border-none cursor-pointer p-0" 
-                type="button" 
-                onClick={() => setShowLogin(true)}
-              >
-                Entrar
-              </button>
+              onClick={() => setShowLogin(true)} 
+              label="Entrar" />
             )}
           </div>
-        </CardFooter>
+        </CardFooter> */}
+        </>
+      )}
       </Card>
     </main>
   );

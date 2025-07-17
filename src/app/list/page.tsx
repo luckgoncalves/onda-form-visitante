@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from "react"
 import { findAll, checkAuth, updateMensagemEnviada, logout } from "../actions"
-import { LayoutGrid, LayoutList, MessageCircle, PlusCircle, Search } from "lucide-react";
+import { LayoutGrid, LayoutList, MessageCircle, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ButtonForm from "@/components/button-form";
 import { useRouter } from "next/navigation";
@@ -162,7 +162,7 @@ export default function List() {
             >
               {isGridView ? <LayoutList size={20} /> : <LayoutGrid size={20} />}
             </Button>
-            <ButtonForm type="button" onClick={() => router.push('/register')} label={`Novo visitante`} />
+            <ButtonForm type="button" onClick={() => router.push('/register')} label={`Novo visitante`} icon={<Plus size={20} />} />
           </div>
         </div>
         <SwipeInstruction />
@@ -198,7 +198,7 @@ export default function List() {
             </p>
             <div className="mt-6">
               <Button onClick={() => router.push('/register')}>
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <Plus className="mr-2 h-4 w-4" />
                 Adicionar novo visitante
               </Button>
             </div>

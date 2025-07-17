@@ -33,7 +33,12 @@ export default function Home() {
 
   useEffect(() => {
     async function checkAdminAccess() {
-      const { user } = await checkAuth();
+      const { isAuthenticated, user } = await checkAuth();
+      if (!isAuthenticated || !user) {
+        router.push('/');
+        return;
+      }
+
       if (user) {
         setUserName(user.name);
       }
@@ -73,12 +78,19 @@ export default function Home() {
     router.push('/');
   };
 
+  if (!userName) {
+    return (
+      <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-2 sm:p-6 mt-[72px]">
+        <Header userName={userName} onLogout={handleLogout} />
+      </main>
+    )
+  }
+
   return (
     <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-2 sm:p-6 mt-[72px]">
       <Header userName={userName} onLogout={handleLogout} />
       <div className="flex justify-between items-center w-full">
         <h1>Ficha - visitantes</h1>
-        {/* <ButtonForm type="button" onClick={() => router.push('/')} label={`Logar`} /> */}
       </div>
       <Card className="p-4 w-full backdrop-blur-sm bg-white/30  border-none card-glass">
         <Form {...form}>
