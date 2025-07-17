@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { checkAuth, checkIsAdmin, createUser, deleteUser, listUsers, logout, updateUser } from "../actions";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
@@ -19,6 +19,7 @@ import { Trash2, Pencil, KeyRound } from "lucide-react";
 import { userSchema } from "./validate";
 import { z } from "zod";
 import ButtonForm from "@/components/button-form";
+import Image from "next/image";
 
 type User = {
   id: string;
@@ -36,6 +37,7 @@ export default function Users() {
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const router = useRouter();
+  const isAdminRef = useRef(false);
 
   const createUserForm = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
@@ -53,6 +55,7 @@ export default function Users() {
         router.push('/');
         return;
       }
+      isAdminRef.current = isAdmin;
 
       const authResult = await checkAuth();
       if (authResult.user) {
@@ -130,6 +133,22 @@ export default function Users() {
       setIsLoading(false);
     }
   };
+
+  if (!isAdminRef.current) {
+    return (
+      <main className="flex w-full h-[100%]  min-h-screen flex-col  justify-center items-center gap-4 p-4">
+        <div className="flex justify-center items-center h-full">
+          <Image 
+            src="/logo.svg" 
+            alt="Onda Logo" 
+            width={550} 
+            height={350} 
+            className="m-auto"
+          />
+        </div>
+      </main>
+    );
+  }
 
   return (
     <>

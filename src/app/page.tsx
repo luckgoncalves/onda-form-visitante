@@ -45,11 +45,17 @@ export default function Home() {
     setError(null);
     try {
       const result = await login(formData.email, formData.password);
+      const { isAdmin } = await checkIsAdmin();
+
       if (result.success) {
         if (result.user?.requirePasswordChange) {
           router.push('/change-password');
         } else {
-          router.push('/list');
+          if (isAdmin) {
+            router.push('/list');
+          }else {
+            router.push('/register');
+          }
         }
       } else {
         setError(result.message || 'Ocorreu um erro');

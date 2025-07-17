@@ -34,6 +34,7 @@ export default function Home() {
   useEffect(() => {
     async function checkAdminAccess() {
       const { isAuthenticated, user } = await checkAuth();
+      
       if (!isAuthenticated || !user) {
         router.push('/');
         return;
@@ -44,7 +45,7 @@ export default function Home() {
       }
     }
     checkAdminAccess();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     const firstError = Object.keys(form.formState.errors)[0];

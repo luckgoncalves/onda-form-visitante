@@ -1,6 +1,6 @@
 'use client';
-import { useEffect, useState } from "react"
-import { findAll, checkAuth, updateMensagemEnviada, logout } from "../actions"
+import { useEffect, useRef, useState } from "react"
+import { findAll, checkAuth, updateMensagemEnviada, logout, checkIsAdmin } from "../actions"
 import { LayoutGrid, LayoutList, MessageCircle, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ButtonForm from "@/components/button-form";
@@ -11,6 +11,7 @@ import { DetailView } from "@/components/visitors/details-view";
 import { VisitorCard } from "@/components/visitors/visitor-card";
 import { SkeletonCard } from "@/components/visitors/skeleton";
 import { SwipeInstruction } from "@/components/visitors/swipe-intruction";
+import Image from "next/image";
 
 interface Visitante {
   id: string;
@@ -42,12 +43,20 @@ export default function List() {
   const router = useRouter();
   const [filteredVisitantes, setFilteredVisitantes] = useState<Visitante[]>([]);
   const [userName, setUserName] = useState("");
-
+  const isAdminRef = useRef(false);
   useEffect(() => {
     async function fetchData() {
       const { isAuthenticated, user } = await checkAuth();
+      const { isAdmin } = await checkIsAdmin();
       if (!isAuthenticated || !user) {
         router.push('/');
+        return;
+      }
+
+      isAdminRef.current = isAdmin;
+
+      if (!isAdmin) {
+        router.push('/register');
         return;
       }
       
@@ -123,6 +132,24 @@ export default function List() {
       prevFiltered.filter((visitante) => visitante.id !== id)
     );
   };
+
+  if (!isAdminRef.current) {
+    if (!isAdminRef.current) {
+      return (
+        <main className="flex w-full h-[100%]  min-h-screen flex-col  justify-center items-center gap-4 p-4">
+          <div className="flex justify-center items-center h-full">
+            <Image 
+              src="/logo.svg" 
+              alt="Onda Logo" 
+              width={550} 
+              height={350} 
+              className="m-auto"
+            />
+          </div>
+        </main>
+      );
+    }
+  }
 
   if (selectedItem) {
     return (
