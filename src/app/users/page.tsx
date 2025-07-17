@@ -172,7 +172,7 @@ export default function Users() {
   return (
     <>
       <Header userName={userName} onLogout={handleLogout} />
-      <div className="p-2 sm:p-6 mt-[72px]">
+      <div className="p-2 sm:p-6 mt-[72px] max-w-full overflow-x-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Usuários</h1>
           <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
@@ -257,13 +257,13 @@ export default function Users() {
         </div>
 
         {/* Search Bar */}
-        <div className="relative mb-6 max-w-md sm:w-64">
+        <div className="relative mb-6 w-full max-w-md sm:w-64">
             <Input
               type="text"
               placeholder="Buscar usuários por nome..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+              className="pl-10 pr-10 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500 w-full"
             />
             {searchTerm && (
             <Button
@@ -291,7 +291,7 @@ export default function Users() {
           </div>
         )}
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {isLoadingUsers ? (
             Array.from({ length: 6 }).map((_, index) => (
               <Card key={`skeleton-${index}`} className="p-4">
@@ -332,21 +332,22 @@ export default function Users() {
             </div>
           ) : (
             users.map((user) => (
-              <Card key={user.id} className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-semibold">{user.name}</h3>
-                    <p className="text-sm text-gray-500">{user.email}</p>
+              <Card key={user.id} className="p-4 w-full">
+                <div className="flex justify-between items-start mb-2 gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold truncate">{user.name}</h3>
+                    <p className="text-sm text-gray-500 truncate">{user.email}</p>
                     {user.phone && (
-                      <p className="text-sm text-gray-500">{user.phone}</p>
+                      <p className="text-sm text-gray-500 truncate">{user.phone}</p>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => router.push(`/users/${user.id}`)}
                       title="Editar usuário"
+                      className="h-8 w-8"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -356,6 +357,7 @@ export default function Users() {
                           variant="ghost"
                           size="icon"
                           title="Forçar redefinição de senha"
+                          className="h-8 w-8"
                         >
                           <KeyRound className="h-4 w-4" />
                         </Button>
@@ -377,7 +379,7 @@ export default function Users() {
                     </AlertDialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" title="Excluir usuário">
+                        <Button variant="ghost" size="icon" title="Excluir usuário" className="h-8 w-8">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
@@ -398,9 +400,9 @@ export default function Users() {
                     </AlertDialog>
                   </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Papel: {user.role === 'admin' ? 'Administrador' : 'Usuário'}</span>
-                  <span className="text-gray-500">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-sm">
+                  <span className="text-gray-500 truncate">Papel: {user.role === 'admin' ? 'Administrador' : 'Usuário'}</span>
+                  <span className="text-gray-500 truncate">
                     Criado em: {new Date(user.createdAt).toLocaleDateString('pt-BR')}
                   </span>
                 </div>
