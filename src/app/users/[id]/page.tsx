@@ -20,6 +20,7 @@ type UserData = {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   role: string;
   // requirePasswordChange: boolean; // This might be useful to display but not directly editable here
 };
@@ -42,6 +43,7 @@ export default function EditUserPage() {
     defaultValues: {
       name: '',
       email: '',
+      phone: '',
       role: 'user',
       password: '',
     },
@@ -83,6 +85,7 @@ export default function EditUserPage() {
           form.reset({
             name: userData.name,
             email: userData.email,
+            phone: userData.phone || '',
             role: userData.role,
             password: '',
           });
@@ -115,6 +118,7 @@ export default function EditUserPage() {
       const updatePayload: {
         name: string;
         email: string;
+        phone?: string;
         role: string;
         password?: string;
         // requirePasswordChange is not part of this form, so we don't include it.
@@ -122,6 +126,7 @@ export default function EditUserPage() {
       } = {
         name: data.name,     // This is string due to EditUserPageFormData
         email: data.email,    // This is string
+        phone: data.phone,    // This is string or undefined
         role: data.role,     // This is string
       };
 
@@ -232,6 +237,19 @@ export default function EditUserPage() {
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input type="email" placeholder="exemplo@dominio.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Telefone</FormLabel>
+                      <FormControl>
+                        <Input type="tel" placeholder="(11) 99999-9999" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

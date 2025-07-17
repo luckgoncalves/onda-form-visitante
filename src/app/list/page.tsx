@@ -134,7 +134,6 @@ export default function List() {
   };
 
   if (!isAdminRef.current) {
-    if (!isAdminRef.current) {
       return (
         <main className="flex w-full h-[100%]  min-h-screen flex-col  justify-center items-center gap-4 p-4">
           <div className="flex justify-center items-center h-full">
@@ -148,7 +147,6 @@ export default function List() {
           </div>
         </main>
       );
-    }
   }
 
   if (selectedItem) {

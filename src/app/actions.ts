@@ -338,7 +338,7 @@ export async function checkIsAdmin() {
   return { isAdmin: user.role === 'admin' };
 }
 
-export async function createUser(data: { email: string; password?: string; name: string; role: string }) {
+export async function createUser(data: { email: string; password?: string; name: string; phone?: string; role: string }) {
   if (!data.password) {
     throw new Error('Senha é obrigatória para criar um usuário');
   }
@@ -357,21 +357,31 @@ export async function createUser(data: { email: string; password?: string; name:
     id: user.id, 
     name: user.name, 
     email: user.email, 
+    phone: user.phone,
     role: user.role,
     requirePasswordChange: user.requirePasswordChange 
   } };
 }
 
-export async function listUsers() {
+export async function listUsers(searchTerm?: string) {
   const users = await prismaClient.users.findMany({
+    where: searchTerm ? {
+      name: {
+        contains: searchTerm
+      }
+    } : undefined,
     select: {
       id: true,
       name: true,
       email: true,
+      phone: true,
       role: true,
       createdAt: true,
       requirePasswordChange: true,
     },
+    orderBy: {
+      name: 'asc'
+    }
   });
 
   return users;
@@ -388,6 +398,7 @@ export async function deleteUser(id: string) {
 type UpdateUserData = {
   email: string;
   name: string;
+  phone?: string;
   role: string;
   password?: string;
   requirePasswordChange?: boolean;
@@ -397,6 +408,7 @@ export async function updateUser(id: string, data: UpdateUserData) {
   const updateData: any = {
     email: data.email,
     name: data.name,
+    phone: data.phone,
     role: data.role,
     requirePasswordChange: data.requirePasswordChange
   };
@@ -418,6 +430,7 @@ export async function updateUser(id: string, data: UpdateUserData) {
     id: user.id, 
     name: user.name, 
     email: user.email, 
+    phone: user.phone,
     role: user.role,
     requirePasswordChange: user.requirePasswordChange 
   } };

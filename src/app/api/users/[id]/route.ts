@@ -31,6 +31,7 @@ export async function GET(
         id: true,
         name: true,
         email: true,
+        phone: true,
         role: true,
         requirePasswordChange: true, // If this field is relevant for the edit page
       },

@@ -15,16 +15,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Trash2, Pencil, KeyRound } from "lucide-react";
+import { Trash2, Pencil, KeyRound, Search, X } from "lucide-react";
 import { userSchema } from "./validate";
 import { z } from "zod";
 import ButtonForm from "@/components/button-form";
 import Image from "next/image";
+import { useDebounce } from "./hooks/useDebounce";
 
 type User = {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   role: string;
   createdAt: string;
   requirePasswordChange: boolean;
@@ -36,14 +38,19 @@ export default function Users() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
   const isAdminRef = useRef(false);
+
+  // Debounce search term to avoid excessive API calls
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const createUserForm = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
       name: "",
       email: "",
+      phone: "",
       role: "user",
     },
   });
@@ -68,12 +75,20 @@ export default function Users() {
     checkAdminAccess();
   }, [router]);
 
-  async function fetchUsers() {
+  // Fetch users when debounced search term changes
+  useEffect(() => {
+    if (isAdminRef.current) {
+      fetchUsers(debouncedSearchTerm);
+    }
+  }, [debouncedSearchTerm]);
+
+  async function fetchUsers(search?: string) {
     try {
       setIsLoadingUsers(true);
-      const fetchedUsers = await listUsers();
+      const fetchedUsers = await listUsers(search);
       setUsers(fetchedUsers.map(user => ({
         ...user,
+        phone: user.phone || undefined,
         createdAt: user.createdAt.toISOString()
       })));
     } catch (error) {
@@ -92,7 +107,7 @@ export default function Users() {
     try {
       setIsLoading(true);
       await createUser({ ...data, password: 'ondadura' });
-      await fetchUsers();
+      await fetchUsers(debouncedSearchTerm);
       setIsCreateUserDialogOpen(false);
       createUserForm.reset();
     } catch (error) {
@@ -105,7 +120,7 @@ export default function Users() {
   const handleDeleteUser = async (userId: string) => {
     try {
       await deleteUser(userId);
-      await fetchUsers();
+      await fetchUsers(debouncedSearchTerm);
     } catch (error) {
       console.error('Erro ao deletar usuário:', error);
     }
@@ -126,12 +141,16 @@ export default function Users() {
         role: userToUpdate.role,
         requirePasswordChange: true
       });
-      await fetchUsers();
+      await fetchUsers(debouncedSearchTerm);
     } catch (error) {
       console.error('Erro ao forçar redefinição de senha:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
   };
 
   if (!isAdminRef.current) {
@@ -154,7 +173,7 @@ export default function Users() {
     <>
       <Header userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px]">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Usuários</h1>
           <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
             <DialogTrigger asChild>
@@ -195,6 +214,19 @@ export default function Users() {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={createUserForm.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefone</FormLabel>
+                        <FormControl>
+                          <Input type="tel" placeholder="(11) 99999-9999" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
                     A senha inicial será &quot;ondadura&quot;. O usuário será solicitado a alterá-la no primeiro login.
                   </div>
@@ -224,6 +256,41 @@ export default function Users() {
           </Dialog>
         </div>
 
+        {/* Search Bar */}
+        <div className="relative mb-6 max-w-md sm:w-64">
+            <Input
+              type="text"
+              placeholder="Buscar usuários por nome..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+            />
+            {searchTerm && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClearSearch}
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          </div>
+
+        {/* Results count */}
+        {!isLoadingUsers && (
+          <div className="mb-4 text-sm text-gray-600">
+            {searchTerm ? (
+              <span>
+                {users.length} usuário{users.length !== 1 ? 's' : ''} encontrado{users.length !== 1 ? 's' : ''} para &quot;{searchTerm}&quot;
+              </span>
+            ) : (
+              <span>{users.length} usuário{users.length !== 1 ? 's' : ''} no total</span>
+            )}
+          </div>
+        )}
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {isLoadingUsers ? (
             Array.from({ length: 6 }).map((_, index) => (
@@ -245,6 +312,24 @@ export default function Users() {
                 </div>
               </Card>
             ))
+          ) : users.length === 0 ? (
+            <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+              <Search className="h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {searchTerm ? 'Nenhum usuário encontrado' : 'Nenhum usuário cadastrado'}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {searchTerm 
+                  ? `Não encontramos usuários com o nome "${searchTerm}".`
+                  : 'Comece criando o primeiro usuário do sistema.'
+                }
+              </p>
+              {searchTerm && (
+                <Button variant="outline" onClick={handleClearSearch}>
+                  Limpar busca
+                </Button>
+              )}
+            </div>
           ) : (
             users.map((user) => (
               <Card key={user.id} className="p-4">
@@ -252,6 +337,9 @@ export default function Users() {
                   <div>
                     <h3 className="font-semibold">{user.name}</h3>
                     <p className="text-sm text-gray-500">{user.email}</p>
+                    {user.phone && (
+                      <p className="text-sm text-gray-500">{user.phone}</p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <Button
