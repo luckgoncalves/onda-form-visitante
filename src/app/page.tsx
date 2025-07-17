@@ -88,7 +88,7 @@ export default function Home() {
         <>
         <CardHeader className="text-center">
           <Image 
-            src="/onda-logo.png" 
+            src="/logo-login.png" 
             alt="Onda Logo" 
             width={150} 
             height={60} 
