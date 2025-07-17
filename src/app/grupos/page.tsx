@@ -21,6 +21,7 @@ interface Grupo {
   lideres: {
     id: string;
     name: string;
+    phone?: string;
   }[];
 }
 
