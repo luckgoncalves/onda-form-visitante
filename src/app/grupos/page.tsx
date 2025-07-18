@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Users } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Users } from 'lucide-react';
 import GrupoCard from '@/components/grupos/grupo-card';
 import GrupoCardsSkeleton from '@/components/grupos/grupo-cards-skeleton';
 
@@ -29,7 +27,6 @@ export default function GruposPublicPage() {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const router = useRouter();
 
   useEffect(() => {
     async function loadGrupos() {
