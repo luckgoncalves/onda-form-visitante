@@ -1,6 +1,6 @@
 import { useFormStatus } from "react-dom";
 import { Button } from "./ui/button";
-import { ButtonHTMLAttributes } from "react";
+import { ButtonHTMLAttributes, forwardRef } from "react";
 import { Loader2 } from "lucide-react";
 
 interface ButtonFormProps extends ButtonHTMLAttributes<HTMLButtonElement>{
@@ -8,11 +8,12 @@ interface ButtonFormProps extends ButtonHTMLAttributes<HTMLButtonElement>{
     icon?: React.ReactNode;
 }
 
-export default function ButtonForm(props: ButtonFormProps) {
+const ButtonForm = forwardRef<HTMLButtonElement, ButtonFormProps>((props, ref) => {
     const { pending } = useFormStatus();
     
     return (
         <Button 
+            ref={ref}
             {...props} 
             disabled={pending || props.disabled}
             className={`flex items-center gap-2 bg-[#503387] hover:bg-[#503387]/90 text-white ${props.className}`}
@@ -30,4 +31,8 @@ export default function ButtonForm(props: ButtonFormProps) {
             )}
         </Button>
     );
-}
+});
+
+ButtonForm.displayName = "ButtonForm";
+
+export default ButtonForm;

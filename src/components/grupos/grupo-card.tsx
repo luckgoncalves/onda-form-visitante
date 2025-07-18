@@ -110,7 +110,6 @@ export default function GrupoCard({ grupo }: GrupoCardProps) {
     // Você pode adicionar um toast aqui se quiser feedback visual
   };
 
-  console.log(grupo);
   return (
     <Card className="h-full hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="pb-3">

@@ -15,12 +15,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Trash2, Pencil, KeyRound, Search, X } from "lucide-react";
+import { Trash2, Pencil, KeyRound, Search, X, Plus } from "lucide-react";
 import { userSchema } from "./validate";
 import { z } from "zod";
 import ButtonForm from "@/components/button-form";
 import Image from "next/image";
 import { useDebounce } from "./hooks/useDebounce";
+import { formatPhone } from "@/lib/utils";
 
 type User = {
   id: string;
@@ -157,11 +158,11 @@ export default function Users() {
     return (
       <main className="flex w-full h-[100%]  min-h-screen flex-col  justify-center items-center gap-4 p-4">
         <div className="flex justify-center items-center h-full">
-          <Image 
-            src="/logo.svg" 
-            alt="Onda Logo" 
-            width={550} 
-            height={350} 
+          <Image
+            src="/logo.svg"
+            alt="Onda Logo"
+            width={550}
+            height={350}
             className="m-auto"
           />
         </div>
@@ -177,7 +178,7 @@ export default function Users() {
           <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Usuários</h1>
           <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
             <DialogTrigger asChild>
-              <ButtonForm label="Novo Usuário" type="button" />
+              <ButtonForm icon={<Plus size={20} />} label="Novo Usuário" type="button" />
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -221,7 +222,16 @@ export default function Users() {
                       <FormItem>
                         <FormLabel>Telefone</FormLabel>
                         <FormControl>
-                          <Input type="tel" placeholder="(11) 99999-9999" {...field} />
+                          <Input
+                            placeholder="(11) 99999-9999"
+                            id="phone"
+                            type="tel"
+                            {...field}
+                            onChange={(e) => {
+                              const mask = formatPhone(e.target.value);
+                              field.onChange(mask);
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -258,14 +268,14 @@ export default function Users() {
 
         {/* Search Bar */}
         <div className="relative mb-6 w-full max-w-md sm:w-64">
-            <Input
-              type="text"
-              placeholder="Buscar usuários por nome..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-10 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500 w-full"
-            />
-            {searchTerm && (
+          <Input
+            type="text"
+            placeholder="Buscar usuários por nome..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 pr-10 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500 w-full"
+          />
+          {searchTerm && (
             <Button
               variant="ghost"
               size="icon"
@@ -275,8 +285,8 @@ export default function Users() {
               <X className="h-4 w-4" />
             </Button>
           )}
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          </div>
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+        </div>
 
         {/* Results count */}
         {!isLoadingUsers && (
@@ -319,7 +329,7 @@ export default function Users() {
                 {searchTerm ? 'Nenhum usuário encontrado' : 'Nenhum usuário cadastrado'}
               </h3>
               <p className="text-gray-600 mb-4">
-                {searchTerm 
+                {searchTerm
                   ? `Não encontramos usuários com o nome "${searchTerm}".`
                   : 'Comece criando o primeiro usuário do sistema.'
                 }

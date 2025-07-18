@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ButtonForm from '@/components/button-form';
 import { checkAuth, checkIsAdmin, logout, updateUser } from '@/app/actions';
 import { editUserPageSchema, userSchema } from '../validate'; // Assuming validate.ts is in the parent users folder src/app/users/validate.ts
+import { formatPhone } from '@/lib/utils';
 
 type UserData = {
   id: string;
@@ -133,7 +134,7 @@ export default function EditUserPage() {
       if (data.password && data.password.trim() !== '') {
         updatePayload.password = data.password;
       }
-      
+
       await updateUser(user.id, updatePayload);
       router.push('/users');
     } catch (error) {
@@ -152,7 +153,7 @@ export default function EditUserPage() {
         <Header userName={userName} onLogout={handleLogout} />
         <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <Skeleton className="h-8 w-48" /> 
+            <Skeleton className="h-8 w-48" />
             <Skeleton className="h-10 w-24" />
           </div>
           <Card>
@@ -249,7 +250,16 @@ export default function EditUserPage() {
                     <FormItem>
                       <FormLabel>Telefone</FormLabel>
                       <FormControl>
-                        <Input type="tel" placeholder="(11) 99999-9999" {...field} />
+                        <Input
+                          placeholder="(11) 99999-9999"
+                          id="phone"
+                          type="tel"
+                          {...field}
+                          onChange={(e) => {
+                            const mask = formatPhone(e.target.value);
+                            field.onChange(mask);
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -290,7 +300,7 @@ export default function EditUserPage() {
                 />
                 {/* Display server-side error from form.setError here if implemented */}
                 {form.formState.errors.root?.serverError && (
-                    <p className="text-sm font-medium text-destructive">{form.formState.errors.root.serverError.message}</p>
+                  <p className="text-sm font-medium text-destructive">{form.formState.errors.root.serverError.message}</p>
                 )}
                 <ButtonForm type="submit" disabled={isLoading || isFetchingUser} label={isLoading ? "Salvando..." : "Salvar Alterações"} />
               </form>

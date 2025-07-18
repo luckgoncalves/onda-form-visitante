@@ -35,14 +35,49 @@ export const save = async (data: any) => {
         orderBy: {
             created_at: 'desc'
         },
-        include: {
-            registeredBy: {
-                select: {
-                    name: true
+        // Removed include to reduce query complexity and improve performance
+        // include: {
+        //     registeredBy: {
+        //         select: {
+        //             name: true
+        //         }
+        //     }
+        // }
+    });
+ }
+
+ export const findAllPaginated = async (page: number = 1, limit: number = 20) => {
+    const skip = (page - 1) * limit;
+    
+    const [visitantes, total] = await Promise.all([
+        prisma.visitantes.findMany({
+            skip,
+            take: limit,
+            orderBy: {
+                created_at: 'desc'
+            },
+            include: {
+                registeredBy: {
+                    select: {
+                        name: true
+                    }
                 }
             }
+        }),
+        prisma.visitantes.count()
+    ]);
+
+    return {
+        visitantes,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+            hasNext: page < Math.ceil(total / limit),
+            hasPrev: page > 1
         }
-    });
+    };
  }
 
  export const getBairrosCuritiba = async () => {
