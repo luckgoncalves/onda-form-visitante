@@ -175,16 +175,16 @@ export default function Users() {
       <Header userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-full overflow-x-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Usuários</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Membros</h1>
           <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
             <DialogTrigger asChild>
-              <ButtonForm icon={<Plus size={20} />} label="Novo Usuário" type="button" />
+              <ButtonForm icon={<Plus size={20} />} label="Novo Membro" type="button" />
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Criar Novo Usuário</DialogTitle>
+                <DialogTitle>Criar Novo Membro</DialogTitle>
                 <DialogDescription>
-                  Preencha os dados abaixo para criar um novo usuário.
+                  Preencha os dados abaixo para criar um novo membro.
                 </DialogDescription>
               </DialogHeader>
               <Form {...createUserForm}>
@@ -258,7 +258,7 @@ export default function Users() {
                     )}
                   />
                   <DialogFooter>
-                    <ButtonForm type="submit" disabled={isLoading} label={isLoading ? "Criando..." : "Criar Usuário"} />
+                    <ButtonForm type="submit" disabled={isLoading} label={isLoading ? "Criando..." : "Criar Membro"} />
                   </DialogFooter>
                 </form>
               </Form>
@@ -270,7 +270,7 @@ export default function Users() {
         <div className="relative mb-6 w-full max-w-md sm:w-64">
           <Input
             type="text"
-            placeholder="Buscar usuários por nome..."
+            placeholder="Buscar membros por nome..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 pr-10 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500 w-full"
@@ -293,10 +293,10 @@ export default function Users() {
           <div className="mb-4 text-sm text-gray-600">
             {searchTerm ? (
               <span>
-                {users.length} usuário{users.length !== 1 ? 's' : ''} encontrado{users.length !== 1 ? 's' : ''} para &quot;{searchTerm}&quot;
+                {users.length} membro{users.length !== 1 ? 's' : ''} encontrado{users.length !== 1 ? 's' : ''} para &quot;{searchTerm}&quot;
               </span>
             ) : (
-              <span>{users.length} usuário{users.length !== 1 ? 's' : ''} no total</span>
+              <span>{users.length} membro{users.length !== 1 ? 's' : ''} no total</span>
             )}
           </div>
         )}
@@ -326,12 +326,12 @@ export default function Users() {
             <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
               <Search className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {searchTerm ? 'Nenhum usuário encontrado' : 'Nenhum usuário cadastrado'}
+                {searchTerm ? 'Nenhum membro encontrado' : 'Nenhum membro cadastrado'}
               </h3>
               <p className="text-gray-600 mb-4">
                 {searchTerm
-                  ? `Não encontramos usuários com o nome "${searchTerm}".`
-                  : 'Comece criando o primeiro usuário do sistema.'
+                  ? `Não encontramos membros com o nome "${searchTerm}".`
+                  : 'Comece criando o primeiro membro do sistema.'
                 }
               </p>
               {searchTerm && (
@@ -356,7 +356,7 @@ export default function Users() {
                       variant="ghost"
                       size="icon"
                       onClick={() => router.push(`/users/${user.id}`)}
-                      title="Editar usuário"
+                      title="Editar membro"
                       className="h-8 w-8"
                     >
                       <Pencil className="h-4 w-4" />
@@ -376,7 +376,7 @@ export default function Users() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Forçar redefinição de senha</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Tem certeza que deseja forçar este usuário a redefinir sua senha no próximo login?
+                            Tem certeza que deseja forçar este membro a redefinir sua senha no próximo login?
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -397,7 +397,7 @@ export default function Users() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.
+                            Tem certeza que deseja excluir este membro? Esta ação não pode ser desfeita.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

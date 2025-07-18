@@ -86,7 +86,7 @@ export function Header({ userName, onLogout }: { userName: string, onLogout: () 
                     onClick={() => router.push('/users')}
                   >
                     <UserCog className="h-4 w-4 mr-2.5" />
-                    Gerenciar Usuários
+                    Membros
                   </Button>
                 )}
                 <Button

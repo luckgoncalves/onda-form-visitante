@@ -204,14 +204,14 @@ export default function EditUserPage() {
       <Header userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold">Editar Usuário</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Editar Membro</h1>
           <Button variant="outline" onClick={() => router.push('/users')}>Voltar</Button>
         </div>
         <Card>
           <CardHeader>
             <CardTitle>Detalhes de {user.name}</CardTitle>
             <CardDescription>
-              Atualize as informações do usuário abaixo. Deixe o campo de senha em branco para manter a senha atual.
+              Atualize as informações do membro abaixo. Deixe o campo de senha em branco para manter a senha atual.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -224,7 +224,7 @@ export default function EditUserPage() {
                     <FormItem>
                       <FormLabel>Nome</FormLabel>
                       <FormControl>
-                        <Input placeholder="Nome completo do usuário" {...field} />
+                        <Input placeholder="Nome completo do membro" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
