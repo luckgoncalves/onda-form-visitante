@@ -208,7 +208,7 @@ export default function EditUserPage() {
           <h1 className="text-xl sm:text-2xl font-bold">Editar Membro</h1>
           <Button variant="outline" onClick={() => router.push('/users')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
+            Usuários
           </Button>
         </div>
         <Card>

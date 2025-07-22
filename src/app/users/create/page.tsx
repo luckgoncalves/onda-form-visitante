@@ -205,7 +205,7 @@ export default function CreateUserPage() {
           </div>
           <Button variant="outline" onClick={() => router.push('/users')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
+              Usuários
             </Button>
         </div>
 
