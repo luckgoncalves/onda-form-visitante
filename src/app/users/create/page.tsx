@@ -197,21 +197,20 @@ export default function CreateUserPage() {
   return (
     <>
       <Header userName={userName} onLogout={handleLogout} />
-      <div className="p-2 sm:p-6 mt-[72px] max-w-4xl mx-auto">
+      <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
         {/* Header da página */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="outline" onClick={() => router.push('/users')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
-          <div>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="">
             <h1 className="text-xl sm:text-2xl font-bold">Novo Membro</h1>
-            <p className="text-muted-foreground">Cadastre um novo membro e suas empresas</p>
           </div>
+          <Button variant="outline" onClick={() => router.push('/users')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Button>
         </div>
 
         {/* Indicador de Passos */}
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center mb-6">
           {steps.map((step, index) => {
             const Icon = step.icon;
             return (
@@ -235,7 +234,7 @@ export default function CreateUserPage() {
         </div>
 
         {/* Conteúdo do Step */}
-        <Card className="backdrop-blur-sm bg-white/30 border-none card-glass">
+        <Card className="bg-white border-none">
           <CardContent className="p-6">
             {currentStep === 0 && (
               <div className="space-y-6">
@@ -247,7 +246,7 @@ export default function CreateUserPage() {
                 </div>
 
                 <Form {...userForm}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-6">
                     <FormField
                       control={userForm.control}
                       name="name"
