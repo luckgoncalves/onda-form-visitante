@@ -223,19 +223,12 @@ export default function UserEmpresasPage() {
       <Header userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
         {/* Header da página */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center justify-between gap-4 mb-6">
           <Button variant="outline" onClick={() => router.push('/users')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
-          <div className="flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold">
-              Empresas de {user?.name || 'Carregando...'}
-            </h1>
-            <p className="text-muted-foreground">
-              {empresas.length} empresa{empresas.length !== 1 ? 's' : ''} cadastrada{empresas.length !== 1 ? 's' : ''}
-            </p>
-          </div>
+          
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <ButtonForm 
@@ -261,6 +254,14 @@ export default function UserEmpresasPage() {
             </DialogContent>
           </Dialog>
         </div>
+        <div className="flex-1 mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold">
+              Empresas de {user?.name || 'Carregando...'}
+            </h1>
+            <p className="text-muted-foreground">
+              {empresas.length} empresa{empresas.length !== 1 ? 's' : ''} cadastrada{empresas.length !== 1 ? 's' : ''}
+            </p>
+          </div>
 
         {/* Grid de Empresas */}
         {isLoading ? (

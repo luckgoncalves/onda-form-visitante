@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === "production") {
           url: process.env.MYSQL_HOST,
         },
       },
-      log: ['query', 'error', 'warn'],
+      log: ['error', 'warn'],
     });
   }
   prisma = globalWithPrisma.prisma;
