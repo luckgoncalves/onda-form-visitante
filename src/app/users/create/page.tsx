@@ -183,7 +183,7 @@ export default function CreateUserPage() {
 
   const steps = [
     { title: 'Dados Pessoais', icon: User },
-    { title: 'Empresas/Serviços', icon: Building },
+    { title: 'Empresas', icon: Building },
   ];
 
   if (!userName) {
@@ -210,23 +210,23 @@ export default function CreateUserPage() {
         </div>
 
         {/* Indicador de Passos */}
-        <div className="flex items-center mb-6">
+        <div className="flex items-center mb-4">
           {steps.map((step, index) => {
             const Icon = step.icon;
             return (
               <div key={index} className="flex items-center">
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                <div className={`flex items-center gap-2 py-2 rounded-lg ${
                   index === currentStep 
                     ? 'bg-primary text-primary-foreground' 
                     : index < currentStep 
-                      ? 'bg-green-100 text-green-700' 
+                      ? 'bg-green-100 text-green-700 px-2' 
                       : 'bg-muted text-muted-foreground'
                 }`}>
                   <Icon className="h-4 w-4" />
                   <span className="font-medium">{step.title}</span>
                 </div>
                 {index < steps.length - 1 && (
-                  <ArrowRight className="h-4 w-4 mx-4 text-muted-foreground" />
+                  <ArrowRight className="h-4 w-4 mx-2 text-muted-foreground" />
                 )}
               </div>
             );
@@ -326,9 +326,9 @@ export default function CreateUserPage() {
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-lg font-semibold mb-2">Empresas/Serviços</h2>
+                  <h2 className="text-lg font-semibold mb-2">Empresas</h2>
                   <p className="text-sm text-muted-foreground mb-6">
-                    Adicione as empresas ou serviços do membro (opcional)
+                    Adicione as empresas do membro (opcional)
                   </p>
                 </div>
 
@@ -371,7 +371,6 @@ export default function CreateUserPage() {
 
                 {/* Formulário para adicionar nova empresa */}
                 <div>
-                  <h3 className="font-medium mb-4">Adicionar Nova Empresa</h3>
                   <Form {...empresaForm}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
