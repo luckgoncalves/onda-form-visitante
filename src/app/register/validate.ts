@@ -18,7 +18,7 @@ export const step2Schema = z.object({
 
 export const step3Schema = z.object({
     como_nos_conheceu: z.string().optional(),
-    como_chegou_ate_nos: z.string().optional(),
+    como_chegou_ate_nos: z.string().optional().nullable(),
     frequenta_igreja: z.string().optional(),
     qual_igreja: z.string().optional(),
     interesse_em_conhecer: z.array(z.string({required_error: 'Selecione pelo menos uma opção'}))

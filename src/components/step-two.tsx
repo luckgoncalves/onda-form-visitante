@@ -31,20 +31,6 @@ export default function StepTwo({ form }: any) {
 
           <FormField
             control={form.control}
-            name="como_chegou_ate_nos"
-            render={({ field }) => (
-              <FormItem>
-                <Label htmlFor="como_chegou_ate_nos">Como chegou até nós?</Label>
-                <FormControl>
-                  <Input id="como_chegou_ate_nos" defaultValue={""} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
             name="frequenta_igreja"
             render={({ field }) => (
               <FormItem>

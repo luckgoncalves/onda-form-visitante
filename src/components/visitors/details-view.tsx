@@ -15,7 +15,7 @@ interface VisitorDetails {
   telefone: string;
   estado_civil: string;
   bairro?: string | null;
-  como_chegou_ate_nos?: string | null;
+  como_nos_conheceu?: string | null;
   frequenta_igreja?: string | null | undefined;
   genero?: string | null;
   idade?: number | null;
@@ -110,8 +110,8 @@ function DetailView({ item, onBack, onDelete }: {
             <p className="text-gray-600 mb-3"> {item.bairro}</p>
           </div>
           <div>
-            <h4 className="text-base font-semibold">Como chegou até nós</h4>
-            <p className="text-gray-600 mb-3"> {item?.como_chegou_ate_nos || '-'}</p>
+            <h4 className="text-base font-semibold">Como nos conheceu</h4>
+            <p className="text-gray-600 mb-3"> {item?.como_nos_conheceu || '-'}</p>
           </div>
           <div>
             <h4 className="text-base font-semibold">Frequenta igreja</h4>
