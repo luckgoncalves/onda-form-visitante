@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import type { Viewport } from 'next'
-import { Header } from "@/components/header";
-import { logout } from "./actions";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { ConditionalSidebar } from "@/components/conditional-sidebar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,14 +35,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
 
-
-  return (
+return (
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
       </head>
       <body className={`${inter.className} h-[100%]  min-h-screen  bg-gradient-to-r from-[#9562DC] to-[#FEF057]`}>
-        {children}
+        <ConditionalSidebar>
+          {children}
+        </ConditionalSidebar>
       </body>
     </html>
   );

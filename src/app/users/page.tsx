@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef } from "react";
-import { checkAuth, checkIsAdmin, createUser, deleteUser, listUsers, logout, updateUser } from "../actions";
+import { checkAuth, checkIsAdmin, createUser, deleteUser, listUsers, updateUser } from "../actions";
 import { useRouter } from "next/navigation";
-import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -99,10 +98,6 @@ export default function Users() {
     }
   }
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
 
   const onCreateUserSubmit = async (data: z.infer<typeof userSchema>) => {
     try {
@@ -172,8 +167,7 @@ export default function Users() {
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
-      <div className="p-2 sm:p-6 mt-[72px] max-w-full overflow-x-hidden">
+      <div className="p-2 sm:p-6 max-w-full overflow-x-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Membros</h1>
           <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>

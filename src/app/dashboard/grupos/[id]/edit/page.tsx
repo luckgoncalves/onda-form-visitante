@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/header';
-import { checkAuth, logout } from '@/app/actions';
+import { checkAuth } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import GrupoForm, { GrupoFormData } from '@/components/grupos/grupo-form';
 import GrupoFormSkeleton from '@/components/grupos/grupo-form-skeleton';
@@ -87,11 +86,6 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
-
   const handleSubmit = async (data: GrupoFormData) => {
     setIsLoading(true);
     try {
@@ -133,8 +127,7 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
   if (isLoadingData) {
     return (
       <>
-        <Header userName={userName} onLogout={handleLogout} />
-        <div className="p-2 sm:p-6 mt-[72px]">
+        <div className="p-2 sm:p-6">
           <GrupoFormSkeleton mode="edit" />
         </div>
       </>
@@ -144,8 +137,7 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
   if (!grupo) {
     return (
       <>
-        <Header userName={userName} onLogout={handleLogout} />
-        <div className="p-2 sm:p-6 mt-[72px]">
+        <div className="p-2 sm:p-6">
           <div className="max-w-2xl mx-auto">
             <div className="flex justify-center py-8">
               <div className="text-gray-500">Grupo não encontrado</div>
@@ -158,9 +150,7 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
-      
-      <div className="p-2 sm:p-6 mt-[72px]">
+      <div className="p-2 sm:p-6">
         <GrupoForm
           mode="edit"
           initialData={grupo}

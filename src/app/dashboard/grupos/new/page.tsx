@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/header';
-import { checkAuth, logout } from '@/app/actions';
+import { checkAuth } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import GrupoForm, { GrupoFormData } from '@/components/grupos/grupo-form';
 
@@ -36,10 +35,6 @@ export default function NovoGrupoPage() {
     initializeData();
   }, [router, toast]);
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
 
   const handleSubmit = async (data: GrupoFormData) => {
     setIsLoading(true);
@@ -81,9 +76,8 @@ export default function NovoGrupoPage() {
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
       
-      <div className="p-2 sm:p-6 mt-[72px]">
+      <div className="p-2 sm:p-6">
         <GrupoForm
           mode="create"
           onSubmit={handleSubmit}

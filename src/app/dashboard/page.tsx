@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useState, useMemo } from "react";
-import { checkAuth, logout, checkIsAdmin } from "../actions";
+import { checkAuth, checkIsAdmin } from "../actions";
 import { useRouter } from "next/navigation";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { Header } from "@/components/header";
 import { ChartSkeleton } from "@/components/dashboard/skeleton";
 import { useExcel, ReportType } from "./hooks/use-excel.hook";
 import { useVisitStats } from "./hooks/use-visit-stats.hook";
@@ -59,11 +58,6 @@ export default function Dashboard() {
     checkAuthentication();
   }, [router]);
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  }
-
   const handleExport = (type: ReportType) => {
     exportToExcel(type, dashboardStats.totalVisits);
   };
@@ -74,8 +68,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
-      <div className="p-2 sm:p-6 mt-[72px]">
+      <div className="p-2 sm:p-6">
         <div className="flex flex-col gap-2 sm:gap-4 justify-between mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-0">Dashboard de Visitas</h1>

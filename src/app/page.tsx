@@ -84,7 +84,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-4">
+    <div className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-4">
       <Card className="p-4 w-full backdrop-blur-sm bg-white/30 mt-10 border-none card-glass">
       {isCheckingAuthentication ? (
         <div className="flex justify-center items-center h-full">
@@ -146,6 +146,6 @@ export default function Home() {
         </>
       )}
       </Card>
-    </main>
+    </div>
   );
 }

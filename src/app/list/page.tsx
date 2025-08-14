@@ -1,12 +1,11 @@
 'use client';
 import { useEffect, useRef, useState, useCallback } from "react"
-import { checkAuth, updateMensagemEnviada, logout, checkIsAdmin } from "../actions"
+import { checkAuth, updateMensagemEnviada, checkIsAdmin } from "../actions"
 import { LayoutGrid, LayoutList, MessageCircle, Plus, Search, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ButtonForm from "@/components/button-form";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { Header } from "@/components/header";
 import { DetailView } from "@/components/visitors/details-view";
 import { VisitorCard } from "@/components/visitors/visitor-card";
 import { SkeletonCard } from "@/components/visitors/skeleton";
@@ -186,10 +185,6 @@ export default function List() {
     }
   }
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  }
 
   const handleDeleteVisitor = async (id: string) => {
     setVisitantes((prevVisitantes) => 
@@ -207,7 +202,6 @@ export default function List() {
 
   if (!isAdminRef.current) {
       return (
-        <main className="flex w-full h-[100%]  min-h-screen flex-col  justify-center items-center gap-4 p-4">
           <div className="flex justify-center items-center h-full">
             <Image 
               src="/logo.svg" 
@@ -215,16 +209,14 @@ export default function List() {
               width={550} 
               height={350} 
               className="m-auto"
-            />
-          </div>
-        </main>
+          />
+        </div>
       );
   }
 
   if (selectedItem) {
     return (
       <>
-        <Header userName={userName} onLogout={handleLogout} />
         <DetailView 
           item={selectedItem} 
           onBack={handleBackToList}
@@ -236,8 +228,7 @@ export default function List() {
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
-      <div className="p-2 sm:p-6 mt-[72px]">
+      <div className="p-2 sm:p-6">
         <div className="mb-4 flex flex-col-reverse sm:flex-row items-end sm:items-center justify-between gap-4">
           <div className="relative w-full sm:w-64">
             <Input

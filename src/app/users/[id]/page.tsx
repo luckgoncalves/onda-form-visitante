@@ -6,15 +6,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
 import ButtonForm from '@/components/button-form';
-import { checkAuth, checkIsAdmin, logout, updateUser } from '@/app/actions';
-import { editUserPageSchema, userSchema } from '../validate'; // Assuming validate.ts is in the parent users folder src/app/users/validate.ts
+import { checkAuth, checkIsAdmin, updateUser } from '@/app/actions';
+import { editUserPageSchema } from '../validate'; // Assuming validate.ts is in the parent users folder src/app/users/validate.ts
 import { formatPhone } from '@/lib/utils';
 
 type UserData = {
@@ -104,11 +103,6 @@ export default function EditUserPage() {
     setupPageAndFetchUser();
   }, [userId, router, form]);
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
-
   const onSubmit = async (data: EditUserPageFormData) => {
     if (!user) return;
 
@@ -150,8 +144,7 @@ export default function EditUserPage() {
   if (isFetchingUser) {
     return (
       <>
-        <Header userName={userName} onLogout={handleLogout} />
-        <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
+        <div className="p-2 sm:p-6 max-w-2xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <Skeleton className="h-8 w-48" />
             <Skeleton className="h-10 w-24" />
@@ -190,8 +183,7 @@ export default function EditUserPage() {
   if (fetchError || !user) {
     return (
       <>
-        <Header userName={userName} onLogout={handleLogout} />
-        <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto flex flex-col items-center justify-center text-center">
+        <div className="p-2 sm:p-6 max-w-2xl mx-auto flex flex-col items-center justify-center text-center">
           <h1 className="text-xl sm:text-2xl font-bold mb-4">{fetchError || 'Usuário não encontrado'}</h1>
           <Button variant="outline" onClick={() => router.push('/users')}>Voltar para Usuários</Button>
         </div>
@@ -201,8 +193,7 @@ export default function EditUserPage() {
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
-      <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
+      <div className="p-2 sm:p-6 max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Editar Membro</h1>
           <Button variant="outline" onClick={() => router.push('/users')}>Voltar</Button>

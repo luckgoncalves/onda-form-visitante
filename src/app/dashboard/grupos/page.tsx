@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Header } from '@/components/header';
-import { checkAuth, logout } from '@/app/actions';
+import { checkAuth } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -86,11 +85,6 @@ export default function GruposPage() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
-
   const handleDeleteGrupo = async (id: string) => {
     try {
       const response = await fetch(`/api/grupos/${id}`, {
@@ -154,9 +148,7 @@ export default function GruposPage() {
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
-      
-      <div className="p-2 sm:p-6 mt-[72px]">
+      <div className="p-2 sm:p-6">
         {isLoading ? (
           <GruposTableSkeleton />
         ) : (
