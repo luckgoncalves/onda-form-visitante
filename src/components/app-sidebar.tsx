@@ -85,7 +85,7 @@ import { useEffect, useState } from "react";
                   <SidebarMenuButton className="w-full justify-start  text-base text-black hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200" asChild>
                     <a href={item.href}>
                       {item.icon}
-                      <span className="text-sm font-medium">{item.label}</span>
+                      <span className="text-md font-medium">{item.label}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -105,24 +105,19 @@ import { useEffect, useState } from "react";
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   side="top"
-                  className="w-[--radix-popper-anchor-width] flex flex-col gap-2 bg-gradient-to-r from-[#ac8dd9]/10 to-[#9562DC]/20  shadow-lg z-50 rounded-lg p-2" 
+                  className="w-[--radix-popper-anchor-width] mb-3 flex flex-col gap-2 bg-gradient-to-r from-[#ac8dd9]/10 to-[#9562DC]/20  shadow-lg z-50 rounded-lg p-2" 
                 >
                   <DropdownMenuItem className="flex items-center cursor-pointer">
-                    <User2 className="h-4 w-4 mr-2.5" />
+                    <User2 className="h-4 w-4 mr-2.5 text-black" />
                     <div className="flex flex-col">
-                      <span>{dataUser.name}</span>
-                      <span className="text-xs ">{dataUser.email}</span>
+                      <span className="text-sm font-medium text-black">{dataUser.name}</span>
+                      <span className="text-xs text-black">{dataUser.email}</span>
                     </div>
                   </DropdownMenuItem>
                   <Separator className="w-full bg-gray-600 h-[1px]" />
-                  <DropdownMenuItem className="flex items-center cursor-pointer">
-                    <BadgeCheck className="h-4 w-4 mr-2.5" />
-                    <span>Perfil</span>
-                  </DropdownMenuItem>
-                  <Separator className="w-full bg-gray-600 h-[1px]" />
                   <DropdownMenuItem className="flex  items-center cursor-pointer "  onClick={handleLogout}>
-                    <LogOut className="h-4 w-4 mr-2.5" />
-                    <span>Sair</span>
+                    <LogOut className="h-4 w-4 mr-2.5 text-black" />
+                    <span className="text-md text-black">Sair</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
