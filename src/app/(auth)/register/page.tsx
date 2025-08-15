@@ -8,7 +8,7 @@ import StepZero from "@/components/step-zero";
 import { Card } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { checkAuth, save } from "../actions";
+import { checkAuth, save } from "../../actions";
 import Done from "@/components/done";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step1Schema, step2Schema, step3Schema } from "./validate";
@@ -31,20 +31,15 @@ export default function Home() {
   });
 
   useEffect(() => {
-    async function checkAdminAccess() {
-      const { isAuthenticated, user } = await checkAuth();
-      
-      if (!isAuthenticated || !user) {
-        router.push('/');
-        return;
-      }
-
+    async function getUserData() {
+      // Como já estamos no layout autenticado, só precisamos pegar os dados do usuário
+      const { user } = await checkAuth();
       if (user) {
         setUserName(user.name);
       }
     }
-    checkAdminAccess();
-  }, [router]);
+    getUserData();
+  }, []);
 
   useEffect(() => {
     const firstError = Object.keys(form.formState.errors)[0];

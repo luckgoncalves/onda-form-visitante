@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState, useCallback } from "react"
-import { checkAuth, updateMensagemEnviada, checkIsAdmin } from "../actions"
+import { checkAuth, updateMensagemEnviada, checkIsAdmin } from "../../actions"
 import { LayoutGrid, LayoutList, MessageCircle, Plus, Search, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ButtonForm from "@/components/button-form";
@@ -80,10 +80,11 @@ export default function List() {
 
   useEffect(() => {
     async function fetchData() {
-      const { isAuthenticated, user } = await checkAuth();
+      const { user } = await checkAuth();
       const { isAdmin } = await checkIsAdmin();
-      if (!isAuthenticated || !user) {
-        router.push('/');
+      
+      // Como já estamos no layout autenticado, só verificamos se é admin
+      if (!user) {
         return;
       }
 
@@ -91,11 +92,6 @@ export default function List() {
 
       if (!isAdmin) {
         router.push('/register');
-        return;
-      }
-      
-      if (user.requirePasswordChange) {
-        router.push('/change-password');
         return;
       }
 

@@ -28,9 +28,9 @@ export default function Home() {
           router.push('/change-password');
         } else {
           if (isAdmin) {
-            router.push('/list');
+            router.push('/list'); // Rota já está em (auth)/list
           }else {
-            router.push('/register');
+            router.push('/register'); // Rota movida para (auth)/register
           }
         }
       }
@@ -52,9 +52,9 @@ export default function Home() {
           router.push('/change-password');
         } else {
           if (isAdmin) {
-            router.push('/list');
+            router.push('/list'); // Rota já está em (auth)/list
           }else {
-            router.push('/register');
+            router.push('/register'); // Rota movida para (auth)/register
           }
         }
       } else {

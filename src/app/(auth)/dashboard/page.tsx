@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from "react";
-import { checkAuth, checkIsAdmin } from "../actions";
+import { checkAuth, checkIsAdmin } from "../../actions";
 import { useRouter } from "next/navigation";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { ChartSkeleton } from "@/components/dashboard/skeleton";

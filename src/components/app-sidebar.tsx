@@ -9,6 +9,8 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarTrigger,
+    useSidebar,
   } from "@/components/ui/sidebar"
 import { BadgeCheck, ChevronUp, LayoutDashboard, LogOut, User2, UserCog, UserRound, Users, UsersRound } from "lucide-react";
 import Image from "next/image";
@@ -16,9 +18,13 @@ import { checkAuth, logout } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator } from "@radix-ui/react-dropdown-menu";
 import { useEffect, useState } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
   
   export function AppSidebar() {
     const router = useRouter();
+    const { open } = useSidebar();
+    console.log(open);
     const [dataUser, setDataUser] = useState({name: '', email: ''});
 
     useEffect(() => {
@@ -66,32 +72,55 @@ import { useEffect, useState } from "react";
     };
 
     return (
-      <Sidebar className="border-r border-white/20">
-        <SidebarHeader className="bg-gradient-to-r from-[#9562DC] to-[#9562DC]/50 top-0 left-0 right-0 z-50">
-          <Image
-            src="/logo-login.png"
-            alt="Logo"
-            width={60}
-            height={40}
-            className="mx-auto"
-            priority
-          />
+      <TooltipProvider>
+      <Sidebar collapsible="icon" className="border-r border-white/20">
+        <SidebarHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-[#9562DC] to-[#9562DC]/50 top-0 left-0 right-0 z-50">
+          {open && (
+            <Image
+              src="/logo-login.png"
+              alt="Logo"
+              width={60}
+              height={40}
+              className={`ml-3`}
+              priority
+            />
+          )}
+        <SidebarTrigger className='' />
         </SidebarHeader>
         <SidebarContent  className="bg-gradient-to-r from-[#9562DC] to-[#9562DC]/50 top-0 left-0 right-0 z-50">
-          {/* <SidebarGroup> */}
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem  className="px-3" key={item.href}>
-                  <SidebarMenuButton className="w-full justify-start  text-base text-black hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200" asChild>
-                    <a href={item.href}>
-                      {item.icon}
-                      <span className="text-md font-medium">{item.label}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                if (!open) {
+                  return (
+                    <SidebarMenuItem  className={`  ${open ? 'px-3' : 'p-3 mx-auto'}`} key={item.href}>
+                      <SidebarMenuButton className="w-full justify-start  text-base text-black hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200" asChild>
+                        <Tooltip delayDuration={0}>
+                          <TooltipTrigger asChild>
+                            <a className="text-neutral-800" href={item.href}>
+                              {item.icon}
+                              <span className="sr-only">{item.label}</span>
+                            </a>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="bg-[#9562DC] shadow-2xl text-sm  text-white py-1 px-2 rounded-lg">
+                            {item.label}
+                          </TooltipContent>
+                        </Tooltip>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                }
+                return (
+                  <SidebarMenuItem  className={` ${open ? 'px-3' : 'mx-auto'}`} key={item.href}>
+                    <SidebarMenuButton className="w-full justify-start  text-base text-black hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200" asChild>
+                      <a href={item.href}>
+                        {item.icon}
+                        <span className="text-md font-medium text-neutral-800">{item.label}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
-          {/* </SidebarGroup> */}
         </SidebarContent>
         <SidebarFooter className="bg-gradient-to-r from-[#9562DC] to-[#9562DC]/50 top-0 left-0 right-0 z-50" >
         <SidebarMenu>
@@ -132,5 +161,6 @@ import { useEffect, useState } from "react";
           </SidebarMenuButton> */}
         </SidebarFooter>
       </Sidebar>
+      </TooltipProvider>
     )
   }
