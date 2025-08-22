@@ -8,6 +8,7 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { getBairrosCuritiba } from "@/app/actions";
+import { getEstados, getCidadesPorNomeEstado, Estado, Cidade } from "@/lib/dados-brasil";
 import {
   Command,
   CommandEmpty,
@@ -21,16 +22,6 @@ import {
   PopoverTrigger,
 } from "./ui/popover";
 import { CommandList } from "cmdk";
-
-interface Estado {
-  id: number;
-  sigla: string;
-  nome: string;
-}
-
-interface Cidade {
-  nome: string;
-}
 
 interface Bairro {
   id: string;
@@ -50,22 +41,25 @@ export default function StepOne({ form }: any) {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
-    // Carregar estados
-    fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
-      .then(response => response.json())
-      .then((data: Estado[]) => {
-        setEstados(data.sort((a, b) => a.nome.localeCompare(b.nome)));
-      });
-  }, []);
+    // Carregar estados dos dados locais
+    const estadosLocais = getEstados();
+    setEstados(estadosLocais);
+    
+    // Definir valores padrão para Paraná e Curitiba
+    const parana = estadosLocais.find(estado => estado.nome === 'Paraná');
+    if (parana) {
+      setSelectedEstado(parana);
+      form.setValue('estado', parana.nome);
+      form.setValue('cidade', 'Curitiba');
+      setSelectedCidade('Curitiba');
+    }
+  }, [form]);
 
   useEffect(() => {
-    if (selectedEstado?.sigla) {
-      // Carregar cidades do estado selecionado
-      fetch(`https://brasilapi.com.br/api/ibge/municipios/v1/${selectedEstado.sigla}`)
-        .then(response => response.json())
-        .then((data: Cidade[]) => {
-          setCidades(data.sort((a, b) => a.nome.localeCompare(b.nome)));
-        });
+    if (selectedEstado?.nome) {
+      // Carregar cidades do estado selecionado dos dados locais
+      const cidadesLocais = getCidadesPorNomeEstado(selectedEstado.nome);
+      setCidades(cidadesLocais);
     }
   }, [selectedEstado]);
 
