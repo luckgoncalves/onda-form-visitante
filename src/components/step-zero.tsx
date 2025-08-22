@@ -34,6 +34,10 @@ export default function StepZero({ form }: any) {
                   <RadioGroupItem id="domingo-n" value="domingo-noite" />
                   <label htmlFor="domingo-n">Domingo noite</label>
                 </div>
+                <div className="flex items-center space-x-3 space-y-0">
+                  <RadioGroupItem id="evento" value="evento" />
+                  <label htmlFor="evento">Evento</label>
+                </div>
               </RadioGroup>
             </FormControl>
             {fieldState.error && (

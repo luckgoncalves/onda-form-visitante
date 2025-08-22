@@ -35,6 +35,7 @@ export function useVisitStats({ startDate, endDate }: UseVisitStatsProps) {
             'Sábado': counts['sabado'] || 0,
             'Domingo Manhã': counts['domingo-manha'] || 0,
             'Domingo Noite': counts['domingo-noite'] || 0,
+            'Evento': counts['evento'] || 0,
             total: counts.total || 0
           };
         });
@@ -50,6 +51,7 @@ export function useVisitStats({ startDate, endDate }: UseVisitStatsProps) {
                 'Sábado': 0,
                 'Domingo Manhã': 0,
                 'Domingo Noite': 0,
+                'Evento': 0,
                 total: 0
               };
             }
@@ -57,6 +59,7 @@ export function useVisitStats({ startDate, endDate }: UseVisitStatsProps) {
             acc[monthYear]['Sábado'] += counts['sabado'] || 0;
             acc[monthYear]['Domingo Manhã'] += counts['domingo-manha'] || 0;
             acc[monthYear]['Domingo Noite'] += counts['domingo-noite'] || 0;
+            acc[monthYear]['Evento'] += counts['evento'] || 0;
             acc[monthYear].total += counts.total || 0;
 
             return acc;

@@ -48,6 +48,7 @@ interface DailyReportRow {
   'Sábado': number;
   'Domingo Manhã': number;
   'Domingo Noite': number;
+  'Evento': number;
   'Total': number;
 }
 
@@ -56,6 +57,7 @@ interface AgeReportRow {
   'Sábado': number;
   'Domingo Manhã': number;
   'Domingo Noite': number;
+  'Evento': number;
   'Total': number;
   'Média de Idade': number;
 }
@@ -65,6 +67,7 @@ interface GenderReportRow {
   'Sábado': number;
   'Domingo Manhã': number;
   'Domingo Noite': number;
+  'Evento': number;
   'Total': number;
   'Porcentagem': string;
 }
@@ -142,6 +145,7 @@ export function useExcel() {
                 'Sábado': 0,
                 'Domingo Manhã': 0,
                 'Domingo Noite': 0,
+                'Evento': 0,
                 'Total': 0
               };
             }
@@ -154,6 +158,9 @@ export function useExcel() {
                 break;
               case 'domingo-noite':
                 acc[date]['Domingo Noite']++;
+                break;
+              case 'evento':
+                acc[date]['Evento']++;
                 break;
             }
             acc[date]['Total']++;
@@ -169,13 +176,14 @@ export function useExcel() {
             'Sábado': excelData.reduce((acc, curr: DailyReportRow) => acc + curr['Sábado'], 0),
             'Domingo Manhã': excelData.reduce((acc, curr: DailyReportRow) => acc + curr['Domingo Manhã'], 0),
             'Domingo Noite': excelData.reduce((acc, curr: DailyReportRow) => acc + curr['Domingo Noite'], 0),
+            'Evento': excelData.reduce((acc, curr: DailyReportRow) => acc + curr['Evento'], 0),
             'Total': totalVisits
           });
           break;
 
         case 'age':
           // Initialize age ranges with service-specific counts
-          const ageStats: { [key: string]: { sabado: number[], 'domingo-manha': number[], 'domingo-noite': number[] } } = {};
+          const ageStats: { [key: string]: { sabado: number[], 'domingo-manha': number[], 'domingo-noite': number[], evento: number[] } } = {};
 
           // Process each visit
           detailedStats.forEach(visit => {
@@ -187,7 +195,8 @@ export function useExcel() {
               ageStats[rangeKey] = {
                 sabado: [],
                 'domingo-manha': [],
-                'domingo-noite': []
+                'domingo-noite': [],
+                evento: []
               };
             }
 
@@ -201,9 +210,10 @@ export function useExcel() {
               const sabadoCount = data.sabado.length;
               const domingoManhaCount = data['domingo-manha'].length;
               const domingoNoiteCount = data['domingo-noite'].length;
-              const total = sabadoCount + domingoManhaCount + domingoNoiteCount;
+              const eventoCount = data.evento.length;
+              const total = sabadoCount + domingoManhaCount + domingoNoiteCount + eventoCount;
 
-              const allAges = [...data.sabado, ...data['domingo-manha'], ...data['domingo-noite']];
+              const allAges = [...data.sabado, ...data['domingo-manha'], ...data['domingo-noite'], ...data.evento];
               const mediaIdade = allAges.length > 0 
                 ? Math.round((allAges.reduce((a, b) => a + b, 0) / allAges.length) * 10) / 10
                 : 0;
@@ -213,6 +223,7 @@ export function useExcel() {
                 'Sábado': sabadoCount,
                 'Domingo Manhã': domingoManhaCount,
                 'Domingo Noite': domingoNoiteCount,
+                'Evento': eventoCount,
                 'Total': total,
                 'Média de Idade': mediaIdade
               };
@@ -222,6 +233,7 @@ export function useExcel() {
           const totalSabado = excelData.reduce((acc, curr) => acc + curr['Sábado'], 0);
           const totalDomingoManha = excelData.reduce((acc, curr) => acc + curr['Domingo Manhã'], 0);
           const totalDomingoNoite = excelData.reduce((acc, curr) => acc + curr['Domingo Noite'], 0);
+          const totalEvento = excelData.reduce((acc, curr) => acc + curr['Evento'], 0);
           const mediaGeralIdade = Math.round((detailedStats.reduce((acc, curr) => acc + parseInt(curr.idade), 0) / detailedStats.length) * 10) / 10;
 
           (excelData as AgeReportRow[]).push({
@@ -229,6 +241,7 @@ export function useExcel() {
             'Sábado': totalSabado,
             'Domingo Manhã': totalDomingoManha,
             'Domingo Noite': totalDomingoNoite,
+            'Evento': totalEvento,
             'Total': totalVisits,
             'Média de Idade': mediaGeralIdade
           });
@@ -238,9 +251,9 @@ export function useExcel() {
 
         case 'gender':
           // Initialize gender stats with service-specific counts
-          const genderServiceStats: { [key: string]: { sabado: number, 'domingo-manha': number, 'domingo-noite': number, total: number } } = {
-            'Masculino': { sabado: 0, 'domingo-manha': 0, 'domingo-noite': 0, total: 0 },
-            'Feminino': { sabado: 0, 'domingo-manha': 0, 'domingo-noite': 0, total: 0 }
+          const genderServiceStats: { [key: string]: { sabado: number, 'domingo-manha': number, 'domingo-noite': number, evento: number, total: number } } = {
+            'Masculino': { sabado: 0, 'domingo-manha': 0, 'domingo-noite': 0, evento: 0, total: 0 },
+            'Feminino': { sabado: 0, 'domingo-manha': 0, 'domingo-noite': 0, evento: 0, total: 0 }
           };
 
           // Process each visit
@@ -249,7 +262,7 @@ export function useExcel() {
             const gender = visit.genero === 'masculino' ? 'Masculino' : 'Feminino';
             
             // Map culto values
-            let serviceKey: 'sabado' | 'domingo-manha' | 'domingo-noite';
+            let serviceKey: 'sabado' | 'domingo-manha' | 'domingo-noite' | 'evento';
             switch (visit.culto) {
               case 'Sábado':
               case 'sabado':
@@ -262,6 +275,10 @@ export function useExcel() {
               case 'Domingo Noite':
               case 'domingo-noite':
                 serviceKey = 'domingo-noite';
+                break;
+              case 'Evento':
+              case 'evento':
+                serviceKey = 'evento';
                 break;
               default:
                 console.warn('Culto não reconhecido:', visit.culto);
@@ -279,6 +296,7 @@ export function useExcel() {
             'Sábado': data.sabado,
             'Domingo Manhã': data['domingo-manha'],
             'Domingo Noite': data['domingo-noite'],
+            'Evento': data.evento,
             'Total': data.total,
             'Porcentagem': totalVisits > 0 ? `${Math.round((data.total / totalVisits) * 100)}%` : '0%'
           }));
@@ -287,7 +305,8 @@ export function useExcel() {
           const totalPorGenero = {
             'Sábado': excelData.reduce((acc, curr) => acc + curr['Sábado'], 0),
             'Domingo Manhã': excelData.reduce((acc, curr) => acc + curr['Domingo Manhã'], 0),
-            'Domingo Noite': excelData.reduce((acc, curr) => acc + curr['Domingo Noite'], 0)
+            'Domingo Noite': excelData.reduce((acc, curr) => acc + curr['Domingo Noite'], 0),
+            'Evento': excelData.reduce((acc, curr) => acc + curr['Evento'], 0)
           };
 
           (excelData as GenderReportRow[]).push({
@@ -295,6 +314,7 @@ export function useExcel() {
             'Sábado': totalPorGenero['Sábado'],
             'Domingo Manhã': totalPorGenero['Domingo Manhã'],
             'Domingo Noite': totalPorGenero['Domingo Noite'],
+            'Evento': totalPorGenero['Evento'],
             'Total': totalVisits,
             'Porcentagem': '100%'
           });

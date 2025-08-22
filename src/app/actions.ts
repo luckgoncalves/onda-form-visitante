@@ -212,6 +212,7 @@ export async function getVisitStats({ startDate, endDate }: { startDate: string,
         'sabado': 0,
         'domingo-manha': 0,
         'domingo-noite': 0,
+        'evento': 0,
         total: 0
       };
     }
@@ -286,7 +287,8 @@ export async function getGenderStats({ startDate, endDate }: { startDate: string
     const stats: any = {
       'sabado': { masculino: 0, feminino: 0 },
       'domingo-manha': { masculino: 0, feminino: 0 },
-      'domingo-noite': { masculino: 0, feminino: 0 }
+      'domingo-noite': { masculino: 0, feminino: 0 },
+      'evento': { masculino: 0, feminino: 0 }
     };
 
     visits.forEach((visit) => {
@@ -332,6 +334,7 @@ export async function getAgeStats({ startDate, endDate }: { startDate: string; e
           'sabado': 0,
           'domingo-manha': 0,
           'domingo-noite': 0,
+          'evento': 0,
           total: 0
         };
       }
@@ -348,6 +351,7 @@ export async function getAgeStats({ startDate, endDate }: { startDate: string; e
         'Sábado': counts['sabado'],
         'Domingo Manhã': counts['domingo-manha'],
         'Domingo Noite': counts['domingo-noite'],
+        'Evento': counts['evento'],
         total: counts.total
       }))
       .sort((a, b) => {

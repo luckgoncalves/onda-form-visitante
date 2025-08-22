@@ -3,6 +3,7 @@ export interface VisitStats {
   'Sábado': number;
   'Domingo Manhã': number;
   'Domingo Noite': number;
+  'Evento': number;
   total: number;
 }
 
@@ -18,6 +19,7 @@ export interface AgeStats {
   'Sábado': number;
   'Domingo Manhã': number;
   'Domingo Noite': number;
+  'Evento': number;
 }
 
 export interface CustomTooltipProps {

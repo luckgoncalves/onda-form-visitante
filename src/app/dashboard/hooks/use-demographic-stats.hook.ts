@@ -44,6 +44,12 @@ export function useDemographicStats({ startDate, endDate }: UseDemographicStatsP
             Masculino: genderData['domingo-noite']?.masculino || 0,
             Feminino: genderData['domingo-noite']?.feminino || 0,
             total: (genderData['domingo-noite']?.masculino || 0) + (genderData['domingo-noite']?.feminino || 0)
+          },
+          {
+            culto: 'Evento',
+            Masculino: genderData.evento?.masculino || 0,
+            Feminino: genderData.evento?.feminino || 0,
+            total: (genderData.evento?.masculino || 0) + (genderData.evento?.feminino || 0)
           }
         ];
 

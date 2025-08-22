@@ -57,6 +57,7 @@ export function VisitChart({ data, title, xAxisAngle = -45, xAxisHeight = 60 }: 
               <Bar dataKey="Sábado" fill="#9562DC" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Domingo Manhã" fill="#FFC857" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Domingo Noite" fill="#B09FF3" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Evento" fill="#FF6B6B" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
