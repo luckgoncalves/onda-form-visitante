@@ -18,9 +18,42 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
+    const search = searchParams.get('search') || '';
     const skip = (page - 1) * limit;
 
+
+
+    // Construir filtros de busca inteligente
+    const searchTerm = search.trim();
+    let searchFilter = {};
+    
+    if (searchTerm) {
+      const conditions = [];
+      
+      // Busca no nome (string)
+      conditions.push({ nome: { contains: searchTerm } });
+      
+      // Busca na categoria (enum) - busca exata ou parcial
+      const categorias = ['HOMENS', 'UNVT', 'MULHERES', 'MISTO', 'NEW', 'CASAIS'];
+      const categoriaMatch = categorias.find(cat => 
+        cat.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        searchTerm.toLowerCase().includes(cat.toLowerCase())
+      );
+      if (categoriaMatch) {
+        conditions.push({ categoria: categoriaMatch });
+      }
+      
+      // Busca no bairro (relação)
+      conditions.push({ bairro: { nome: { contains: searchTerm } } });
+      
+      // Busca nos líderes (relação many-to-many)
+      conditions.push({ lideres: { some: { name: { contains: searchTerm } } } });
+      
+      searchFilter = { OR: conditions };
+    }
+
     const grupos = await prisma.grupo.findMany({
+      where: searchFilter,
       skip,
       take: limit,
       include: {
@@ -43,7 +76,11 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const total = await prisma.grupo.count();
+    const total = await prisma.grupo.count({
+      where: searchFilter,
+    });
+
+
 
     return NextResponse.json({
       grupos,

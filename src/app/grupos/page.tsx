@@ -39,6 +39,7 @@ export default function GruposPublicPage() {
         }
 
         const data = await response.json();
+        console.log(data);
         setGrupos(data.grupos);
       } catch (error) {
         console.error('Erro ao carregar grupos:', error);
