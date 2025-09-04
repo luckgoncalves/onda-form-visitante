@@ -41,25 +41,36 @@ export default function StepOne({ form }: any) {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
-    // Carregar estados dos dados locais
-    const estadosLocais = getEstados();
-    setEstados(estadosLocais);
-    
-    // Definir valores padrão para Paraná e Curitiba
-    const parana = estadosLocais.find(estado => estado.nome === 'Paraná');
-    if (parana) {
-      setSelectedEstado(parana);
-      form.setValue('estado', parana.nome);
-      form.setValue('cidade', 'Curitiba');
-      setSelectedCidade('Curitiba');
+    try {
+      // Carregar estados dos dados locais
+      const estadosLocais = getEstados();
+      setEstados(estadosLocais);
+      
+      // Definir valores padrão para Paraná e Curitiba
+      const parana = estadosLocais.find(estado => estado.nome === 'Paraná');
+      if (parana) {
+        setSelectedEstado(parana);
+        form.setValue('estado', parana.nome);
+        form.setValue('cidade', 'Curitiba');
+        setSelectedCidade('Curitiba');
+      }
+    } catch (error) {
+      console.error('Error loading estados:', error);
+      // Fallback para valores padrão sem dados locais
+      setEstados([]);
     }
   }, [form]);
 
   useEffect(() => {
     if (selectedEstado?.nome) {
-      // Carregar cidades do estado selecionado dos dados locais
-      const cidadesLocais = getCidadesPorNomeEstado(selectedEstado.nome);
-      setCidades(cidadesLocais);
+      try {
+        // Carregar cidades do estado selecionado dos dados locais
+        const cidadesLocais = getCidadesPorNomeEstado(selectedEstado.nome);
+        setCidades(cidadesLocais);
+      } catch (error) {
+        console.error('Error loading cities:', error);
+        setCidades([]);
+      }
     }
   }, [selectedEstado]);
 
@@ -68,6 +79,9 @@ export default function StepOne({ form }: any) {
       // Carregar bairros de Curitiba
       getBairrosCuritiba().then((data) => {
         setBairros(data);
+      }).catch((error) => {
+        console.error('Error loading bairros:', error);
+        setBairros([]);
       });
     } else {
       setBairros([]);

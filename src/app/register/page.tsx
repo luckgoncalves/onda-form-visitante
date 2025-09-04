@@ -14,38 +14,85 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { step1Schema, step2Schema, step3Schema } from "./validate";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
+import ErrorBoundary from "@/components/error-boundary";
 
 export default function Home() {
   const [step, setStep] = useState(0);
   const [userName, setUserName] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const [formData, setFormData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Função para obter o schema correto baseado no step
+  const getSchemaForStep = (currentStep: number) => {
+    switch (currentStep) {
+      case 0:
+        return step1Schema;
+      case 1:
+        return step2Schema;
+      case 2:
+        return step3Schema;
+      default:
+        return step1Schema;
+    }
+  };
+
   const form = useForm({
-    resolver: zodResolver(step === 0 ? step1Schema : step === 1 ? step2Schema : step3Schema),
+    resolver: zodResolver(getSchemaForStep(step)),
     defaultValues: {
+      culto: '',
+      nome: '',
+      genero: '',
+      idade: '',
+      estado: 'Paraná',
+      cidade: 'Curitiba',
+      bairro: '',
+      estado_civil: '',
+      telefone: '',
+      como_nos_conheceu: '',
+      como_chegou_ate_nos: '',
+      frequenta_igreja: '',
+      qual_igreja: '',
       interesse_em_conhecer: [],
-      ...formData, // Inicialize o formulário com os dados salvos
+      observacao: '',
     },
     mode: 'onBlur'
   });
 
   useEffect(() => {
-    async function checkAdminAccess() {
-      const { isAuthenticated, user } = await checkAuth();
-      
-      if (!isAuthenticated || !user) {
-        router.push('/');
-        return;
-      }
+    setIsMounted(true);
+  }, []);
 
-      if (user) {
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    async function checkAdminAccess() {
+      try {
+        const { isAuthenticated, user } = await checkAuth();
+        
+        if (!isAuthenticated || !user) {
+          router.push('/');
+          return;
+        }
+
         setUserName(user.name);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        router.push('/');
       }
     }
     checkAdminAccess();
-  }, [router]);
+  }, [router, isMounted]);
+
+  // Atualizar o resolver quando o step mudar
+  useEffect(() => {
+    form.clearErrors();
+    const currentValues = form.getValues();
+    form.reset(currentValues, { keepValues: true, keepDefaultValues: true });
+  }, [step, form]);
 
   useEffect(() => {
     const firstError = Object.keys(form.formState.errors)[0];
@@ -79,43 +126,47 @@ export default function Home() {
     router.push('/');
   };
 
-  if (!userName) {
+  if (!isMounted || isLoading || !userName) {
     return (
-      <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <Header userName={userName} onLogout={handleLogout} />
+      <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center justify-center gap-4 p-2 sm:p-6 mt-[72px]">
+        <div className="flex justify-center items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 dark:border-white"></div>
+        </div>
       </main>
     )
   }
 
   return (
-    <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-2 sm:p-6 mt-[72px]">
-      <Header userName={userName} onLogout={handleLogout} />
-      <div className="flex justify-between items-center w-full">
-        <h1>Ficha - visitantes</h1>
-      </div>
-      <Card className="p-4 w-full backdrop-blur-sm bg-white/30  border-none card-glass">
-        <Form {...form}>
-          <form onSubmit={submitAction}>
-            {step === 0 && <StepZero form={form} />}
-            {step === 1 && <StepOne form={form} />}
-            {step === 2 && <StepTwo form={form} />}
-            {step === 3 && <Done />}
-      
-            <div className="flex flex-col-reverse gap-4">
-              {step > 0 && step < 3 && (
-                <ButtonForm className="w-full" type="button" onClick={() => setStep(step - 1)} label="Voltar"/>
-              )}
-              {step < 3 && (
-                <ButtonForm 
-                  type="submit" 
-                  label={step < 2 ? "Próximo" : "Salvar"}
-                  disabled={isSubmitting}
-                />
-              )}
-            </div>
-          </form>
-        </Form>
-      </Card>
-    </main>
+    <ErrorBoundary>
+      <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-2 sm:p-6 mt-[72px]">
+        <Header userName={userName} onLogout={handleLogout} />
+        <div className="flex justify-between items-center w-full">
+          <h1>Ficha - visitantes</h1>
+        </div>
+        <Card className="p-4 w-full backdrop-blur-sm bg-white/30  border-none card-glass">
+          <Form {...form}>
+            <form onSubmit={submitAction}>
+              {step === 0 && <StepZero form={form} />}
+              {step === 1 && <StepOne form={form} />}
+              {step === 2 && <StepTwo form={form} />}
+              {step === 3 && <Done />}
+        
+              <div className="flex flex-col-reverse gap-4">
+                {step > 0 && step < 3 && (
+                  <ButtonForm className="w-full" type="button" onClick={() => setStep(step - 1)} label="Voltar"/>
+                )}
+                {step < 3 && (
+                  <ButtonForm 
+                    type="submit" 
+                    label={step < 2 ? "Próximo" : "Salvar"}
+                    disabled={isSubmitting}
+                  />
+                )}
+              </div>
+            </form>
+          </Form>
+        </Card>
+      </main>
+    </ErrorBoundary>
   );
 }
