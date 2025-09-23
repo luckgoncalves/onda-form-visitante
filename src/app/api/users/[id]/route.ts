@@ -12,11 +12,7 @@ export async function GET(
     // It's crucial to ensure that checkIsAdmin can work in an API route context.
     // API routes don't have the same session context as server components or server actions by default.
     // This might require passing auth tokens or other mechanisms if checkIsAdmin relies on cookies/session.
-    const { isAdmin } = await checkIsAdmin(); 
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
+  
     const userId = params.id;
 
     if (!userId) {

@@ -18,6 +18,7 @@ export default function EmpresasPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [userName, setUserName] = useState('');
+  const [userId, setUserId] = useState('');
   const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,6 +37,7 @@ export default function EmpresasPage() {
       const authResult = await checkAuth();
       if (authResult.user) {
         setUserName(authResult.user.name);
+        setUserId(authResult.user.id);
         setCurrentUser({
           id: authResult.user.id,
           role: authResult.user.role,
@@ -128,14 +130,14 @@ export default function EmpresasPage() {
   if (!userName) {
     return (
       <main className="flex w-full h-[100%] min-h-screen flex-col items-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <Header userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} onLogout={handleLogout} />
       </main>
     );
   }
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
         {/* Header da página */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

@@ -10,10 +10,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trash2, Pencil, KeyRound, Search, Plus, Building } from "lucide-react";
 import { SearchInput } from "@/components/search-input";
-import Image from "next/image";
 import { useDebounce } from "./hooks/useDebounce";
-import { formatPhone } from "@/lib/utils";
 import ButtonForm from "@/components/button-form";
+import LoadingOnda from "@/components/loading-onda";
 
 type User = {
   id: string;
@@ -28,6 +27,7 @@ type User = {
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,6 +49,7 @@ export default function Users() {
       const authResult = await checkAuth();
       if (authResult.user) {
         setUserName(authResult.user.name);
+        setUserId(authResult.user.id);
       }
 
       fetchUsers();
@@ -119,23 +120,13 @@ export default function Users() {
 
   if (!isAdminRef.current) {
     return (
-      <main className="flex w-full h-[100%]  min-h-screen flex-col  justify-center items-center gap-4 p-4">
-        <div className="flex justify-center items-center h-full">
-          <Image
-            src="/logo.svg"
-            alt="Onda Logo"
-            width={550}
-            height={350}
-            className="m-auto"
-          />
-        </div>
-      </main>
+      <LoadingOnda />
     );
   }
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-full overflow-x-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Membros</h1>

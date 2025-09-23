@@ -40,6 +40,7 @@ export default function CreateUserPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [userName, setUserName] = useState('');
+  const [userId, setUserId] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [empresas, setEmpresas] = useState<EmpresaFormData[]>([]);
@@ -83,6 +84,7 @@ export default function CreateUserPage() {
       const authResult = await checkAuth();
       if (authResult.user) {
         setUserName(authResult.user.name);
+        setUserId(authResult.user.id);
       }
     }
 
@@ -189,14 +191,14 @@ export default function CreateUserPage() {
   if (!userName) {
     return (
       <main className="flex w-full h-[100%] min-h-screen flex-col items-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <Header userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} onLogout={handleLogout} />
       </main>
     );
   }
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
         {/* Header da página */}
         <div className="flex items-center justify-between gap-4 mb-6">

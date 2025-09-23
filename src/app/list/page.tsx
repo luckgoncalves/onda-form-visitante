@@ -11,7 +11,7 @@ import { DetailView } from "@/components/visitors/details-view";
 import { VisitorCard } from "@/components/visitors/visitor-card";
 import { SkeletonCard } from "@/components/visitors/skeleton";
 import { SwipeInstruction } from "@/components/visitors/swipe-intruction";
-import Image from "next/image";
+import LoadingOnda from "@/components/loading-onda";
 
 interface Visitante {
   id: string;
@@ -72,6 +72,7 @@ export default function List() {
   const [loadingMore, setLoadingMore] = useState(false);
   const router = useRouter();
   const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const isAdminRef = useRef(false);
@@ -101,6 +102,7 @@ export default function List() {
       }
 
       setUserName(user.name);
+      setUserId(user.id);
     }
     fetchData();
   }, [router]);
@@ -207,24 +209,14 @@ export default function List() {
 
   if (!isAdminRef.current) {
       return (
-        <main className="flex w-full h-[100%]  min-h-screen flex-col  justify-center items-center gap-4 p-4">
-          <div className="flex justify-center items-center h-full">
-            <Image 
-              src="/logo.svg" 
-              alt="Onda Logo" 
-              width={550} 
-              height={350} 
-              className="m-auto"
-            />
-          </div>
-        </main>
+        <LoadingOnda />
       );
   }
 
   if (selectedItem) {
     return (
       <>
-        <Header userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} onLogout={handleLogout} />
         <DetailView 
           item={selectedItem} 
           onBack={handleBackToList}
@@ -236,7 +228,7 @@ export default function List() {
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px]">
         <div className="mb-4 flex flex-col-reverse sm:flex-row items-end sm:items-center justify-between gap-4">
           <div className="relative w-full sm:w-64">

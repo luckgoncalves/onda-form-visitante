@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,7 +39,7 @@ export default function EditUserPage() {
   const [isFetchingUser, setIsFetchingUser] = useState(true);
   const [userName, setUserName] = useState("");
   const [fetchError, setFetchError] = useState<string | null>(null);
-
+  const isAdminRef = useRef(false);
   const form = useForm<EditUserPageFormData>({
     resolver: zodResolver(editUserPageSchema),
     defaultValues: {
@@ -62,10 +62,7 @@ export default function EditUserPage() {
         setUserName(auth.user.name);
 
         const { isAdmin } = await checkIsAdmin();
-        if (!isAdmin) {
-          router.push('/');
-          return;
-        }
+        isAdminRef.current = isAdmin;
 
         if (userId) {
           setIsFetchingUser(true);
@@ -151,7 +148,7 @@ export default function EditUserPage() {
   if (isFetchingUser) {
     return (
       <>
-        <Header userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} onLogout={handleLogout} />
         <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <Skeleton className="h-8 w-48" />
@@ -191,7 +188,7 @@ export default function EditUserPage() {
   if (fetchError || !user) {
     return (
       <>
-        <Header userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} onLogout={handleLogout} />
         <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto flex flex-col items-center justify-center text-center">
           <h1 className="text-xl sm:text-2xl font-bold mb-4">{fetchError || 'Usuário não encontrado'}</h1>
           <Button variant="outline" onClick={() => router.push('/users')}>Voltar para Usuários</Button>
@@ -202,20 +199,20 @@ export default function EditUserPage() {
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold">Editar Membro</h1>
-          <Button variant="outline" onClick={() => router.push('/users')}>
+          <h1 className="text-xl sm:text-2xl font-bold">Editar Perfil</h1>
+          <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Usuários
+            Voltar
           </Button>
         </div>
         <Card>
           <CardHeader>
             <CardTitle>Detalhes de {user.name}</CardTitle>
             <CardDescription>
-              Atualize as informações do membro abaixo. Deixe o campo de senha em branco para manter a senha atual.
+              Deixe o campo de senha em branco para manter a senha atual.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -237,6 +234,7 @@ export default function EditUserPage() {
                 <FormField
                   control={form.control}
                   name="email"
+                  disabled={!isAdminRef.current}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Email</FormLabel>
@@ -284,6 +282,7 @@ export default function EditUserPage() {
                 />
                 <FormField
                   control={form.control}
+                  disabled={!isAdminRef.current}
                   name="role"
                   render={({ field }) => (
                     <FormItem>

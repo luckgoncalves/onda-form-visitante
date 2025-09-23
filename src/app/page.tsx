@@ -1,7 +1,7 @@
 'use client';
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Form, FormField, FormLabel } from "@/components/ui/form";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { login, checkAuth, checkIsAdmin } from "./actions";
 import ButtonForm from "@/components/button-form";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Image from 'next/image';
+import LoadingOnda from "@/components/loading-onda";
 
 export default function Home() {
   const form = useForm();
@@ -69,17 +70,7 @@ export default function Home() {
 
   if (isCheckingAuthentication) {
     return (
-      <main className="flex w-full h-[100%]  min-h-screen flex-col  justify-center items-center gap-4 p-4">
-        <div className="flex justify-center items-center h-full">
-          <Image 
-            src="/logo-svg.svg" 
-            alt="Onda Logo" 
-            width={550} 
-            height={350} 
-            className="m-auto"
-          />
-        </div>
-      </main>
+      <LoadingOnda />
     );
   }
 

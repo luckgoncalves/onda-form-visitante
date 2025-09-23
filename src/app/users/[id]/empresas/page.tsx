@@ -213,14 +213,14 @@ export default function UserEmpresasPage() {
   if (!userName) {
     return (
       <main className="flex w-full h-[100%] min-h-screen flex-col items-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <Header userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} onLogout={handleLogout} />
       </main>
     );
   }
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
         {/* Header da página */}
         <div className="flex items-center justify-between gap-4 mb-6">

@@ -59,6 +59,7 @@ export default function GruposPage() {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState('');
+  const [userId, setUserId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
@@ -114,7 +115,7 @@ export default function GruposPage() {
           return;
         }
         setUserName(user.name);
-
+        setUserId(user.id);
         // Carregar grupos
         await loadGrupos(1, 10, '');
       } catch (error) {
@@ -215,7 +216,7 @@ export default function GruposPage() {
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} onLogout={handleLogout} />
       
       <div className="p-2 sm:p-6 mt-[72px]">
         {/* Search Bar */}

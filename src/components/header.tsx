@@ -6,8 +6,10 @@ import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { checkIsAdmin } from "@/app/actions";
+import { Separator } from "./ui/separator";
 
-export function Header({ userName, onLogout }: { userName: string, onLogout: () => void }) {
+export function Header({ userName, userId, onLogout }: { userName: string, userId: string, onLogout: () => void }) {
+
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -29,10 +31,10 @@ export function Header({ userName, onLogout }: { userName: string, onLogout: () 
             onClick={() => router.push('/list')}
           >
             <Image
-              src="/onda-logo-header.png" 
+              src="/logo-login.png" 
               alt="Onda Logo" 
-              width={150}
-              height={100}
+              width={50}
+              height={50}
             />
           </div>
         </div>
@@ -97,6 +99,21 @@ export function Header({ userName, onLogout }: { userName: string, onLogout: () 
                     Membros
                   </Button>
                 )}
+                
+                <Separator className="bg-gray-200" />
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    router.push(`/users/${userId}`);
+                  }}
+                >
+                  <User className="h-4 w-4 mr-2.5" />
+                  {userName}
+                </Button>
+
                 <Button
                   variant="ghost"
                   className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"

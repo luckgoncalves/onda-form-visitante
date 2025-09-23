@@ -24,7 +24,7 @@ export default function Home() {
   const router = useRouter();
   const [formData, setFormData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [userId, setUserId] = useState('');
   // Função para obter o schema correto baseado no step
   const getSchemaForStep = (currentStep: number) => {
     switch (currentStep) {
@@ -78,6 +78,7 @@ export default function Home() {
         }
 
         setUserName(user.name);
+        setUserId(user.id);
         setIsLoading(false);
       } catch (error) {
         console.error('Error checking authentication:', error);
@@ -139,7 +140,7 @@ export default function Home() {
   return (
     <ErrorBoundary>
       <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <Header userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} onLogout={handleLogout} />
         <div className="flex justify-between items-center w-full">
           <h1>Ficha - visitantes</h1>
         </div>

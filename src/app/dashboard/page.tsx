@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
   const { exportToExcel, isExporting, startDate, setStartDate, endDate, setEndDate } = useExcel();
   
   const { stats, monthlyStats, isLoading: isLoadingVisits } = useVisitStats({ startDate, endDate });
@@ -55,6 +56,7 @@ export default function Dashboard() {
       }
 
       setUserName(user.name);
+      setUserId(user.id);
     }
     checkAuthentication();
   }, [router]);
@@ -74,7 +76,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <Header userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px]">
         <div className="flex flex-col gap-2 sm:gap-4 justify-between mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
