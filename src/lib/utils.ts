@@ -58,3 +58,25 @@ export const formatCulto = (culto: string) => {
   
   return formatMap[culto] || culto;
 };
+
+// Função para criar link de ligação
+export const createCallLink = (phone: string) => {
+  return `tel:${phone}`;
+};
+
+// Função para formatar telefone para WhatsApp (remove caracteres especiais)
+export const formatPhoneForWhatsApp = (phone: string) => {
+  return phone.replace(/\D/g, '');
+};
+
+// Função para criar link do WhatsApp
+export const createWhatsAppLink = (phone: string, text: string) => {
+  const cleanPhone = formatPhoneForWhatsApp(phone);
+  const message = encodeURIComponent(text);
+  return `https://wa.me/55${cleanPhone}?text=${message}`;
+};
+
+// Função para copiar telefone para clipboard
+export const copyPhoneToClipboard = (phone: string) => {
+  navigator.clipboard.writeText(phone);
+};

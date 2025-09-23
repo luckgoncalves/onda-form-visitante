@@ -5,6 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { copyPhoneToClipboard, createCallLink, createWhatsAppLink } from '@/lib/utils';
 import { Clock, MapPin, Users, Calendar, Phone, ChevronDown, Copy } from 'lucide-react';
 
 interface GrupoCardProps {
@@ -86,29 +87,7 @@ export default function GrupoCard({ grupo }: GrupoCardProps) {
   const getLideresPhones = () => {
     return grupo.lideres.filter(lider => lider.phone).map(lider => lider.phone);
   };
-
-  // Função para formatar telefone para WhatsApp (remove caracteres especiais)
-  const formatPhoneForWhatsApp = (phone: string) => {
-    return phone.replace(/\D/g, '');
-  };
-
-  // Função para criar link do WhatsApp
-  const createWhatsAppLink = (phone: string) => {
-    const cleanPhone = formatPhoneForWhatsApp(phone);
-    const message = encodeURIComponent(`Olá! Vi o grupo "${grupo.nome}" e gostaria de saber mais informações.`);
-    return `https://wa.me/55${cleanPhone}?text=${message}`;
-  };
-
-  // Função para criar link de ligação
-  const createCallLink = (phone: string) => {
-    return `tel:${phone}`;
-  };
-
-  // Função para copiar telefone para clipboard
-  const copyPhoneToClipboard = (phone: string) => {
-    navigator.clipboard.writeText(phone);
-    // Você pode adicionar um toast aqui se quiser feedback visual
-  };
+  
 
   return (
     <Card className="h-full hover:shadow-lg transition-shadow duration-200">
@@ -179,7 +158,7 @@ export default function GrupoCard({ grupo }: GrupoCardProps) {
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <a
-                            href={createWhatsAppLink(lider.phone!)}
+                            href={createWhatsAppLink(lider.phone!, `Olá! Vi o grupo "${grupo.nome}" e gostaria de saber mais informações.`)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 cursor-pointer text-green-600"
