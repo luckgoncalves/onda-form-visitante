@@ -10,8 +10,8 @@ import { useState } from "react";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "OD - Visitantes",
-  description: "Ficha de visitantes Onda Dura",
+  title: "Onda Dura",
+  description: "App Onda Dura",
   icons: {
     icon: [
       { url: '/favicon.ico' },
