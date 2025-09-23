@@ -16,6 +16,7 @@ import ButtonForm from '@/components/button-form';
 import { checkAuth, checkIsAdmin, logout, updateUser } from '@/app/actions';
 import { editUserPageSchema, userSchema } from '../validate'; // Assuming validate.ts is in the parent users folder src/app/users/validate.ts
 import { formatPhone } from '@/lib/utils';
+import { ArrowLeft } from 'lucide-react';
 
 type UserData = {
   id: string;
@@ -205,7 +206,10 @@ export default function EditUserPage() {
       <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Editar Membro</h1>
-          <Button variant="outline" onClick={() => router.push('/users')}>Voltar</Button>
+          <Button variant="outline" onClick={() => router.push('/users')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Usuários
+          </Button>
         </div>
         <Card>
           <CardHeader>

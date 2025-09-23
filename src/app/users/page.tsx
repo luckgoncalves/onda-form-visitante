@@ -1,27 +1,19 @@
 'use client';
 
 import { useEffect, useState, useRef } from "react";
-import { checkAuth, checkIsAdmin, createUser, deleteUser, listUsers, logout, updateUser } from "../actions";
+import { checkAuth, checkIsAdmin, deleteUser, listUsers, logout, updateUser } from "../actions";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Trash2, Pencil, KeyRound, Search, X, Plus } from "lucide-react";
-import { userSchema } from "./validate";
-import { z } from "zod";
-import ButtonForm from "@/components/button-form";
+import { Trash2, Pencil, KeyRound, Search, Plus, Building } from "lucide-react";
+import { SearchInput } from "@/components/search-input";
 import Image from "next/image";
 import { useDebounce } from "./hooks/useDebounce";
 import { formatPhone } from "@/lib/utils";
+import ButtonForm from "@/components/button-form";
 
 type User = {
   id: string;
@@ -38,23 +30,12 @@ export default function Users() {
   const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-  const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
   const isAdminRef = useRef(false);
 
   // Debounce search term to avoid excessive API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-
-  const createUserForm = useForm<z.infer<typeof userSchema>>({
-    resolver: zodResolver(userSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      role: "user",
-    },
-  });
 
   useEffect(() => {
     async function checkAdminAccess() {
@@ -104,20 +85,6 @@ export default function Users() {
     router.push('/');
   };
 
-  const onCreateUserSubmit = async (data: z.infer<typeof userSchema>) => {
-    try {
-      setIsLoading(true);
-      await createUser({ ...data, password: 'ondadura' });
-      await fetchUsers(debouncedSearchTerm);
-      setIsCreateUserDialogOpen(false);
-      createUserForm.reset();
-    } catch (error) {
-      console.error('Erro ao criar usuário:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleDeleteUser = async (userId: string) => {
     try {
       await deleteUser(userId);
@@ -150,10 +117,6 @@ export default function Users() {
     }
   };
 
-  const handleClearSearch = () => {
-    setSearchTerm("");
-  };
-
   if (!isAdminRef.current) {
     return (
       <main className="flex w-full h-[100%]  min-h-screen flex-col  justify-center items-center gap-4 p-4">
@@ -176,117 +139,19 @@ export default function Users() {
       <div className="p-2 sm:p-6 mt-[72px] max-w-full overflow-x-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Membros</h1>
-          <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
-            <DialogTrigger asChild>
-              <ButtonForm icon={<Plus size={20} />} label="Novo Membro" type="button" />
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Criar Novo Membro</DialogTitle>
-                <DialogDescription>
-                  Preencha os dados abaixo para criar um novo membro.
-                </DialogDescription>
-              </DialogHeader>
-              <Form {...createUserForm}>
-                <form onSubmit={createUserForm.handleSubmit(onCreateUserSubmit)} className="space-y-4">
-                  <FormField
-                    control={createUserForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createUserForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createUserForm.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Telefone</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="(11) 99999-9999"
-                            id="phone"
-                            type="tel"
-                            {...field}
-                            onChange={(e) => {
-                              const mask = formatPhone(e.target.value);
-                              field.onChange(mask);
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                    A senha inicial será &quot;ondadura&quot;. O usuário será solicitado a alterá-la no primeiro login.
-                  </div>
-                  <FormField
-                    control={createUserForm.control}
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Papel</FormLabel>
-                        <Select
-                          onChange={field.onChange}
-                          value={field.value}
-                        >
-                          <option value="user">Usuário</option>
-                          <option value="admin">Administrador</option>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <DialogFooter>
-                    <ButtonForm type="submit" disabled={isLoading} label={isLoading ? "Criando..." : "Criar Membro"} />
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
+          <ButtonForm
+            label="Novo Membro"
+            icon={<Plus size={20} />}
+            onClick={() => router.push('/users/create')}
+          />
         </div>
 
         {/* Search Bar */}
-        <div className="relative mb-6 w-full max-w-md sm:w-64">
-          <Input
-            type="text"
-            placeholder="Buscar membros por nome..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-10 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500 w-full"
-          />
-          {searchTerm && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleClearSearch}
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-        </div>
+        <SearchInput
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar membros por nome..."
+        />
 
         {/* Results count */}
         {!isLoadingUsers && (
@@ -335,7 +200,7 @@ export default function Users() {
                 }
               </p>
               {searchTerm && (
-                <Button variant="outline" onClick={handleClearSearch}>
+                <Button variant="outline" onClick={() => setSearchTerm("")}>
                   Limpar busca
                 </Button>
               )}
@@ -353,11 +218,18 @@ export default function Users() {
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
                     <Button
-                      variant="ghost"
-                      size="icon"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/users/${user.id}/empresas`)}
+                      title="Gerenciar empresas"
+                    >
+                      <Building className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => router.push(`/users/${user.id}`)}
-                      title="Editar membro"
-                      className="h-8 w-8"
+                      title="Editar usuário"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
