@@ -3,16 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { checkAuth, checkIsAdmin, logout } from '@/app/actions';
-import { Search, X } from 'lucide-react';
+import { checkAuth, logout } from '@/app/actions';
 import { useDebounce } from '@/app/users/hooks/useDebounce';
 import EmpresaCard from '@/components/empresas/empresa-card';
 import { EmpresasGridSkeleton } from '@/components/empresas/empresa-skeleton';
-import { Empresa, EmpresaListResponse } from '@/types/empresa';
+import { Empresa, EmpresaListResponse, EmpresaFiltersResponse, EmpresaContactChannel, EMPRESA_CONTACT_CHANNELS } from '@/types/empresa';
 import { SearchInput } from '@/components/search-input';
+import { EmpresaFilters } from '@/components/empresas/empresa-filters';
 
 export default function EmpresasPage() {
   const router = useRouter();
@@ -22,7 +21,20 @@ export default function EmpresasPage() {
   const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState<{
+    ramos: string[];
+    channels: EmpresaContactChannel[];
+    ownerName: string;
+  }>({
+    ramos: [],
+    channels: [],
+    ownerName: '',
+  });
+  const [availableRamos, setAvailableRamos] = useState<string[]>([]);
+  const [availableChannels, setAvailableChannels] = useState<EmpresaContactChannel[]>(EMPRESA_CONTACT_CHANNELS);
+  const [isFetchingFilterOptions, setIsFetchingFilterOptions] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
@@ -50,15 +62,31 @@ export default function EmpresasPage() {
     checkAdminAccess();
   }, [router]); //eslint-disable-line
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchFilterOptions();
+  }, []);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (userName) {
-      fetchEmpresas(1, debouncedSearchTerm);
+      fetchEmpresas(1, debouncedSearchTerm, filters);
     }
-  }, [debouncedSearchTerm, userName]); //eslint-disable-line
+  }, [debouncedSearchTerm, userName, filters]);
 
-  const fetchEmpresas = async (page = 1, search = '') => {
+  const fetchEmpresas = async (
+    page = 1,
+    search = '',
+    appliedFilters: { ramos: string[]; channels: EmpresaContactChannel[]; ownerName: string } = filters,
+    options?: { append?: boolean; showLoading?: boolean }
+  ) => {
+    const { append = false, showLoading = true } = options || {};
+
     try {
-      setIsLoading(true);
+      if (showLoading) {
+        setIsLoading(true);
+      }
+
       const params = new URLSearchParams({
         page: page.toString(),
         limit: pagination.limit.toString(),
@@ -68,13 +96,25 @@ export default function EmpresasPage() {
         params.append('search', search);
       }
 
+      if (appliedFilters.ramos.length > 0) {
+        params.append('ramo', appliedFilters.ramos.join(','));
+      }
+
+      if (appliedFilters.channels.length > 0) {
+        params.append('channels', appliedFilters.channels.join(','));
+      }
+
+      if (appliedFilters.ownerName) {
+        params.append('ownerName', appliedFilters.ownerName);
+      }
+
       const response = await fetch(`/api/empresas?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Erro ao buscar empresas');
       }
 
       const data: EmpresaListResponse = await response.json();
-      setEmpresas(data.empresas);
+      setEmpresas((prev) => (append ? [...prev, ...data.empresas] : data.empresas));
       setPagination(data.pagination);
 
     } catch (error) {
@@ -85,7 +125,29 @@ export default function EmpresasPage() {
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const fetchFilterOptions = async () => {
+    try {
+      setIsFetchingFilterOptions(true);
+      const response = await fetch('/api/empresas/filters');
+
+      if (!response.ok) {
+        throw new Error('Erro ao carregar filtros');
+      }
+
+      const data: EmpresaFiltersResponse = await response.json();
+      setAvailableRamos(data.ramos);
+      setAvailableChannels(data.channels);
+    } catch (error) {
+      console.error('Erro ao carregar filtros de empresas:', error);
+      setAvailableChannels(EMPRESA_CONTACT_CHANNELS);
+    } finally {
+      setIsFetchingFilterOptions(false);
     }
   };
 
@@ -104,7 +166,7 @@ export default function EmpresasPage() {
         description: 'Empresa deletada com sucesso!',
       });
 
-      fetchEmpresas(pagination.page, debouncedSearchTerm);
+      await fetchEmpresas(pagination.page, debouncedSearchTerm, filters);
 
     } catch (error) {
       console.error('Erro ao deletar empresa:', error);
@@ -121,10 +183,49 @@ export default function EmpresasPage() {
     router.push('/');
   };
 
-  const handleLoadMore = () => {
-    if (pagination.page < pagination.totalPages) {
-      fetchEmpresas(pagination.page + 1, debouncedSearchTerm);
+  const handleLoadMore = async () => {
+    if (pagination.page < pagination.totalPages && !isLoadingMore) {
+      setIsLoadingMore(true);
+      try {
+        await fetchEmpresas(
+          pagination.page + 1,
+          debouncedSearchTerm,
+          filters,
+          { append: true, showLoading: false }
+        );
+      } finally {
+        setIsLoadingMore(false);
+      }
     }
+  };
+
+  const handleRamosChange = (nextRamos: string[]) => {
+    setFilters((prev) => ({
+      ...prev,
+      ramos: nextRamos,
+    }));
+  };
+
+  const handleChannelsChange = (nextChannels: EmpresaContactChannel[]) => {
+    setFilters((prev) => ({
+      ...prev,
+      channels: nextChannels,
+    }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      ramos: [],
+      channels: [],
+      ownerName: '',
+    });
+  };
+
+  const handleOwnerNameChange = (value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      ownerName: value,
+    }));
   };
 
   if (!userName) {
@@ -149,12 +250,30 @@ export default function EmpresasPage() {
           </div>
         </div>
 
-        {/* Barra de Pesquisa */}
-        <SearchInput
-          value={searchTerm}
-          onChange={setSearchTerm}
-          placeholder="Buscar empresas..."
-        />
+        {/* Barra de Pesquisa + Filtros */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
+          <SearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Buscar empresas..."
+            className="w-full sm:max-w-xl mb-0"
+          />
+
+          <div className="w-full sm:w-auto">
+            <EmpresaFilters
+              availableRamos={availableRamos}
+              availableChannels={availableChannels}
+              selectedRamos={filters.ramos}
+              selectedChannels={filters.channels}
+              ownerName={filters.ownerName}
+              onRamosChange={handleRamosChange}
+              onChannelsChange={handleChannelsChange}
+              onOwnerNameChange={handleOwnerNameChange}
+              onClearAll={handleClearFilters}
+              isFetchingOptions={isFetchingFilterOptions}
+            />
+          </div>
+        </div>
 
         {/* Grid de Empresas */}
         {isLoading ? (
@@ -186,9 +305,9 @@ export default function EmpresasPage() {
                 <Button
                   onClick={handleLoadMore}
                   variant="outline"
-                  disabled={isLoading}
+                  disabled={isLoading || isLoadingMore}
                 >
-                  Carregar Mais
+                  {isLoadingMore ? 'Carregando...' : 'Carregar Mais'}
                 </Button>
               </div>
             )}

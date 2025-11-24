@@ -15,6 +15,9 @@ export interface Empresa {
   usuarios?: UserEmpresa[];
 }
 
+export const EMPRESA_CONTACT_CHANNELS = ['site', 'instagram', 'facebook', 'linkedin'] as const;
+export type EmpresaContactChannel = (typeof EMPRESA_CONTACT_CHANNELS)[number];
+
 export interface UserEmpresa {
   id: string;
   userId: string;
@@ -50,6 +53,11 @@ export interface EmpresaListResponse {
     total: number;
     totalPages: number;
   };
+}
+
+export interface EmpresaFiltersResponse {
+  ramos: string[];
+  channels: EmpresaContactChannel[];
 }
 
 export interface UserEmpresasResponse {

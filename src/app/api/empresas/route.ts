@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { EMPRESA_CONTACT_CHANNELS, EmpresaContactChannel } from '@/types/empresa';
 
 // Schema de validação para criar empresa
 const createEmpresaSchema = z.object({
@@ -23,6 +24,9 @@ const listEmpresasSchema = z.object({
   limit: z.string().optional().transform(val => val ? parseInt(val) : 10),
   search: z.string().optional(),
   userId: z.string().optional(),
+  ramo: z.string().optional(),
+  channels: z.string().optional(),
+  ownerName: z.string().optional(),
 });
 
 // GET /api/empresas - Listar empresas
@@ -32,7 +36,7 @@ export async function GET(request: NextRequest) {
     const queryParams = Object.fromEntries(searchParams.entries());
     const validatedParams = listEmpresasSchema.parse(queryParams);
 
-    const { page, limit, search, userId } = validatedParams;
+    const { page, limit, search, userId, ramo, channels, ownerName } = validatedParams;
     const skip = (page - 1) * limit;
 
     // Construir filtros
@@ -46,11 +50,52 @@ export async function GET(request: NextRequest) {
       ];
     }
 
+    if (ramo) {
+      const ramoList = ramo
+        .split(',')
+        .map(value => value.trim())
+        .filter(Boolean);
+
+      if (ramoList.length > 0) {
+        where.ramoAtuacao = { in: ramoList };
+      }
+    }
+
+    if (channels) {
+      const selectedChannels = channels
+        .split(',')
+        .map(value => value.trim())
+        .filter((value): value is EmpresaContactChannel =>
+          (EMPRESA_CONTACT_CHANNELS as readonly string[]).includes(value)
+        );
+
+      if (selectedChannels.length > 0) {
+        selectedChannels.forEach(channel => {
+          where[channel] = {
+            not: null,
+          };
+        });
+      }
+    }
+
+    const usuarioWhere: any = {};
+
     if (userId) {
+      usuarioWhere.userId = userId;
+    }
+
+    if (ownerName) {
+      usuarioWhere.user = {
+        name: {
+          contains: ownerName,
+          mode: 'insensitive',
+        },
+      };
+    }
+
+    if (Object.keys(usuarioWhere).length > 0) {
       where.usuarios = {
-        some: {
-          userId: userId
-        }
+        some: usuarioWhere,
       };
     }
 
