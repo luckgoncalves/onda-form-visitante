@@ -33,7 +33,7 @@ export default function EmpresasPage() {
     ownerName: '',
   });
   const [availableRamos, setAvailableRamos] = useState<string[]>([]);
-  const [availableChannels, setAvailableChannels] = useState<EmpresaContactChannel[]>(EMPRESA_CONTACT_CHANNELS);
+  const [availableChannels, setAvailableChannels] = useState<EmpresaContactChannel[]>();
   const [isFetchingFilterOptions, setIsFetchingFilterOptions] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -145,7 +145,7 @@ export default function EmpresasPage() {
       setAvailableChannels(data.channels);
     } catch (error) {
       console.error('Erro ao carregar filtros de empresas:', error);
-      setAvailableChannels(EMPRESA_CONTACT_CHANNELS);
+      setAvailableChannels(Array.from(EMPRESA_CONTACT_CHANNELS) as EmpresaContactChannel[]);
     } finally {
       setIsFetchingFilterOptions(false);
     }
@@ -262,7 +262,7 @@ export default function EmpresasPage() {
           <div className="w-full sm:w-auto">
             <EmpresaFilters
               availableRamos={availableRamos}
-              availableChannels={availableChannels}
+              availableChannels={availableChannels || Array.from(EMPRESA_CONTACT_CHANNELS) as EmpresaContactChannel[]}
               selectedRamos={filters.ramos}
               selectedChannels={filters.channels}
               ownerName={filters.ownerName}
