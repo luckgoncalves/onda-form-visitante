@@ -12,11 +12,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ButtonForm from '@/components/button-form';
+import UserCompanies from '@/components/users/user-companies';
 import { checkAuth, checkIsAdmin, logout, updateUser } from '@/app/actions';
 import { editUserPageSchema, userSchema } from '../validate'; // Assuming validate.ts is in the parent users folder src/app/users/validate.ts
 import { formatPhone } from '@/lib/utils';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, User, Building2 } from 'lucide-react';
 
 type UserData = {
   id: string;
@@ -39,6 +41,7 @@ export default function EditUserPage() {
   const [isFetchingUser, setIsFetchingUser] = useState(true);
   const [userName, setUserName] = useState("");
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
   const isAdminRef = useRef(false);
   const form = useForm<EditUserPageFormData>({
     resolver: zodResolver(editUserPageSchema),
@@ -60,6 +63,10 @@ export default function EditUserPage() {
           return;
         }
         setUserName(auth.user.name);
+        setCurrentUser({
+          id: auth.user.id,
+          role: auth.user.role,
+        });
 
         const { isAdmin } = await checkIsAdmin();
         isAdminRef.current = isAdmin;
@@ -208,108 +215,127 @@ export default function EditUserPage() {
             Voltar
           </Button>
         </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Detalhes de {user.name}</CardTitle>
-            <CardDescription>
-              Deixe o campo de senha em branco para manter a senha atual.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome completo do membro" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  disabled={!isAdminRef.current}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="exemplo@dominio.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Telefone</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="(11) 99999-9999"
-                          id="phone"
-                          type="tel"
-                          {...field}
-                          onChange={(e) => {
-                            const mask = formatPhone(e.target.value);
-                            field.onChange(mask);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nova Senha</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Deixe em branco para não alterar" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  disabled={!isAdminRef.current}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Papel</FormLabel>
-                      <FormControl>
-                        {/* Using a native select. Replace with ShadCN Select if preferred and available */}
-                        <select
-                          {...field}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <option value="user">Usuário</option>
-                          <option value="admin">Administrador</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {/* Display server-side error from form.setError here if implemented */}
-                {form.formState.errors.root?.serverError && (
-                  <p className="text-sm font-medium text-destructive">{form.formState.errors.root.serverError.message}</p>
-                )}
-                <ButtonForm type="submit" disabled={isLoading || isFetchingUser} label={isLoading ? "Salvando..." : "Salvar Alterações"} />
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Dados do Usuário
+            </TabsTrigger>
+            <TabsTrigger value="companies" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Empresas
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="profile" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Detalhes de {user.name}</CardTitle>
+                <CardDescription>
+                  Deixe o campo de senha em branco para manter a senha atual.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nome completo do membro" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      disabled={!isAdminRef.current}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="exemplo@dominio.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Telefone</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="(11) 99999-9999"
+                              id="phone"
+                              type="tel"
+                              {...field}
+                              onChange={(e) => {
+                                const mask = formatPhone(e.target.value);
+                                field.onChange(mask);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nova Senha</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="Deixe em branco para não alterar" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      disabled={!isAdminRef.current}
+                      name="role"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Papel</FormLabel>
+                          <FormControl>
+                            {/* Using a native select. Replace with ShadCN Select if preferred and available */}
+                            <select
+                              {...field}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <option value="user">Usuário</option>
+                              <option value="admin">Administrador</option>
+                            </select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Display server-side error from form.setError here if implemented */}
+                    {form.formState.errors.root?.serverError && (
+                      <p className="text-sm font-medium text-destructive">{form.formState.errors.root.serverError.message}</p>
+                    )}
+                    <ButtonForm type="submit" disabled={isLoading || isFetchingUser} label={isLoading ? "Salvando..." : "Salvar Alterações"} />
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="companies" className="space-y-6">
+            <UserCompanies userId={userId} currentUser={currentUser} />
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );

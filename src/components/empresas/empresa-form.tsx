@@ -9,12 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { formatPhone } from '@/lib/utils';
+import { cn, formatPhone } from '@/lib/utils';
 import { empresaSchema, EmpresaFormData } from '@/lib/validations/empresa';
 import { Empresa } from '@/types/empresa';
 import ButtonForm from '@/components/button-form';
 
 interface EmpresaFormProps {
+  onModal?: boolean;
   mode: 'create' | 'edit';
   initialData?: Empresa;
   userId?: string;
@@ -24,6 +25,7 @@ interface EmpresaFormProps {
 }
 
 export default function EmpresaForm({ 
+  onModal = false,
   mode, 
   initialData, 
   userId,
@@ -63,7 +65,7 @@ export default function EmpresaForm({
   };
 
   return (
-    <Card className="max-w-2xl mx-auto">
+    <Card className={cn("max-w-2xl mx-auto", onModal && "w-full")}>
       <CardHeader>
         <CardTitle>
           {mode === 'create' ? 'Nova Empresa' : 'Editar Empresa'}

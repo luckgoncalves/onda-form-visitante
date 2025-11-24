@@ -73,7 +73,7 @@ export default function EmpresaCard({
     <Card className="h-full hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <CardTitle className="text-lg">{empresa.nomeNegocio}</CardTitle>
+          <CardTitle className="text-lg">{empresa.nomeNegocio}sd</CardTitle>
           <Badge variant="secondary" className="text-xs">
             {empresa.ramoAtuacao}
           </Badge>
