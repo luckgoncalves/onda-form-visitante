@@ -35,6 +35,10 @@ export default function StepZero({ form }: any) {
                   <label htmlFor="domingo-n">Domingo noite</label>
                 </div>
                 <div className="flex items-center space-x-3 space-y-0">
+                  <RadioGroupItem id="culto-new" value="new" />
+                  <label htmlFor="culto-new">New</label>
+                </div>
+                <div className="flex items-center space-x-3 space-y-0">
                   <RadioGroupItem id="evento" value="evento" />
                   <label htmlFor="evento">Evento</label>
                 </div>
