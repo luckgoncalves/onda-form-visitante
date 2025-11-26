@@ -254,7 +254,9 @@ export function useExcel() {
           const totalDomingoNoite = excelData.reduce((acc, curr) => acc + curr['Domingo Noite'], 0);
           const totalEvento = excelData.reduce((acc, curr) => acc + curr['Evento'], 0);
           const totalNew = excelData.reduce((acc, curr) => acc + curr['New'], 0);
-          const mediaGeralIdade = Math.round((detailedStats.reduce((acc, curr) => acc + parseInt(curr.idade), 0) / detailedStats.length) * 10) / 10;
+          const mediaGeralIdade = detailedStats.length > 0
+            ? Math.round((detailedStats.reduce((acc, curr) => acc + Number(curr.idade), 0) / detailedStats.length) * 10) / 10
+            : 0;
 
           (excelData as AgeReportRow[]).push({
             'Faixa Etária': 'TOTAL',
