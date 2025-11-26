@@ -13,16 +13,16 @@ interface DetailedVisit {
   idade: number;
   genero: string;
   estado_civil: string;
-  bairro: string;
+  bairro: string | null;
   culto: string;
   responsavel_nome?: string | null;
   responsavel_telefone?: string | null;
-  como_nos_conheceu: string;
-  como_chegou_ate_nos?: string;
-  frequenta_igreja: boolean;
-  qual_igreja?: string;
-  interesse_em_conhecer?: string[];
-  observacao?: string;
+  como_nos_conheceu: string | null;
+  como_chegou_ate_nos?: string | null;
+  frequenta_igreja: string | null;
+  qual_igreja?: string | null;
+  interesse_em_conhecer?: string[] | null;
+  observacao?: string | null;
   mensagem_enviada: boolean;
 }
 
@@ -115,7 +115,7 @@ export function useExcel() {
             'Culto': row.culto,
             'Como Conheceu': row.como_nos_conheceu,
             'Como Chegou': row.como_chegou_ate_nos || '',
-            'Frequenta Igreja': row.frequenta_igreja ? 'Sim' : 'Não',
+            'Frequenta Igreja': row.frequenta_igreja?.toLowerCase() === 'sim' ? 'Sim' : 'Não',
             'Qual Igreja': row.qual_igreja || '',
             'Interesses': (row.interesse_em_conhecer || []).join(', '),
             'Observação': row.observacao || '',
