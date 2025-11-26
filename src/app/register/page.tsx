@@ -51,6 +51,8 @@ export default function Home() {
       bairro: '',
       estado_civil: '',
       telefone: '',
+      responsavel_nome: '',
+      responsavel_telefone: '',
       como_nos_conheceu: '',
       como_chegou_ate_nos: '',
       frequenta_igreja: '',

@@ -27,6 +27,8 @@ interface Visitor {
   genero: string;
   estado_civil: string;
   interesse_em_conhecer: string[];
+  responsavel_nome?: string | null;
+  responsavel_telefone?: string | null;
 }
 
 function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusChange }: { 
@@ -77,6 +79,12 @@ function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusC
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     Mensagem enviada
                   </span>
+                )}
+                {visitante.culto === 'new' && (visitante.responsavel_nome || visitante.responsavel_telefone) && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Responsável: {visitante.responsavel_nome || '-'}
+                    {visitante.responsavel_telefone ? ` • ${visitante.responsavel_telefone}` : ''}
+                  </p>
                 )}
               </div>
               <div className="flex gap-2 items-center text-sm text-gray-600 flex-wrap">

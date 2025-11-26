@@ -37,6 +37,8 @@ export default function StepOne({ form }: any) {
   const [openBairro, setOpenBairro] = useState(false);
   const [selectedEstado, setSelectedEstado] = useState<Estado | null>(null);
   const [selectedCidade, setSelectedCidade] = useState<string | null>(null);
+  const selectedCulto = form.watch('culto');
+  const isCultoNew = selectedCulto === 'new';
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -158,6 +160,50 @@ export default function StepOne({ form }: any) {
           </FormItem>
         )}
       />
+
+      {isCultoNew && (
+        <>
+          <FormField
+            control={form.control}
+            name="responsavel_nome"
+            render={({ field, fieldState }) => (
+              <div>
+                <Label htmlFor="responsavel_nome">Nome do responsável</Label>
+                <FormControl>
+                  <Input id="responsavel_nome" {...field} />
+                </FormControl>
+                {fieldState.error && (
+                  <p className="text-red-500 text-base mt-1">{fieldState.error.message}</p>
+                )}
+              </div>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="responsavel_telefone"
+            render={({ field, fieldState }) => (
+              <div>
+                <Label htmlFor="responsavel_telefone">Telefone do responsável</Label>
+                <FormControl>
+                  <Input
+                    id="responsavel_telefone"
+                    type="tel"
+                    {...field}
+                    onChange={(e) => {
+                      const mask = formatPhone(e.target.value);
+                      field.onChange(mask);
+                    }}
+                  />
+                </FormControl>
+                {fieldState.error && (
+                  <p className="text-red-500 text-base mt-1">{fieldState.error.message}</p>
+                )}
+              </div>
+            )}
+          />
+        </>
+      )}
 
       <FormField
         control={form.control}

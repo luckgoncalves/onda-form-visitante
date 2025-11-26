@@ -39,6 +39,8 @@ interface Visitante {
   registeredBy?: {
     name: string;
   } | null;
+  responsavel_nome?: string | null;
+  responsavel_telefone?: string | null;
 }
 
 interface PaginationInfo {

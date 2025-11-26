@@ -27,6 +27,8 @@ interface VisitorDetails {
   registeredBy?: { // Optional user relation
     name: string;
   } | null;
+  responsavel_nome?: string | null;
+  responsavel_telefone?: string | null;
 }
 
 function DetailView({ item, onBack, onDelete }: { 
@@ -139,6 +141,18 @@ function DetailView({ item, onBack, onDelete }: {
             <h4 className="text-base font-semibold">Telefone</h4>
             <p className="text-gray-600 mb-3"> {item?.telefone || '-'}</p>
           </div>
+          {item.culto === 'new' && (item.responsavel_nome || item.responsavel_telefone) && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <h4 className="text-base font-semibold">Responsável</h4>
+                <p className="text-gray-600 mb-3">{item?.responsavel_nome || '-'}</p>
+              </div>
+              <div>
+                <h4 className="text-base font-semibold">Telefone do responsável</h4>
+                <p className="text-gray-600 mb-3">{item?.responsavel_telefone || '-'}</p>
+              </div>
+            </div>
+          )}
           <div>
             <h4 className="text-base font-semibold">Qual igreja</h4>
             <p className="text-gray-600 mb-3"> {item?.qual_igreja || '-'}</p>

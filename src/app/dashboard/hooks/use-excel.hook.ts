@@ -15,6 +15,8 @@ interface DetailedVisit {
   estado_civil: string;
   bairro: string;
   culto: string;
+  responsavel_nome?: string | null;
+  responsavel_telefone?: string | null;
   como_nos_conheceu: string;
   como_chegou_ate_nos?: string;
   frequenta_igreja: boolean;
@@ -29,6 +31,8 @@ interface DetailedReportRow {
   'Horário': string;
   'Nome': string;
   'Telefone': string;
+  'Responsável': string;
+  'Telefone Responsável': string;
   'Idade': string;
   'Gênero': string;
   'Estado Civil': string;
@@ -102,6 +106,8 @@ export function useExcel() {
             'Horário': format(new Date(row.created_at), 'HH:mm'),
             'Nome': row.nome,
             'Telefone': row.telefone,
+            'Responsável': row.responsavel_nome || '',
+            'Telefone Responsável': row.responsavel_telefone || '',
             'Idade': row.idade,
             'Gênero': row.genero,
             'Estado Civil': row.estado_civil,
@@ -123,6 +129,8 @@ export function useExcel() {
             'Horário': '',
             'Nome': totalVisits.toString(),
             'Telefone': '',
+            'Responsável': '',
+            'Telefone Responsável': '',
             'Idade': '',
             'Gênero': '',
             'Estado Civil': '',

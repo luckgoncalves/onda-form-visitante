@@ -19,6 +19,14 @@ export const save = async (data: any) => {
     idade: Number(data.idade),
   };
 
+  if (createData.culto === 'new') {
+    createData.responsavel_nome = data.responsavel_nome || null;
+    createData.responsavel_telefone = data.responsavel_telefone || null;
+  } else {
+    createData.responsavel_nome = null;
+    createData.responsavel_telefone = null;
+  }
+
   if (user) {
     createData.registeredById = user.id;
   }
@@ -254,6 +262,8 @@ export async function getVisitStatsDetailed(params: { startDate: string, endDate
         estado_civil,
         telefone,
         culto,
+        responsavel_nome,
+        responsavel_telefone,
         como_nos_conheceu,
         como_chegou_ate_nos,
         frequenta_igreja,
