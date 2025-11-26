@@ -10,7 +10,7 @@ interface DetailedVisit {
   created_at: string | Date;
   nome: string;
   telefone: string;
-  idade: string;
+  idade: number;
   genero: string;
   estado_civil: string;
   bairro: string;
@@ -108,7 +108,7 @@ export function useExcel() {
             'Telefone': row.telefone,
             'Responsável': row.responsavel_nome || '',
             'Telefone Responsável': row.responsavel_telefone || '',
-            'Idade': row.idade,
+            'Idade': row.idade?.toString() ?? '',
             'Gênero': row.genero,
             'Estado Civil': row.estado_civil,
             'Bairro': row.bairro,
