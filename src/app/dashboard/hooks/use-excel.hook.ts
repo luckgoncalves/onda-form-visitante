@@ -7,7 +7,7 @@ import { getVisitStatsDetailed } from "@/app/actions";
 export type ReportType = 'detailed' | 'daily' | 'age' | 'gender';
 
 interface DetailedVisit {
-  created_at: string;
+  created_at: string | Date;
   nome: string;
   telefone: string;
   idade: string;
