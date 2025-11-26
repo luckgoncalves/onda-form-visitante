@@ -4,6 +4,7 @@ export interface VisitStats {
   'Domingo Manhã': number;
   'Domingo Noite': number;
   'Evento': number;
+  'New': number;
   total: number;
 }
 
@@ -20,6 +21,7 @@ export interface AgeStats {
   'Domingo Manhã': number;
   'Domingo Noite': number;
   'Evento': number;
+  'New': number;
 }
 
 export interface CustomTooltipProps {

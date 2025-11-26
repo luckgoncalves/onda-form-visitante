@@ -85,7 +85,7 @@ export default function Dashboard() {
             <Popover>
               <PopoverTrigger asChild>
                 <button
-                  className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-base font-medium text-white hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed gap-2 shadow-sm"
+                  className="inline-flex items-center justify-center rounded-lg bg-[#6344bb] px-4 py-2.5 text-base font-medium text-white hover:bg-[#8e69e8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed gap-2 shadow-sm"
                   disabled={isLoadingVisits || stats.length === 0 || isExporting}
                 >
                   {isExporting ? (
@@ -115,17 +115,17 @@ export default function Dashboard() {
                   )}
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-56 p-0">
+              <PopoverContent className="w-56 p-0 border border-[#a0a09f] bg-[#f4f4f2] text-[#161616]">
                 <div className="flex flex-col">
                   <button
                     onClick={() => handleExport('detailed')}
-                    className="flex items-center px-3 py-2.5 text-sm hover:bg-slate-100 transition-colors"
+                    className="flex items-center px-3 py-2.5 text-sm hover:bg-[#f4f4f2]/80 transition-colors"
                   >
                     Relatório Detalhado
                   </button>
                   <button
                     onClick={() => handleExport('daily')}
-                    className="flex items-center px-3 py-2.5 text-sm hover:bg-slate-100 transition-colors"
+                    className="flex items-center px-3 py-2.5 text-sm hover:bg-[#f4f4f2]/80 transition-colors"
                   >
                     Relatório Diário
                   </button>

@@ -3,6 +3,15 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CustomTooltip } from './CustomTooltip';
 import { VisitStats } from '../types';
 
+const palette = {
+  sabado: '#6344bb',
+  domingoManha: '#c96ce0',
+  domingoNoite: '#8e69e8',
+  evento: '#efe160',
+  new: '#a0a09f',
+  axis: '#444444',
+};
+
 interface VisitChartProps {
   data: VisitStats[];
   title: string;
@@ -12,9 +21,9 @@ interface VisitChartProps {
 
 export function VisitChart({ data, title, xAxisAngle = -45, xAxisHeight = 60 }: VisitChartProps) {
   return (
-    <Card>
+    <Card className="bg-[#f4f4f2] border-0 shadow-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
+        <CardTitle className="text-base sm:text-lg text-[#161616]">{title}</CardTitle>
       </CardHeader>
       <CardContent className="p-0 sm:p-4">
         <div className="h-[400px]">
@@ -34,15 +43,15 @@ export function VisitChart({ data, title, xAxisAngle = -45, xAxisHeight = 60 }: 
                 angle={xAxisAngle}
                 interval={0}
                 textAnchor="end"
-                tick={{ fontSize: 11 }}
-                stroke="#3F3F46"
+                tick={{ fontSize: 11, fill: palette.axis }}
+                stroke={palette.axis}
                 style={{ fontWeight: 300 }}
               />
               <YAxis 
                 allowDecimals={false} 
-                stroke="#3F3F46"
+                stroke={palette.axis}
                 style={{ fontWeight: 300 }}
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 11, fill: palette.axis }}
               />
               <Tooltip 
                 content={<CustomTooltip />}
@@ -51,17 +60,19 @@ export function VisitChart({ data, title, xAxisAngle = -45, xAxisHeight = 60 }: 
               <Legend 
                 wrapperStyle={{ 
                   fontSize: '12px',
-                  paddingTop: '15px'
+                  paddingTop: '15px',
+                  color: palette.axis
                 }}
               />
-              <Bar dataKey="Sábado" fill="#9562DC" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Domingo Manhã" fill="#FFC857" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Domingo Noite" fill="#B09FF3" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Evento" fill="#FF6B6B" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Sábado" fill={palette.sabado} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Domingo Manhã" fill={palette.domingoManha} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Domingo Noite" fill={palette.domingoNoite} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Evento" fill={palette.evento} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="New" fill={palette.new} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
   );
-} 
+}

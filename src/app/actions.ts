@@ -188,6 +188,15 @@ export async function getVisitStats({ startDate, endDate }: { startDate: string,
   const start = new Date(startDate + 'T00:00:00.000Z');
   const end = new Date(endDate + 'T23:59:59.999Z');
 
+  const initialCounts = {
+    'sabado': 0,
+    'domingo-manha': 0,
+    'domingo-noite': 0,
+    'evento': 0,
+    'new': 0,
+    total: 0
+  };
+
   const visits = await prisma.visitantes.findMany({
     where: {
       created_at: {
@@ -208,13 +217,10 @@ export async function getVisitStats({ startDate, endDate }: { startDate: string,
   const stats = visits.reduce((acc: any, visit) => {
     const date = visit.created_at.toISOString().split('T')[0];
     if (!acc[date]) {
-      acc[date] = {
-        'sabado': 0,
-        'domingo-manha': 0,
-        'domingo-noite': 0,
-        'evento': 0,
-        total: 0
-      };
+      acc[date] = { ...initialCounts };
+    }
+    if (typeof acc[date][visit.culto] !== 'number') {
+      acc[date][visit.culto] = 0;
     }
     acc[date][visit.culto]++;
     acc[date].total++;
@@ -284,18 +290,20 @@ export async function getGenderStats({ startDate, endDate }: { startDate: string
       }
     });
 
-    const stats: any = {
+    const stats: Record<string, { masculino: number; feminino: number }> = {
       'sabado': { masculino: 0, feminino: 0 },
       'domingo-manha': { masculino: 0, feminino: 0 },
       'domingo-noite': { masculino: 0, feminino: 0 },
-      'evento': { masculino: 0, feminino: 0 }
+      'evento': { masculino: 0, feminino: 0 },
+      'new': { masculino: 0, feminino: 0 },
     };
 
     visits.forEach((visit) => {
       const generoKey = visit.genero.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-      if (stats[visit.culto]) {
-        stats[visit.culto][generoKey] = visit._count.id;
+      if (!stats[visit.culto]) {
+        stats[visit.culto] = { masculino: 0, feminino: 0 };
       }
+      stats[visit.culto][generoKey] = visit._count.id;
     });
 
     return stats;
@@ -335,6 +343,7 @@ export async function getAgeStats({ startDate, endDate }: { startDate: string; e
           'domingo-manha': 0,
           'domingo-noite': 0,
           'evento': 0,
+          'new': 0,
           total: 0
         };
       }
@@ -352,6 +361,7 @@ export async function getAgeStats({ startDate, endDate }: { startDate: string; e
         'Domingo Manhã': counts['domingo-manha'],
         'Domingo Noite': counts['domingo-noite'],
         'Evento': counts['evento'],
+        'New': counts['new'],
         total: counts.total
       }))
       .sort((a, b) => {

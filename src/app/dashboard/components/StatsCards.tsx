@@ -20,30 +20,36 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-      <Card className="h-full">
+      <Card className="h-full bg-[#f4f4f2] border-0 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium text-muted-foreground">Total de Visitas</CardTitle>
+          <CardTitle className="text-base font-medium text-[#a0a09f] uppercase tracking-wide">
+            Total de Visitas
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.totalVisits}</div>
+          <div className="text-3xl font-bold text-[#161616]">{stats.totalVisits}</div>
         </CardContent>
       </Card>
 
-      <Card className="h-full">
+      <Card className="h-full bg-[#f4f4f2] border-0 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium text-muted-foreground">Média por Dia</CardTitle>
+          <CardTitle className="text-base font-medium text-[#a0a09f] uppercase tracking-wide">
+            Média por Dia
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.averageVisitsPerDay.toFixed(1)}</div>
+          <div className="text-3xl font-bold text-[#161616]">{stats.averageVisitsPerDay.toFixed(1)}</div>
         </CardContent>
       </Card>
 
-      <Card className="h-full">
+      <Card className="h-full bg-[#f4f4f2] border-0 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium text-muted-foreground">Dias com Visitas</CardTitle>
+          <CardTitle className="text-base font-medium text-[#a0a09f] uppercase tracking-wide">
+            Dias com Visitas
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.daysWithVisits}</div>
+          <div className="text-3xl font-bold text-[#161616]">{stats.daysWithVisits}</div>
         </CardContent>
       </Card>
     </div>

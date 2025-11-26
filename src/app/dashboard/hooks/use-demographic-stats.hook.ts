@@ -50,6 +50,12 @@ export function useDemographicStats({ startDate, endDate }: UseDemographicStatsP
             Masculino: genderData.evento?.masculino || 0,
             Feminino: genderData.evento?.feminino || 0,
             total: (genderData.evento?.masculino || 0) + (genderData.evento?.feminino || 0)
+          },
+          {
+            culto: 'New',
+            Masculino: genderData.new?.masculino || 0,
+            Feminino: genderData.new?.feminino || 0,
+            total: (genderData.new?.masculino || 0) + (genderData.new?.feminino || 0)
           }
         ];
 
