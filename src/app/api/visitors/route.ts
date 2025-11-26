@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { checkAuth, checkIsAdmin } from '@/app/actions';
 
@@ -20,15 +21,31 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
     const search = searchParams.get('search') || '';
+    const culto = searchParams.get('culto') || '';
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     
     const skip = (page - 1) * limit;
 
-    // Build where clause for search
-    const whereClause = search.trim() !== '' ? {
-      nome: {
+    // Build where clause for search/filters
+    const whereClause: Prisma.VisitantesWhereInput = {};
+
+    if (search.trim() !== '') {
+      whereClause.nome = {
         contains: search,
-      },
-    } : {};
+      };
+    }
+
+    if (culto) {
+      whereClause.culto = culto;
+    }
+
+    if (startDate || endDate) {
+      whereClause.created_at = {
+        ...(startDate && { gte: new Date(`${startDate}T00:00:00.000Z`) }),
+        ...(endDate && { lte: new Date(`${endDate}T23:59:59.999Z`) }),
+      };
+    }
 
     // Execute queries in parallel
     const [visitantes, total] = await Promise.all([

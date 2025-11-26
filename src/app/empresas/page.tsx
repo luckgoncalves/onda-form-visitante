@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,7 @@ export default function EmpresasPage() {
     total: 0,
     totalPages: 0,
   });
+  const requestIdRef = useRef(0);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -80,6 +81,7 @@ export default function EmpresasPage() {
     appliedFilters: { ramos: string[]; channels: EmpresaContactChannel[]; ownerName: string } = filters,
     options?: { append?: boolean; showLoading?: boolean }
   ) => {
+    const requestId = ++requestIdRef.current;
     const { append = false, showLoading = true } = options || {};
 
     try {
@@ -114,8 +116,10 @@ export default function EmpresasPage() {
       }
 
       const data: EmpresaListResponse = await response.json();
-      setEmpresas((prev) => (append ? [...prev, ...data.empresas] : data.empresas));
-      setPagination(data.pagination);
+      if (requestId === requestIdRef.current) {
+        setEmpresas((prev) => (append ? [...prev, ...data.empresas] : data.empresas));
+        setPagination(data.pagination);
+      }
 
     } catch (error) {
       console.error('Erro ao buscar empresas:', error);
@@ -125,7 +129,7 @@ export default function EmpresasPage() {
         variant: 'destructive',
       });
     } finally {
-      if (showLoading) {
+      if (showLoading && requestId === requestIdRef.current) {
         setIsLoading(false);
       }
     }

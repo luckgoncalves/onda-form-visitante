@@ -150,12 +150,12 @@ export default function Dashboard() {
           <div className="w-full flex flex-col sm:flex-row gap-2">
             <DatePicker
               date={startDate}
-              setDate={setStartDate}
+              setDate={(value) => value && setStartDate(value)}
               placeholder="Data inicial"
             />
             <DatePicker
               date={endDate}
-              setDate={setEndDate}
+              setDate={(value) => value && setEndDate(value)}
               placeholder="Data final"
             />
           </div>

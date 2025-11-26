@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { checkAuth, updateMensagemEnviada, logout, checkIsAdmin } from "../actions"
-import { LayoutGrid, LayoutList, MessageCircle, Plus, Search, ChevronDown } from "lucide-react";
+import { LayoutGrid, LayoutList, MessageCircle, Plus, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ButtonForm from "@/components/button-form";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,10 @@ import { VisitorCard } from "@/components/visitors/visitor-card";
 import { SkeletonCard } from "@/components/visitors/skeleton";
 import { SwipeInstruction } from "@/components/visitors/swipe-intruction";
 import LoadingOnda from "@/components/loading-onda";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { Select } from "@/components/ui/select";
+import { format } from "date-fns";
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from "@/components/ui/sheet";
 
 interface Visitante {
   id: string;
@@ -76,6 +80,29 @@ export default function List() {
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const isAdminRef = useRef(false);
+  const [filters, setFilters] = useState({
+    culto: '',
+    startDate: null as Date | null,
+    endDate: null as Date | null,
+  });
+  const [filtersDraft, setFiltersDraft] = useState({
+    culto: '',
+    startDate: null as Date | null,
+    endDate: null as Date | null,
+  });
+
+  const filterParams = useMemo(() => ({
+    culto: filters.culto || undefined,
+    startDate: filters.startDate ? format(filters.startDate, 'yyyy-MM-dd') : undefined,
+    endDate: filters.endDate ? format(filters.endDate, 'yyyy-MM-dd') : undefined,
+  }), [filters]);
+
+  const hasActiveFilters = Boolean(filters.culto || filters.startDate || filters.endDate);
+  const hasFiltersApplied = Boolean(searchTerm || hasActiveFilters);
+
+  useEffect(() => {
+    setFiltersDraft(filters);
+  }, [filters]);
 
   // Debounce search term to avoid excessive API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -108,7 +135,12 @@ export default function List() {
   }, [router]);
 
   // Fetch visitors from API
-  const fetchVisitantes = useCallback(async (page: number = 1, search: string = '', resetList: boolean = true) => {
+  const fetchVisitantes = useCallback(async (
+    page: number = 1,
+    search: string = '',
+    resetList: boolean = true,
+    filters?: { culto?: string; startDate?: string; endDate?: string }
+  ) => {
     if (resetList) {
       setLoading(true);
     } else {
@@ -119,7 +151,10 @@ export default function List() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '20',
-        ...(search.trim() && { search: search.trim() })
+        ...(search.trim() && { search: search.trim() }),
+        ...(filters?.culto && { culto: filters.culto }),
+        ...(filters?.startDate && { startDate: filters.startDate }),
+        ...(filters?.endDate && { endDate: filters.endDate }),
       });
 
       const response = await fetch(`/api/visitors?${params}`);
@@ -146,21 +181,16 @@ export default function List() {
     }
   }, []);
 
-  // Initial load
+  // Fetch whenever search term or filters change
   useEffect(() => {
-    fetchVisitantes(1, '', true);
-  }, [fetchVisitantes]);
-
-  // Search when debounced term changes
-  useEffect(() => {
-    fetchVisitantes(1, debouncedSearchTerm, true);
-  }, [debouncedSearchTerm, fetchVisitantes]);
+    fetchVisitantes(1, debouncedSearchTerm, true, filterParams);
+  }, [debouncedSearchTerm, fetchVisitantes, filterParams]);
 
   const loadMoreVisitantes = async () => {
     if (!pagination?.hasNext || loadingMore) return;
     
     const nextPage = currentPage + 1;
-    await fetchVisitantes(nextPage, debouncedSearchTerm, false);
+    await fetchVisitantes(nextPage, debouncedSearchTerm, false, filterParams);
   };
 
   const handleItemClick = (item: Visitante) => {
@@ -207,6 +237,16 @@ export default function List() {
     setSearchTerm('');
   };
 
+  const handleClearFilters = () => {
+    const empty = { culto: '', startDate: null as Date | null, endDate: null as Date | null };
+    setFilters(empty);
+    setFiltersDraft(empty);
+  };
+
+  const handleApplyFilters = () => {
+    setFilters(filtersDraft);
+  };
+
   if (!isAdminRef.current) {
       return (
         <LoadingOnda />
@@ -230,8 +270,8 @@ export default function List() {
     <>
       <Header userId={userId} userName={userName} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px]">
-        <div className="mb-4 flex flex-col-reverse sm:flex-row items-end sm:items-center justify-between gap-4">
-          <div className="relative w-full sm:w-64">
+        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full">
             <Input
               type="text"
               placeholder="Buscar visitantes..."
@@ -251,7 +291,109 @@ export default function List() {
               </Button>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex  w-fit items-center justify-center gap-2 text-base"
+                >
+                  <SlidersHorizontal size={18} />
+                  <span className="hidden sm:inline">Filtros</span>
+                  {hasFiltersApplied && (
+                    <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:max-w-md">
+                <SheetHeader>
+                  <SheetTitle>Filtros da listagem</SheetTitle>
+                </SheetHeader>
+                <div className="mt-6 space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Buscar visitantes</label>
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        placeholder="Buscar por nome..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 pr-10"
+                      />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      {searchTerm && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleClearSearch}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                        >
+                          ×
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Culto</label>
+                    <div className="relative">
+                      <Select
+                        value={filtersDraft.culto}
+                        onChange={(event) =>
+                          setFiltersDraft((prev) => ({ ...prev, culto: event.target.value }))
+                        }
+                        className="w-full px-4 bg-white border border-gray-300 rounded-md text-left pr-10 h-12 focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+                      >
+                        <option value="">Todos os cultos</option>
+                        <option value="sabado">Sábado</option>
+                        <option value="domingo-manha">Domingo manhã</option>
+                        <option value="domingo-noite">Domingo noite</option>
+                        <option value="new">New</option>
+                        <option value="evento">Evento</option>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Data inicial</label>
+                    <DatePicker
+                      date={filtersDraft.startDate}
+                      setDate={(date) =>
+                        setFiltersDraft((prev) => ({ ...prev, startDate: date }))
+                      }
+                      placeholder="Selecione uma data"
+                      className="h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Data final</label>
+                    <DatePicker
+                      date={filtersDraft.endDate}
+                      setDate={(date) =>
+                        setFiltersDraft((prev) => ({ ...prev, endDate: date }))
+                      }
+                      placeholder="Selecione uma data"
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+                <SheetFooter className="flex gap-4 sm:gap-0 mt-8">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      handleClearFilters();
+                      handleClearSearch();
+                    }}
+                    disabled={!hasFiltersApplied}
+                  >
+                    Limpar filtros
+                  </Button>
+                  <SheetClose asChild>
+                    <Button className="w-full sm:w-auto bg-[#503387] hover:bg-[#503387]/90 text-white " onClick={handleApplyFilters}>
+                      Aplicar filtros
+                    </Button>
+                  </SheetClose>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
             <Button
               variant="outline"
               size="icon"
