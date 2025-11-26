@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Build where clause for search/filters
-    const whereClause: Prisma.VisitantesWhereInput = {};
+    const whereClause: Prisma.visitantesWhereInput = {};
 
     if (search.trim() !== '') {
       whereClause.nome = {
