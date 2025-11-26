@@ -203,7 +203,7 @@ export function useExcel() {
 
           // Process each visit
           detailedStats.forEach(visit => {
-            const age = parseInt(visit.idade);
+            const age = Number(visit.idade);
             const rangeStart = Math.floor(age / 5) * 5;
             const rangeKey = `${rangeStart}-${rangeStart + 4}`;
 
