@@ -252,32 +252,41 @@ export async function deleteVisitante(id: string) {
 
 export async function getVisitStatsDetailed(params: { startDate: string, endDate: string }) {
   try {
-    const visits = await prisma.$queryRaw`
-      SELECT 
-        id,
-        nome,
-        bairro,
-        idade,
-        genero,
-        estado_civil,
-        telefone,
-        culto,
-        responsavel_nome,
-        responsavel_telefone,
-        como_nos_conheceu,
-        como_chegou_ate_nos,
-        frequenta_igreja,
-        qual_igreja,
-        interesse_em_conhecer,
-        observacao,
-        mensagem_enviada,
-        created_at - INTERVAL '3 hours' as created_at
-      FROM visitantes 
-      WHERE created_at - INTERVAL '3 hours' >= ${params.startDate}::timestamp
-      AND created_at - INTERVAL '3 hours' <= ${params.endDate}::timestamp
-      ORDER BY created_at ASC
-    `;
-    
+    const start = new Date(params.startDate + 'T00:00:00.000Z');
+    const end = new Date(params.endDate + 'T23:59:59.999Z');
+
+    const visits = await prisma.visitantes.findMany({
+      where: {
+        created_at: {
+          gte: start,
+          lte: end,
+        },
+      },
+      select: {
+        id: true,
+        nome: true,
+        bairro: true,
+        idade: true,
+        genero: true,
+        estado_civil: true,
+        telefone: true,
+        culto: true,
+        responsavel_nome: true,
+        responsavel_telefone: true,
+        como_nos_conheceu: true,
+        como_chegou_ate_nos: true,
+        frequenta_igreja: true,
+        qual_igreja: true,
+        interesse_em_conhecer: true,
+        observacao: true,
+        mensagem_enviada: true,
+        created_at: true,
+      },
+      orderBy: {
+        created_at: 'asc',
+      },
+    });
+
     return visits;
   } catch (error) {
     console.error('Erro ao buscar estatísticas:', error);
