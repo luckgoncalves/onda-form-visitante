@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Image from 'next/image';
 import LoadingOnda from "@/components/loading-onda";
+import Link from "next/link";
 
 export default function Home() {
   const form = useForm();
@@ -119,6 +120,15 @@ export default function Home() {
                 )}
                 
                 <ButtonForm className="w-full mx-auto" type="submit" label={isLoading ? 'Carregando...' : 'Entrar'} disabled={isLoading} />
+                
+                <div className="text-center mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Não tem uma conta?{' '}
+                    <Link href="/signup" className="text-primary hover:underline font-medium">
+                      Criar conta
+                    </Link>
+                  </p>
+                </div>
               </form>
             </Form>
           {/* )} */}
