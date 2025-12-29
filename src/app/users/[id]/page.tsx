@@ -207,7 +207,7 @@ export default function EditUserPage() {
   return (
     <>
       <Header userId={userId} userName={userName} onLogout={handleLogout} />
-      <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
+      <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Editar Perfil</h1>
           <Button variant="outline" onClick={() => router.back()}>

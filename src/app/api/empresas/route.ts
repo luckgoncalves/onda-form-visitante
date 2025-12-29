@@ -44,9 +44,9 @@ export async function GET(request: NextRequest) {
     
     if (search) {
       where.OR = [
-        { nomeNegocio: { contains: search, mode: 'insensitive' } },
-        { ramoAtuacao: { contains: search, mode: 'insensitive' } },
-        { detalhesServico: { contains: search, mode: 'insensitive' } },
+        { nomeNegocio: { contains: search } },
+        { ramoAtuacao: { contains: search } },
+        { detalhesServico: { contains: search } },
       ];
     }
 
@@ -88,7 +88,6 @@ export async function GET(request: NextRequest) {
       usuarioWhere.user = {
         name: {
           contains: ownerName,
-          mode: 'insensitive',
         },
       };
     }

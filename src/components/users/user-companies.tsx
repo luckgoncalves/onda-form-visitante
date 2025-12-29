@@ -310,12 +310,6 @@ export default function UserCompanies({ userId, currentUser }: UserCompaniesProp
     <div className="space-y-6">
       {/* Header com ações */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        {/* <div>
-          <h2 className="text-lg font-semibold">Empresas do Usuário</h2>
-          <p className="text-sm text-muted-foreground">
-            {empresas.length} empresa{empresas.length !== 1 ? 's' : ''} associada{empresas.length !== 1 ? 's' : ''}
-          </p>
-        </div> */}
         <div className="flex gap-2 w-full sm:w-auto">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -434,7 +428,7 @@ export default function UserCompanies({ userId, currentUser }: UserCompaniesProp
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {empresas.map((empresa) => (
             <div key={empresa.id} className="relative">
               <EmpresaCard
