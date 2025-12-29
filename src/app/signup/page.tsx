@@ -196,12 +196,12 @@ export default function SignupPage() {
         </div>
 
         {/* Aviso sobre aprovação */}
-        <Alert className="mb-6">
+        {/* <Alert className="mb-6">
           <Info className="h-4 w-4" />
           <AlertDescription>
             <strong>Atenção:</strong> Após o cadastro, sua conta precisará ser aprovada por um administrador antes de você poder fazer login no sistema. Você receberá uma notificação quando sua conta for aprovada.
           </AlertDescription>
-        </Alert>
+        </Alert> */}
 
         {/* Indicador de Passos */}
         <div className="flex items-center mb-4">
