@@ -106,12 +106,25 @@ export const save = async (data: any) => {
  export async function login(email: string, password: string) {
   // const hashedPassword = await bcrypt.hash(password, 10);
 
+  // Buscar usuário (sem select para incluir todos os campos, incluindo approved se existir)
   const user = await prismaClient.users.findUnique({
     where: { email },
   });
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return { success: false, message: 'Credenciais inválidas' };
+  }
+
+  // Verificar se o usuário está aprovado
+  // MySQL retorna booleanos como 1 (true) ou 0 (false)
+  // Se o campo approved não existir ainda (usuários antigos), considerar como aprovado
+  const userApproved = (user as any).approved;
+  
+  // Tratar valores do MySQL: 1 = true, 0 = false, undefined/null = true (usuários antigos)
+  const isApproved = userApproved === undefined || userApproved === null || userApproved === 1 || userApproved === true;
+  
+  if (!isApproved) {
+    return { success: false, message: 'Sua conta ainda não foi aprovada por um administrador. Aguarde a aprovação.' };
   }
 
   const token = sign(
@@ -157,12 +170,35 @@ export async function checkAuth() {
         name: true, 
         email: true, 
         role: true,
-        requirePasswordChange: true 
+        requirePasswordChange: true
       }
     });
 
     if (!user) {
       return { isAuthenticated: false, user: null };
+    }
+
+    // Verificar se o usuário está aprovado (se o campo existir)
+    // MySQL retorna booleanos como 1 (true) ou 0 (false)
+    // Se o campo approved não existir ainda (usuários antigos), considerar como aprovado
+    try {
+      const userWithApproved = await (prismaClient.users.findUnique as any)({
+        where: { id: decoded.userId },
+        select: { approved: true }
+      });
+      
+      if (userWithApproved) {
+        const approvedValue = userWithApproved.approved;
+        // Tratar valores do MySQL: 0 = false, qualquer outro valor = true
+        // Se for 0 ou false, usuário não está aprovado
+        if (approvedValue === 0 || approvedValue === false) {
+          // Limpar cookie se não estiver aprovado
+          cookies().delete('authToken');
+          return { isAuthenticated: false, user: null };
+        }
+      }
+    } catch (error) {
+      // Se o campo não existir ainda no banco, ignorar erro e permitir login (usuários antigos)
     }
 
     return { isAuthenticated: true, user };

@@ -19,6 +19,8 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 import { z } from 'zod';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 type RegisterUserData = z.infer<typeof registerUserSchema>;
 
@@ -131,12 +133,14 @@ export default function SignupPage() {
       }
 
       toast({
-        title: 'Sucesso',
-        description: `Conta criada com sucesso! ${empresas.length > 0 ? `${empresas.length} empresa(s) cadastrada(s).` : ''}`,
+        title: 'Cadastro realizado com sucesso!',
+        description: data.message || `Sua conta foi criada. ${empresas.length > 0 ? `${empresas.length} empresa(s) cadastrada(s).` : ''} Aguarde a aprovação de um administrador para fazer login.`,
       });
 
-      // Redirecionar para dashboard ou página inicial
-      router.push('/register');
+      // Redirecionar para página de login após alguns segundos
+      setTimeout(() => {
+        router.push('/');
+      }, 3000);
 
     } catch (error) {
       console.error('Erro ao criar conta:', error);
@@ -191,6 +195,14 @@ export default function SignupPage() {
           </Button>
         </div>
 
+        {/* Aviso sobre aprovação */}
+        <Alert className="mb-6">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Atenção:</strong> Após o cadastro, sua conta precisará ser aprovada por um administrador antes de você poder fazer login no sistema. Você receberá uma notificação quando sua conta for aprovada.
+          </AlertDescription>
+        </Alert>
+
         {/* Indicador de Passos */}
         <div className="flex items-center mb-4">
           {steps.map((step, index) => {
@@ -222,9 +234,15 @@ export default function SignupPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold mb-2">Dados Pessoais</h2>
-                  <p className="text-sm text-muted-foreground mb-6">
+                  <p className="text-sm text-muted-foreground mb-4">
                     Preencha suas informações básicas
                   </p>
+                  <Alert className="mb-4">
+                    <Info className="h-4 w-4" />
+                    <AlertDescription className="text-xs">
+                      Sua conta precisará ser aprovada por um administrador antes de você poder fazer login.
+                    </AlertDescription>
+                  </Alert>
                 </div>
 
                 <Form {...userForm}>

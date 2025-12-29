@@ -31,8 +31,9 @@ export async function POST(request: NextRequest) {
 
     // Criar usuário e empresas em transação
     const resultado = await prisma.$transaction(async (tx) => {
-      // Criar usuário com role 'user' e requirePasswordChange: false
+      // Criar usuário com role 'user', requirePasswordChange: false e approved: false
       // Garantir que role seja sempre 'user' para registro público
+      // Usuários precisam ser aprovados por um administrador
       const user = await tx.users.create({
         data: {
           name: userData.name,
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
           password: hashedPassword,
           role: 'user', // Sempre 'user' para registro público
           requirePasswordChange: false,
+          approved: false, // Usuário precisa ser aprovado por um administrador
         }
       });
 
@@ -78,29 +80,19 @@ export async function POST(request: NextRequest) {
       return { user, empresas: createdEmpresas };
     });
 
-    // Auto-login: criar token JWT
-    const token = sign(
-      { userId: resultado.user.id, email: resultado.user.email, role: resultado.user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: '1d' }
-    );
-
-    cookies().set('authToken', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 86400, // 1 day in seconds
-      path: '/',
-    });
+    // Não fazer auto-login pois o usuário precisa ser aprovado primeiro
+    // O usuário será notificado que precisa aguardar aprovação
 
     return NextResponse.json({
       success: true,
+      message: 'Cadastro realizado com sucesso! Aguarde a aprovação de um administrador para acessar o sistema.',
       user: {
         id: resultado.user.id,
         name: resultado.user.name,
         email: resultado.user.email,
         phone: resultado.user.phone,
         role: resultado.user.role,
+        approved: resultado.user.approved,
         requirePasswordChange: resultado.user.requirePasswordChange,
       },
       empresas: resultado.empresas,

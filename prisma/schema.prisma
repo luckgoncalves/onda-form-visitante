@@ -73,6 +73,7 @@ model users {
   phone                 String?
   role                  String   @default("user")
   requirePasswordChange Boolean  @default(true)
+  approved              Boolean  @default(true)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 

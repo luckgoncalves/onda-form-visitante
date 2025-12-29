@@ -21,6 +21,7 @@ type User = {
   phone?: string;
   role: string;
   createdAt: string;
+  approved?: boolean;
   requirePasswordChange: boolean;
 };
 
@@ -130,11 +131,19 @@ export default function Users() {
       <div className="p-2 sm:p-6 mt-[72px] max-w-full overflow-x-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Membros</h1>
-          <ButtonForm
-            label="Novo Membro"
-            icon={<Plus size={20} />}
-            onClick={() => router.push('/users/create')}
-          />
+          <div className="flex gap-2">
+            <ButtonForm
+              label="Usuários Pendentes"
+              icon={<Search size={20} />}
+              onClick={() => router.push('/users/pending')}
+              className="bg-orange-500 hover:bg-orange-600"
+            />
+            <ButtonForm
+              label="Novo Membro"
+              icon={<Plus size={20} />}
+              onClick={() => router.push('/users/create')}
+            />
+          </div>
         </div>
 
         {/* Search Bar */}
