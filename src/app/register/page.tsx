@@ -8,7 +8,7 @@ import StepZero from "@/components/step-zero";
 import { Card } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { checkAuth, logout, save } from "../actions";
+import { checkAuth, logout, save, canAccessRegister } from "../actions";
 import Done from "@/components/done";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step1Schema, step2Schema, step3Schema } from "./validate";
@@ -70,8 +70,15 @@ export default function Home() {
   useEffect(() => {
     if (!isMounted) return;
     
-    async function checkAdminAccess() {
+    async function checkAccess() {
       try {
+        const { canAccess } = await canAccessRegister();
+        
+        if (!canAccess) {
+          router.push('/');
+          return;
+        }
+
         const { isAuthenticated, user } = await checkAuth();
         
         if (!isAuthenticated || !user) {
@@ -87,7 +94,7 @@ export default function Home() {
         router.push('/');
       }
     }
-    checkAdminAccess();
+    checkAccess();
   }, [router, isMounted]);
 
   // Atualizar o resolver quando o step mudar

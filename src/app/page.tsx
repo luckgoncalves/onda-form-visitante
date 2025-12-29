@@ -31,8 +31,10 @@ export default function Home() {
         } else {
           if (isAdmin) {
             router.push('/list');
-          }else {
+          } else if (user?.role === 'base_pessoal') {
             router.push('/register');
+          } else if (user?.role === 'user') {
+            router.push('/grupos');
           }
         }
       }
@@ -55,8 +57,10 @@ export default function Home() {
         } else {
           if (isAdmin) {
             router.push('/list');
-          }else {
+          } else if (result.user?.role === 'base_pessoal') {
             router.push('/register');
+          } else if (result.user?.role === 'user') {
+            router.push('/grupos');
           }
         }
       } else {

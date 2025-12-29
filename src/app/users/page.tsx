@@ -13,6 +13,7 @@ import { SearchInput } from "@/components/search-input";
 import { useDebounce } from "./hooks/useDebounce";
 import ButtonForm from "@/components/button-form";
 import LoadingOnda from "@/components/loading-onda";
+import { formatRole } from "@/lib/utils";
 
 type User = {
   id: string;
@@ -283,7 +284,7 @@ export default function Users() {
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-1 text-sm">
-                  <span className="text-gray-500 truncate">Papel: {user.role === 'admin' ? 'Administrador' : 'Usuário'}</span>
+                  <span className="text-gray-500 truncate">Papel: {formatRole(user.role)}</span>
                   <span className="text-gray-500 truncate">
                     Criado em: {new Date(user.createdAt).toLocaleDateString('pt-BR')}
                   </span>

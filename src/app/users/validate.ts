@@ -6,7 +6,7 @@ export const userSchema = z.object({
     phone: z.string().optional().or(z.literal('')),
     role: z.string({
       required_error: "Selecione um papel",
-    }).refine(value => ['user', 'admin'].includes(value), {
+    }).refine(value => ['user', 'admin', 'base_pessoal'].includes(value), {
       message: "Papel inválido"
     })
   });

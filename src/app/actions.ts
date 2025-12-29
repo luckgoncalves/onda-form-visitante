@@ -442,6 +442,17 @@ export async function checkIsAdmin() {
   return { isAdmin: user.role === 'admin' };
 }
 
+export async function canAccessRegister() {
+  const { isAuthenticated, user } = await checkAuth();
+  
+  if (!isAuthenticated || !user) {
+    return { canAccess: false };
+  }
+
+  // Permitir acesso apenas para admin e base_pessoal
+  return { canAccess: user.role === 'admin' || user.role === 'base_pessoal' };
+}
+
 export async function createUser(data: { email: string; password?: string; name: string; phone?: string; role: string }) {
   if (!data.password) {
     throw new Error('Senha é obrigatória para criar um usuário');

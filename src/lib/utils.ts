@@ -59,6 +59,17 @@ export const formatCulto = (culto: string) => {
   return formatMap[culto] || culto;
 };
 
+// Função para traduzir roles/perfis
+export const formatRole = (role: string): string => {
+  const roleMap: { [key: string]: string } = {
+    'user': 'Usuário',
+    'base_pessoal': 'Base Pessoal',
+    'admin': 'Administrador'
+  };
+  
+  return roleMap[role] || role;
+};
+
 // Função para criar link de ligação
 export const createCallLink = (phone: string) => {
   return `tel:${phone}`;

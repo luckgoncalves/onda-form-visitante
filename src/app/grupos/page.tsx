@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Filter } from 'lucide-react';
 import GrupoCard from '@/components/grupos/grupo-card';
 import GrupoCardsSkeleton from '@/components/grupos/grupo-cards-skeleton';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Header } from '@/components/header';
+import { checkAuth, logout } from '@/app/actions';
 
 interface Grupo {
   id: string;
@@ -26,12 +29,36 @@ interface Grupo {
 }
 
 export default function GruposPublicPage() {
+  const router = useRouter();
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [filteredGrupos, setFilteredGrupos] = useState<Grupo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDia, setSelectedDia] = useState<string>('todos');
   const [selectedCategoria, setSelectedCategoria] = useState<string>('todas');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [userId, setUserId] = useState('');
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function checkAuthentication() {
+      try {
+        const { isAuthenticated: auth, user } = await checkAuth();
+        setIsAuthenticated(auth);
+        if (auth && user) {
+          setUserName(user.name);
+          setUserId(user.id);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    }
+
+    checkAuthentication();
+  }, []);
 
   useEffect(() => {
     async function loadGrupos() {
@@ -115,10 +142,22 @@ export default function GruposPublicPage() {
     return dias[dia] || dia;
   };
 
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
+
+  if (isCheckingAuth) {
+    return null; // Ou um loading spinner
+  }
+
   return (
     <div className="min-h-screen">
+      {isAuthenticated && (
+        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      )}
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${isAuthenticated ? 'mt-[72px]' : ''}`}>
         {/* Intro */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">

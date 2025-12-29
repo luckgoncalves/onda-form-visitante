@@ -307,6 +307,7 @@ export default function CreateUserPage() {
                           <FormLabel>Papel</FormLabel>
                           <Select onChange={field.onChange} value={field.value}>
                             <option value="user">Usuário</option>
+                            <option value="base_pessoal">Base Pessoal</option>
                             <option value="admin">Administrador</option>
                           </Select>
                           <FormMessage />
