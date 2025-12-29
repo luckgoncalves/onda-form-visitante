@@ -193,8 +193,8 @@ export default function PendingUsersPage() {
           <SearchInput
             placeholder="Buscar por nome ou email..."
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
+            onChange={(value) => {
+              setSearchTerm(value);
               setPage(1); // Reset to first page on new search
             }}
           />
