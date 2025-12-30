@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
+import { HeaderPublic } from '@/components/header-public';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { checkAuth, logout } from '@/app/actions';
@@ -19,6 +20,8 @@ export default function EmpresasPage() {
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
   const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -45,35 +48,40 @@ export default function EmpresasPage() {
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
+  // Verificar autenticação
   useEffect(() => {
-    async function checkAdminAccess() {
-      const authResult = await checkAuth();
-      if (authResult.user) {
-        setUserName(authResult.user.name);
-        setUserId(authResult.user.id);
-        setCurrentUser({
-          id: authResult.user.id,
-          role: authResult.user.role,
-        });
+    async function checkAuthentication() {
+      try {
+        const authResult = await checkAuth();
+        if (authResult.isAuthenticated && authResult.user) {
+          setIsAuthenticated(true);
+          setUserName(authResult.user.name);
+          setUserId(authResult.user.id);
+          setCurrentUser({
+            id: authResult.user.id,
+            role: authResult.user.role,
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+      } finally {
+        setIsCheckingAuth(false);
       }
-
-      fetchEmpresas();
     }
 
-    checkAdminAccess();
-  }, [router]); //eslint-disable-line
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetchFilterOptions();
+    checkAuthentication();
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Carregar empresas na inicialização (independente de autenticação)
   useEffect(() => {
-    if (userName) {
-      fetchEmpresas(1, debouncedSearchTerm, filters);
-    }
-  }, [debouncedSearchTerm, userName, filters]);
+    fetchEmpresas();
+    fetchFilterOptions();
+  }, []); //eslint-disable-line
+
+  // Recarregar empresas quando busca ou filtros mudarem
+  useEffect(() => {
+    fetchEmpresas(1, debouncedSearchTerm, filters);
+  }, [debouncedSearchTerm, filters]); //eslint-disable-line
 
   const fetchEmpresas = async (
     page = 1,
@@ -232,18 +240,14 @@ export default function EmpresasPage() {
     }));
   };
 
-  if (!userName) {
-    return (
-      <main className="flex w-full h-[100%] min-h-screen flex-col items-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
-      </main>
-    );
-  }
-
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
-      <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
+      {isAuthenticated ? (
+        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      ) : (
+        <HeaderPublic />
+      )}
+      <div className="p-2 sm:p-6 max-w-7xl mx-auto mt-[72px]">
         {/* Header da página */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>

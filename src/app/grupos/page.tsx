@@ -9,6 +9,7 @@ import GrupoCardsSkeleton from '@/components/grupos/grupo-cards-skeleton';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/header';
+import { HeaderPublic } from '@/components/header-public';
 import { checkAuth, logout } from '@/app/actions';
 
 interface Grupo {
@@ -153,11 +154,13 @@ export default function GruposPublicPage() {
 
   return (
     <div className="min-h-screen">
-      {isAuthenticated && (
+      {isAuthenticated ? (
         <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      ) : (
+        <HeaderPublic />
       )}
       {/* Content */}
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${isAuthenticated ? 'mt-[72px]' : ''}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-[72px]">
         {/* Intro */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
