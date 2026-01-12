@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -138,6 +139,10 @@ export async function POST(request: NextRequest) {
 
       return grupo;
     });
+
+    // Revalidar cache das páginas que exibem grupos
+    revalidatePath('/grupos');
+    revalidatePath('/api/grupos/public');
 
     return NextResponse.json(resultado, { status: 201 });
   } catch (error) {

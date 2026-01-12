@@ -65,7 +65,9 @@ export default function GruposPublicPage() {
     async function loadGrupos() {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/grupos/public');
+        const response = await fetch('/api/grupos/public', {
+          cache: 'no-store',
+        });
         
         if (!response.ok) {
           throw new Error('Erro ao carregar grupos');

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+// Desabilitar cache para sempre retornar dados atualizados
+export const dynamic = 'force-dynamic';
+
 // GET /api/grupos/public - Listar grupos (público)
 export async function GET() {
   try {

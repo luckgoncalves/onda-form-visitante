@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -112,6 +113,10 @@ export async function PUT(
       return grupo;
     });
 
+    // Revalidar cache das páginas que exibem grupos
+    revalidatePath('/grupos');
+    revalidatePath('/api/grupos/public');
+
     return NextResponse.json(resultado);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -152,6 +157,10 @@ export async function DELETE(
     await prisma.grupo.delete({
       where: { id },
     });
+
+    // Revalidar cache das páginas que exibem grupos
+    revalidatePath('/grupos');
+    revalidatePath('/api/grupos/public');
 
     return NextResponse.json({ message: 'Grupo removido com sucesso' });
   } catch (error) {
