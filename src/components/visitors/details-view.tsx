@@ -94,7 +94,7 @@ function DetailView({ item, onBack, onDelete }: {
                   </AlertDialogCancel>
                   <AlertDialogAction 
                     onClick={handleDelete}
-                    className="w-full sm:w-auto bg-[#9562DC] hover:bg-[#7B4AC0] text-white border-0"
+                    className="w-full sm:w-auto bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white border-0"
                   >
                     Confirmar
                   </AlertDialogAction>

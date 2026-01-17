@@ -85,7 +85,7 @@ export default function Dashboard() {
             <Popover>
               <PopoverTrigger asChild>
                 <button
-                  className="inline-flex items-center justify-center rounded-lg bg-[#6344bb] px-4 py-2.5 text-base font-medium text-white hover:bg-[#8e69e8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed gap-2 shadow-sm"
+                  className="inline-flex items-center justify-center rounded-lg bg-onda-darkBlue px-4 py-2.5 text-base font-medium text-white hover:bg-onda-darkBlue/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed gap-2 shadow-sm"
                   disabled={isLoadingVisits || stats.length === 0 || isExporting}
                 >
                   {isExporting ? (
@@ -115,29 +115,29 @@ export default function Dashboard() {
                   )}
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-56 p-0 border border-[#a0a09f] bg-[#f4f4f2] text-[#161616]">
+              <PopoverContent className="w-56 p-0 border border-[#c9ced6] bg-[#f4f4f4] text-[#161616]">
                 <div className="flex flex-col">
                   <button
                     onClick={() => handleExport('detailed')}
-                    className="flex items-center px-3 py-2.5 text-sm hover:bg-[#f4f4f2]/80 transition-colors"
+                    className="flex items-center px-3 py-2.5 text-sm hover:bg-[#f4f4f4]/80 transition-colors"
                   >
                     Relatório Detalhado
                   </button>
                   <button
                     onClick={() => handleExport('daily')}
-                    className="flex items-center px-3 py-2.5 text-sm hover:bg-[#f4f4f2]/80 transition-colors"
+                    className="flex items-center px-3 py-2.5 text-sm hover:bg-[#f4f4f4]/80 transition-colors"
                   >
                     Relatório Diário
                   </button>
                   <button
                     onClick={() => handleExport('age')}
-                    className="flex items-center px-3 py-2.5 text-sm hover:bg-slate-100 transition-colors"
+                    className="flex items-center px-3 py-2.5 text-sm hover:bg-[#f4f4f4]/80 transition-colors"
                   >
                     Relatório por Idade
                   </button>
                   <button
                     onClick={() => handleExport('gender')}
-                    className="flex items-center px-3 py-2.5 text-sm hover:bg-slate-100 transition-colors"
+                    className="flex items-center px-3 py-2.5 text-sm hover:bg-[#f4f4f4]/80 transition-colors"
                   >
                     Relatório por Gênero
                   </button>

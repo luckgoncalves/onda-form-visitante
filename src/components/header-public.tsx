@@ -8,25 +8,26 @@ export function HeaderPublic() {
   const router = useRouter();
 
   return (
-    <header className="bg-gradient-to-r from-[#9562DC] to-[#FEF057] shadow-lg fixed top-0 left-0 right-0 z-50">
+    <header className="bg-onda-darkBlue shadow-lg fixed top-0 left-0 right-0 z-50">
       <div className="mx-auto px-2 sm:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center">
           <div 
             className="cursor-pointer" 
             onClick={() => router.push('/')}
           >
-            <Image
+            {/* <Image
               src="/logo-login.png" 
               alt="Onda Logo" 
               width={50}
               height={50}
-            />
+            /> */}
+            <p className="text-white tracking-[-0.1em] text-3xl font-bold">onda.</p>
           </div>
         </div>
         <div>
           <Button
             variant="ghost"
-            className="flex items-center hover:bg-white/20 transition-colors text-gray-700"
+            className="flex items-center hover:bg-white/20 transition-colors text-white"
             onClick={() => router.push('/')}
           >
             <LogIn className="h-4 w-4 mr-2" />

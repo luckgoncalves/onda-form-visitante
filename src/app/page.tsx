@@ -80,30 +80,31 @@ export default function Home() {
   }
 
   return (
-    <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-4">
-      <Card className="p-4 w-full backdrop-blur-sm bg-white/30 mt-10 border-none card-glass">
+    <main className="flex w-full h-[100%] justify-center  min-h-screen flex-col  items-center gap-4 p-4 bg-onda-darkBlue">
+      <h1 className="text-white tracking-[-0.1em] text-5xl md:text-7xl font-bold">onda.</h1>
+      <Card className="p-4 w-full md:w-1/2 lg:w-1/3 bg-white border-none">
       {isCheckingAuthentication ? (
         <div className="flex justify-center items-center h-full">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 dark:border-white"></div>
         </div>
       ) : (
         <>
-        <CardHeader className="text-center">
+        {/* <CardHeader className="text-center">
           <Image 
-            src="/logo-login.png" 
+            src="/onda.png" 
             alt="Onda Logo" 
             width={150} 
-            height={60} 
-            className="mx-auto"
+            height={150} 
+            className="mx-auto w-[150px] h-[150px] rounded-full object-cover"
             placeholder="blur"
-            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQrJyEwPENBLzMzLy0zPVBCR0JHMz1DcWl5VGR2h4iIl5eXqqqq+vr6////2wBDAR"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQrJyEwPENBLzMzLy0zPVBCR0JHMz1DcWl5VGR2h4iIl5eXqqqq+vr6////2wBDAR"
             priority
           />
-        </CardHeader>
-        <CardContent>
+        </CardHeader> */}
+        <CardContent className="p-10">
           {/* {showLogin && ( */}
             <Form {...form}>
-              <form className="flex flex-col mx-auto md:w-1/2 gap-4" onSubmit={submitAction}>
+              <form className="flex flex-col mx-auto gap-4" onSubmit={submitAction}>
 
                 <FormLabel>Email:</FormLabel>
                 <FormField 
@@ -142,7 +143,7 @@ export default function Home() {
             {!showLogin && (
               <ButtonForm 
               type="button" 
-              className={!showLogin ? "w-full sm:w-1/2" : "text-[#503387] hover:bg-transparent hover:underline bg-transparent border-none cursor-pointer p-0"} 
+              className={!showLogin ? "w-full sm:w-1/2" : "text-[#00205b] hover:bg-transparent hover:underline bg-transparent border-none cursor-pointer p-0"} 
               onClick={() => setShowLogin(true)} 
               label="Entrar" />
             )}

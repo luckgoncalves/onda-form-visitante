@@ -5,7 +5,7 @@ export const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) =>
     const total = payload.reduce((sum: number, entry: any) => sum + entry.value, 0);
     
     return (
-      <div className="bg-[#f4f4f2] text-[#161616] p-3 rounded-lg shadow-lg border border-[#a0a09f]">
+      <div className="bg-[#f4f4f4] text-[#161616] p-3 rounded-lg shadow-lg border border-[#c9ced6]">
         <p className="font-medium mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={index} className="flex items-center gap-2 text-[#444444]">
@@ -16,7 +16,7 @@ export const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) =>
             {entry.name}: {entry.value}
           </p>
         ))}
-        <p className="font-medium mt-2 border-t border-[#a0a09f] pt-2">
+        <p className="font-medium mt-2 border-t border-[#c9ced6] pt-2">
           Total: {total}
         </p>
       </div>

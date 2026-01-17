@@ -1,13 +1,27 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import type { Viewport } from 'next'
-import { Header } from "@/components/header";
-import { logout } from "./actions";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
+
+const gothamBold = localFont({
+  src: [
+    {
+      path: "../fonts/Gotham-Bold.otf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../fonts/Gotham-Bold.otf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-gotham-bold",
+  fallback: ["Arial", "sans-serif"],
+});
 
 export const metadata: Metadata = {
   title: "Onda Dura",
@@ -44,7 +58,7 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
       </head>
-      <body className={`${inter.className} h-[100%]  min-h-screen  bg-gradient-to-r from-[#9562DC] to-[#FEF057]`}>
+      <body className={`${inter.className} ${gothamBold.variable} h-[100%]  min-h-screen  bg-white`}>
         {children}
       </body>
     </html>

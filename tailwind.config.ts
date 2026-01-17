@@ -18,6 +18,25 @@ const config = {
       },
     },
     extend: {
+      colors: {
+        primary: {
+          DEFAULT: "#00205b",
+          foreground: "#ffffff",
+        },
+        background: "#ffffff",
+        onda: {
+          darkBlue: "#00205b",
+          teal: "#24cead",
+          skyBlue: "#32add8",
+          offWhite: "#f4f4f4",
+          lightGray: "#c9ced6",
+          darkGray: "#444444",
+          black: "#161616",
+        },
+      },
+      fontFamily: {
+        gotham: ["var(--font-gotham-bold)", "Arial", "sans-serif"],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

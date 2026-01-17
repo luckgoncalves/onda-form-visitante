@@ -16,7 +16,7 @@ const ButtonForm = forwardRef<HTMLButtonElement, ButtonFormProps>((props, ref) =
             ref={ref}
             {...props} 
             disabled={pending || props.disabled}
-            className={`flex items-center gap-2 bg-[#503387] hover:bg-[#503387]/90 text-white ${props.className}`}
+            className={`flex items-center gap-2 bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white ${props.className}`}
         >
             {props.disabled || pending ? (
                 <>

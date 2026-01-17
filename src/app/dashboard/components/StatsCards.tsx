@@ -20,9 +20,9 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-      <Card className="h-full bg-[#f4f4f2] border-0 shadow-sm">
+      <Card className="h-full bg-[#f4f4f4] border-0 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium text-[#a0a09f] uppercase tracking-wide">
+          <CardTitle className="text-base font-medium text-[#c9ced6] uppercase tracking-wide">
             Total de Visitas
           </CardTitle>
         </CardHeader>
@@ -31,9 +31,9 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
         </CardContent>
       </Card>
 
-      <Card className="h-full bg-[#f4f4f2] border-0 shadow-sm">
+      <Card className="h-full bg-[#f4f4f4] border-0 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium text-[#a0a09f] uppercase tracking-wide">
+          <CardTitle className="text-base font-medium text-[#c9ced6] uppercase tracking-wide">
             Média por Dia
           </CardTitle>
         </CardHeader>
@@ -42,9 +42,9 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
         </CardContent>
       </Card>
 
-      <Card className="h-full bg-[#f4f4f2] border-0 shadow-sm">
+      <Card className="h-full bg-[#f4f4f4] border-0 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium text-[#a0a09f] uppercase tracking-wide">
+          <CardTitle className="text-base font-medium text-[#c9ced6] uppercase tracking-wide">
             Dias com Visitas
           </CardTitle>
         </CardHeader>

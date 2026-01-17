@@ -9,7 +9,7 @@ export default function StepZero({ form }: any) {
   }, []);
   
   return (
-    <section className={`flex mb-4 flex-col gap-4`}>
+    <section className={`flex  mb-4 flex-col gap-4`}>
       <h2>Culto</h2>
       <FormField
         control={form.control}
@@ -20,25 +20,25 @@ export default function StepZero({ form }: any) {
               <RadioGroup
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                className="flex flex-col sm:flex-row items-start sm:items-center"
+                className="flex gap-4 flex-col sm:flex-row items-start sm:items-center"
               >
-                <div className="flex items-center space-x-3 space-y-0">
+                <div className="flex items-center space-x-1 space-y-0">
                   <RadioGroupItem id="sabado" value="sabado" />
                   <label htmlFor="sabado">Sábado</label>
                 </div>
-                <div className="flex items-center space-x-3 space-y-0">
+                <div className="flex items-center space-x-1 space-y-0">
                   <RadioGroupItem id="domingo-m" value="domingo-manha" />
                   <label htmlFor="domingo-m">Domingo manhã</label>
                 </div>
-                <div className="flex items-center space-x-3 space-y-0">
+                <div className="flex items-center space-x-1 space-y-0">
                   <RadioGroupItem id="domingo-n" value="domingo-noite" />
                   <label htmlFor="domingo-n">Domingo noite</label>
                 </div>
-                <div className="flex items-center space-x-3 space-y-0">
+                <div className="flex items-center space-x-1 space-y-0">
                   <RadioGroupItem id="culto-new" value="new" />
                   <label htmlFor="culto-new">New</label>
                 </div>
-                <div className="flex items-center space-x-3 space-y-0">
+                <div className="flex items-center space-x-1 space-y-0">
                   <RadioGroupItem id="evento" value="evento" />
                   <label htmlFor="evento">Evento</label>
                 </div>

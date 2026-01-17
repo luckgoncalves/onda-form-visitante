@@ -254,7 +254,7 @@ export default function Users() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction className="bg-[#503387] hover:bg-[#503387]/90 text-white" onClick={() => handleForcePasswordChange(user.id)}>
+                          <AlertDialogAction className="bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white" onClick={() => handleForcePasswordChange(user.id)}>
                             Confirmar
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -275,7 +275,7 @@ export default function Users() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction className="bg-[#503387] hover:bg-[#503387]/90 text-white" onClick={() => handleDeleteUser(user.id)}>
+                          <AlertDialogAction className="bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white" onClick={() => handleDeleteUser(user.id)}>
                             Confirmar
                           </AlertDialogAction>
                         </AlertDialogFooter>

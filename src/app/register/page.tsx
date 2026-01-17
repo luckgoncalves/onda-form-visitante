@@ -153,7 +153,7 @@ export default function Home() {
         <div className="flex justify-between items-center w-full">
           <h1>Ficha - visitantes</h1>
         </div>
-        <Card className="p-4 w-full backdrop-blur-sm bg-white/30  border-none card-glass">
+        <Card className="p-4 w-full backdrop-blur-sm bg-white/30  border card-glass">
           <Form {...form}>
             <form onSubmit={submitAction}>
               {step === 0 && <StepZero form={form} />}
@@ -163,7 +163,7 @@ export default function Home() {
         
               <div className="flex flex-col-reverse gap-4">
                 {step > 0 && step < 3 && (
-                  <ButtonForm className="w-full" type="button" onClick={() => setStep(step - 1)} label="Voltar"/>
+                  <ButtonForm className="w-full bg-onda-darkGray/80" type="button" onClick={() => setStep(step - 1)} label="Voltar"/>
                 )}
                 {step < 3 && (
                   <ButtonForm 

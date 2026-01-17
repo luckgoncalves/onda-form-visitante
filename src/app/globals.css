@@ -4,6 +4,12 @@
   
 
   @layer base {
+    :root {
+      --primary: #00205b;
+      --primary-foreground: #ffffff;
+      --background: #ffffff;
+      --font-gotham-bold: var(--font-gotham-bold);
+    }
     .card-glass {
       @apply  before:content-['']
       before:absolute

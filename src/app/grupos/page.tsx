@@ -270,7 +270,7 @@ export default function GruposPublicPage() {
             {sortedDays.map((day) => (
               <div key={day}>
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <div className="w-1 h-8 bg-[#503387] rounded-full"></div>
+                  <div className="w-1 h-8 bg-onda-darkBlue rounded-full"></div>
                   {formatDiaSemana(day)}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -120,13 +120,13 @@ export default function StepOne({ form }: any) {
               <RadioGroup
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                className="flex items-center"
+                className="flex gap-4 items-center"
               >
-                <div className="flex items-center space-x-3 space-y-0">
+                <div className="flex items-center space-x-1 space-y-0">
                   <RadioGroupItem id="masculino" value="masculino" />
                   <label htmlFor="masculino">Masculino</label>
                 </div>
-                <div className="flex items-center space-x-3 space-y-0">
+                <div className="flex items-center space-x-1 space-y-0">
                   <RadioGroupItem id="feminino" value="feminino" />
                   <label htmlFor="feminino">Feminino</label>
                 </div>
@@ -411,21 +411,21 @@ export default function StepOne({ form }: any) {
               <RadioGroup
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                className="flex flex-wrap items-start sm:items-center"
+                className="flex gap-4 flex-wrap items-start sm:items-center"
               >
-                <FormItem className="flex items-center space-x-3 space-y-0">
+                <FormItem className="flex items-center space-x-1 space-y-0">
                   <FormControl>
                     <RadioGroupItem id="solteiro" value="solteiro" />
                   </FormControl>
                   <Label htmlFor="solteiro">Solteiro(a)</Label>
                 </FormItem>
-                <FormItem className="flex items-center space-x-3 space-y-0">
+                <FormItem className="flex items-center space-x-1 space-y-0">
                   <FormControl>
                     <RadioGroupItem id="casado" value="casado" />
                   </FormControl>
                   <Label htmlFor="casado">Casado(a)</Label>
                 </FormItem>
-                <FormItem className="flex items-center space-x-3 space-y-0">
+                <FormItem className="flex items-center space-x-1 space-y-0">
                   <FormControl>
                     <RadioGroupItem id="viuvo" value="viuvo" />
                   </FormControl>

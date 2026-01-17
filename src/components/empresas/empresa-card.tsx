@@ -70,11 +70,11 @@ export default function EmpresaCard({
   };
 
   return (
-    <Card className="h-full hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
+    <Card className="h-full hover:shadow-lg transition-all border-2 border-onda-darkBlue/20">
+      <CardHeader className="pb-3 border-none border-gray-100">
         <div className="flex items-start justify-between">
-          <CardTitle className="text-lg">{empresa.nomeNegocio}</CardTitle>
-          <Badge variant="secondary" className="text-xs">
+          <CardTitle className="text-lg text-onda-darkBlue font-gotham">{empresa.nomeNegocio}</CardTitle>
+          <Badge variant="secondary" className="text-xs bg-onda-darkBlue/10 text-onda-darkBlue border-onda-darkBlue/20">
             {empresa.ramoAtuacao}
           </Badge>
         </div>
@@ -83,8 +83,9 @@ export default function EmpresaCard({
       <CardContent className="space-y-3">
         {/* Proprietário */}
         {showOwner && empresa.usuarios && empresa.usuarios.length > 0 && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="text-gray-900 font-medium">{empresa.usuarios[0].user.name}</span>
+          <div className="flex items-center gap-2 text-sm">
+            <User className="h-4 w-4 text-onda-darkBlue" />
+            <span className="text-gray-700 font-medium">{empresa.usuarios[0].user.name}</span>
           </div>
         )}
 
@@ -101,8 +102,8 @@ export default function EmpresaCard({
               <div className="flex flex-col flex-wrap gap-2">
                 <DropdownMenu key={empresa.id}>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-800 hover:underline transition-colors cursor-pointer">
-                      <Phone className="h-4 w-4" />
+                    <button className="flex items-center gap-1 text-sm text-gray-600 hover:text-onda-darkBlue hover:underline transition-colors cursor-pointer">
+                      <Phone className="h-4 w-4 text-onda-darkBlue" />
                       <span>{empresa.whatsapp}</span>
                       <ChevronDown className="h-3 w-3" />
                     </button>
@@ -144,12 +145,12 @@ export default function EmpresaCard({
           </div>
 
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Mail className="h-4 w-4" />
+            <Mail className="h-4 w-4 text-onda-darkBlue" />
             <span className="truncate">{empresa.email}</span>
           </div>
 
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <MapPin className="h-4 w-4" />
+            <MapPin className="h-4 w-4 text-onda-darkBlue" />
             <span className="truncate">{empresa.endereco}</span>
           </div>
         </div>
@@ -161,7 +162,7 @@ export default function EmpresaCard({
               variant="outline"
               size="sm"
               asChild
-              className="h-8 px-2"
+              className="h-8 px-2 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40"
             >
               <a
                 href={empresa.site}
@@ -179,7 +180,7 @@ export default function EmpresaCard({
               variant="outline"
               size="sm"
               asChild
-              className="h-8 px-2"
+              className="h-8 px-2 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40"
             >
               <a
                 href={formatSocialLink(empresa.instagram, 'instagram')}
@@ -197,7 +198,7 @@ export default function EmpresaCard({
               variant="outline"
               size="sm"
               asChild
-              className="h-8 px-2"
+              className="h-8 px-2 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40"
             >
               <a
                 href={empresa.facebook}
@@ -215,7 +216,7 @@ export default function EmpresaCard({
               variant="outline"
               size="sm"
               asChild
-              className="h-8 px-2"
+              className="h-8 px-2 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40"
             >
               <a
                 href={empresa.linkedin}
@@ -237,7 +238,7 @@ export default function EmpresaCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onEdit(empresa)}
-                className="flex-1"
+                className="flex-1 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40 text-onda-darkBlue"
               >
                 <Pencil className="h-4 w-4 mr-2" />
                 Editar

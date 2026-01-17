@@ -28,7 +28,7 @@ export function SearchInput({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-10 pr-10 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500 w-full"
+        className="pl-10 pr-10 bg-white border rounded-md border-gray-300 focus:border-onda-darkBlue focus:ring-onda-darkBlue w-full"
       />
       {value && (
         <Button
@@ -40,7 +40,7 @@ export function SearchInput({
           <X className="h-4 w-4" />
         </Button>
       )}
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-onda-darkBlue" size={20} />
     </div>
   );
 } 

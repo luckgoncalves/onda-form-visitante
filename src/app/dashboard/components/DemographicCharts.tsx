@@ -4,13 +4,13 @@ import { CustomTooltip } from './CustomTooltip';
 import { GenderStats, AgeStats } from '../types';
 
 const palette = {
-  masculine: '#6344bb',
-  feminine: '#c96ce0',
-  sabado: '#6344bb',
-  domingoManha: '#c96ce0',
-  domingoNoite: '#8e69e8',
-  evento: '#efe160',
-  new: '#a0a09f',
+  masculine: '#00205b',
+  feminine: '#24cead',
+  sabado: '#00205b',
+  domingoManha: '#24cead',
+  domingoNoite: '#32add8',
+  evento: '#24cead',
+  new: '#c9ced6',
   axis: '#444444',
 };
 
@@ -23,7 +23,7 @@ export function DemographicCharts({ genderStats, ageStats }: DemographicChartsPr
   return (
     <>
       {/* Gender Distribution chart */}
-      <Card className="bg-[#f4f4f2] border-0 shadow-sm">
+      <Card className="bg-[#f4f4f4] border-0 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-base sm:text-lg text-[#161616]">Distribuição por Gênero / Culto</CardTitle>
         </CardHeader>
@@ -72,7 +72,7 @@ export function DemographicCharts({ genderStats, ageStats }: DemographicChartsPr
       </Card>
 
       {/* Age Distribution chart */}
-      <Card className="bg-[#f4f4f2] border-0 shadow-sm">
+      <Card className="bg-[#f4f4f4] border-0 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-base sm:text-lg text-[#161616]">Distribuição por Idade / Culto</CardTitle>
         </CardHeader>

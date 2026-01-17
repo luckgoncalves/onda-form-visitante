@@ -311,8 +311,8 @@ export default function List() {
                 <SheetHeader>
                   <SheetTitle>Filtros da listagem</SheetTitle>
                 </SheetHeader>
-                <div className="mt-6 space-y-6">
-                  <div className="space-y-2">
+                <div className="mt-6 space-y-6 ">
+                  <div className="space-y-2 ">
                     <label className="text-sm font-medium text-gray-700">Buscar visitantes</label>
                     <div className="relative">
                       <Input
@@ -320,7 +320,7 @@ export default function List() {
                         placeholder="Buscar por nome..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-10"
+                        className="pl-10 pr-10 bg-white border rounded-md border-gray-300 focus:border-onda-darkBlue focus:ring-onda-darkBlue w-full"
                       />
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                       {searchTerm && (
@@ -389,7 +389,7 @@ export default function List() {
                     Limpar filtros
                   </Button>
                   <SheetClose asChild>
-                    <Button className="w-full sm:w-auto bg-[#503387] hover:bg-[#503387]/90 text-white " onClick={handleApplyFilters}>
+                    <Button className="w-full sm:w-auto bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white " onClick={handleApplyFilters}>
                       Aplicar filtros
                     </Button>
                   </SheetClose>
@@ -405,7 +405,7 @@ export default function List() {
             >
               {isGridView ? <LayoutList size={20} /> : <LayoutGrid size={20} />}
             </Button>
-            <ButtonForm type="button" onClick={() => router.push('/register')} label={`Novo visitante`} icon={<Plus size={20} />} />
+            <ButtonForm type="button" onClick={() => router.push('/register')} label={`Visitante`} icon={<Plus size={20} />} />
           </div>
         </div>
         
@@ -485,7 +485,7 @@ export default function List() {
               )}
               <Button onClick={() => router.push('/register')}>
                 <Plus className="mr-2 h-4 w-4" />
-                Adicionar novo visitante
+                visitante
               </Button>
             </div>
           </div>

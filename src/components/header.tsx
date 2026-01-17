@@ -23,19 +23,20 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
   }, []);
 
   return (
-    <header className="bg-gradient-to-r from-[#9562DC] to-[#FEF057] shadow-lg fixed top-0 left-0 right-0 z-50">
+    <header className="bg-onda-darkBlue shadow-lg fixed top-0 left-0 right-0 z-50">
       <div className=" mx-auto px-2 sm:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center">
           <div 
             className="cursor-pointer" 
             onClick={() => router.push('/list')}
           >
-            <Image
-              src="/logo-login.png" 
+            {/* <Image
+              src="/onda-transparente.png" 
               alt="Onda Logo" 
               width={50}
               height={50}
-            />
+            /> */}
+            <p className="text-white tracking-[-0.1em] text-3xl font-bold">onda.</p>
           </div>
         </div>
         <div className="relative">
@@ -44,8 +45,8 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
             className="flex items-center hover:bg-white/20 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            <User className="h-4 w-4 mr-2" />
-            <span className="hidden sm:block text-base font-medium text-gray-700">{userName}</span>
+            <User className="h-4 w-4 mr-2 text-white" />
+            <span className="hidden sm:block text-base font-medium text-white">{userName}</span>
             <ChevronDown className="h-4 w-4 ml-1" />
           </Button>
           {isMenuOpen && (
@@ -54,7 +55,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
                 {isAdmin && (
                   <Button
                     variant="ghost"
-                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
+                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
                     onClick={() => router.push('/dashboard')}
                   >
                     <LayoutDashboard className="h-4 w-4 mr-2.5" />
@@ -64,7 +65,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
                 {isAdmin && (
                   <Button
                     variant="ghost"
-                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
+                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
                   onClick={() => router.push('/list')}
                 >
                   <Users className="h-4 w-4 mr-2.5" />
@@ -74,7 +75,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
                 {isAdmin && (
                   <Button
                     variant="ghost"
-                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
+                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
                     onClick={() => router.push('/dashboard/grupos')}
                   >
                     <UsersRound className="h-4 w-4 mr-2.5" />
@@ -84,7 +85,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
                 
                 <Button
                   variant="ghost"
-                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
+                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
                   onClick={() => router.push('/grupos')}
                 >
                   <UsersRound className="h-4 w-4 mr-2.5" />
@@ -93,7 +94,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
 
                 <Button
                   variant="ghost"
-                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
+                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
                   onClick={() => router.push('/empresas')}
                 >
                   <Building className="h-4 w-4 mr-2.5" />
@@ -102,7 +103,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
                 {isAdmin && (
                   <Button
                     variant="ghost"
-                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
+                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
                     onClick={() => router.push('/users')}
                   >
                     <UserCog className="h-4 w-4 mr-2.5" />
@@ -114,7 +115,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
 
                 <Button
                   variant="ghost"
-                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
+                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
                   onClick={() => {
                     setIsMenuOpen(false);
                     router.push(`/users/${userId}`);
@@ -126,7 +127,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
 
                 <Button
                   variant="ghost"
-                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gradient-to-r from-purple-50 to-yellow-50 hover:text-[#9562DC] rounded-lg transition-all duration-200"
+                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
                   onClick={() => {
                     setIsMenuOpen(false);
                     onLogout();

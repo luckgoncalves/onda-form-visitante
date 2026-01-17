@@ -86,12 +86,12 @@ export function EmpresaFilters({
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="w-full sm:w-auto justify-between sm:justify-start gap-2"
+            className="w-full sm:w-auto justify-between sm:justify-start gap-2 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40 text-onda-darkBlue"
           >
             <SlidersHorizontal className="h-4 w-4" />
             Filtros
             {activeCount > 0 && (
-              <Badge variant="secondary" className="ml-1">
+              <Badge variant="secondary" className="ml-1 bg-onda-darkBlue text-white">
                 {activeCount}
               </Badge>
             )}
@@ -185,7 +185,7 @@ export function EmpresaFilters({
               </Button>
             )}
             <SheetClose asChild>
-              <Button className="w-full">
+              <Button className="w-full bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white">
                 Fechar
               </Button>
             </SheetClose>
@@ -199,7 +199,7 @@ export function EmpresaFilters({
             <Badge
               key={`ramo-${ramo}`}
               variant="secondary"
-              className="gap-1 text-xs"
+              className="gap-1 text-xs bg-onda-darkBlue/10 text-onda-darkBlue border-onda-darkBlue/20"
             >
               {ramo}
               <button
@@ -217,7 +217,7 @@ export function EmpresaFilters({
             <Badge
               key={`channel-${channel}`}
               variant="secondary"
-              className="gap-1 text-xs"
+              className="gap-1 text-xs bg-onda-darkBlue/10 text-onda-darkBlue border-onda-darkBlue/20"
             >
               {channelLabelMap[channel]}
               <button
@@ -235,7 +235,7 @@ export function EmpresaFilters({
             <Badge
               key="owner-name"
               variant="secondary"
-              className="gap-1 text-xs"
+              className="gap-1 text-xs bg-onda-darkBlue/10 text-onda-darkBlue border-onda-darkBlue/20"
             >
               Responsável: {ownerName}
               <button

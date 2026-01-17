@@ -4,11 +4,11 @@ import { CustomTooltip } from './CustomTooltip';
 import { VisitStats } from '../types';
 
 const palette = {
-  sabado: '#6344bb',
-  domingoManha: '#c96ce0',
-  domingoNoite: '#8e69e8',
-  evento: '#efe160',
-  new: '#a0a09f',
+  sabado: '#00205b',
+  domingoManha: '#24cead',
+  domingoNoite: '#32add8',
+  evento: '#24cead',
+  new: '#c9ced6',
   axis: '#444444',
 };
 
@@ -21,7 +21,7 @@ interface VisitChartProps {
 
 export function VisitChart({ data, title, xAxisAngle = -45, xAxisHeight = 60 }: VisitChartProps) {
   return (
-    <Card className="bg-[#f4f4f2] border-0 shadow-sm">
+    <Card className="bg-[#f4f4f4] border-0 shadow-sm">
       <CardHeader className="pb-2">
         <CardTitle className="text-base sm:text-lg text-[#161616]">{title}</CardTitle>
       </CardHeader>
