@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import type { Viewport } from 'next'
+import { PWARegister } from "@/components/pwa-register";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -66,8 +67,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#06234f" />
       </head>
       <body className={`${inter.className} ${gothamBold.variable} h-[100%]  min-h-screen  bg-white`}>
+        <PWARegister />
         {children}
       </body>
     </html>
