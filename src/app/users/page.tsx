@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trash2, Pencil, KeyRound, Search, Plus, Building } from "lucide-react";
+import { Trash2, Pencil, KeyRound, Search, Plus, Building, Loader2 } from "lucide-react";
 import { SearchInput } from "@/components/search-input";
 import { useDebounce } from "./hooks/useDebounce";
 import ButtonForm from "@/components/button-form";
 import LoadingOnda from "@/components/loading-onda";
 import { formatRole } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 type User = {
   id: string;
@@ -33,8 +35,10 @@ export default function Users() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDeletingUser, setIsDeletingUser] = useState<string | null>(null);
   const router = useRouter();
   const isAdminRef = useRef(false);
+  const { toast } = useToast();
 
   // Debounce search term to avoid excessive API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -89,11 +93,23 @@ export default function Users() {
   };
 
   const handleDeleteUser = async (userId: string) => {
+    setIsDeletingUser(userId);
     try {
       await deleteUser(userId);
+      toast({
+        title: 'Sucesso',
+        description: 'Membro excluído com sucesso!',
+      });
       await fetchUsers(debouncedSearchTerm);
     } catch (error) {
       console.error('Erro ao deletar usuário:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao excluir membro. Por favor, tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeletingUser(null);
     }
   };
 
@@ -274,9 +290,20 @@ export default function Users() {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction className="bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white" onClick={() => handleDeleteUser(user.id)}>
-                            Confirmar
+                          <AlertDialogCancel disabled={isDeletingUser === user.id}>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction 
+                            className="bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white" 
+                            onClick={() => handleDeleteUser(user.id)}
+                            disabled={isDeletingUser === user.id}
+                          >
+                            {isDeletingUser === user.id ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Excluindo...
+                              </>
+                            ) : (
+                              'Confirmar'
+                            )}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -294,6 +321,7 @@ export default function Users() {
           )}
         </div>
       </div>
+      <Toaster />
     </>
   );
 } 
