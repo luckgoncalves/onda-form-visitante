@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { checkIsAdmin } from "@/app/actions";
 import { Separator } from "./ui/separator";
+import { PWAInstallButton } from "@/components/pwa-install-button";
 
 export function Header({ userName, userId, onLogout }: { userName: string, userId: string, onLogout: () => void }) {
 
@@ -39,16 +40,18 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
             <p className="text-white tracking-[-0.1em] text-3xl font-bold">onda.</p>
           </div>
         </div>
-        <div className="relative">
-          <Button
-            variant="ghost"
-            className="flex items-center hover:bg-white/20 transition-colors"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <User className="h-4 w-4 mr-2 text-white" />
-            <span className="hidden sm:block text-base font-medium text-white">{userName}</span>
-            <ChevronDown className="h-4 w-4 ml-1" />
-          </Button>
+        <div className="flex items-center gap-2">
+          <PWAInstallButton />
+          <div className="relative">
+            <Button
+              variant="ghost"
+              className="flex items-center hover:bg-white/20 transition-colors"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              <User className="h-4 w-4 mr-2 text-white" />
+              <span className="hidden sm:block text-base font-medium text-white">{userName}</span>
+              <ChevronDown className="h-4 w-4 ml-1" />
+            </Button>
           {isMenuOpen && (
             <Card className="absolute right-0 mt-2 w-56 py-2 bg-white rounded-xl shadow-lg z-10 border-none">
               <div className="px-2 space-y-1">
@@ -139,6 +142,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
               </div>
             </Card>
           )}
+          </div>
         </div>
       </div>
     </header>

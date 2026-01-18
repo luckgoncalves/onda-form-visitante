@@ -3,6 +3,7 @@ import { LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { PWAInstallButton } from "@/components/pwa-install-button";
 
 export function HeaderPublic() {
   const router = useRouter();
@@ -24,7 +25,8 @@ export function HeaderPublic() {
             <p className="text-white tracking-[-0.1em] text-3xl font-bold">onda.</p>
           </div>
         </div>
-        <div>
+        <div className="flex items-center gap-2">
+          <PWAInstallButton />
           <Button
             variant="ghost"
             className="flex items-center hover:bg-white/20 transition-colors text-white"
