@@ -11,6 +11,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import Image from 'next/image';
 import LoadingOnda from "@/components/loading-onda";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const form = useForm();
@@ -18,6 +20,7 @@ export default function Home() {
   const [isCheckingAuthentication, setIsCheckingAuthentication] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const checkAuthentication = async () => {
@@ -116,7 +119,29 @@ export default function Home() {
                 <FormField 
                   control={form.control} 
                   name="password"
-                  render={({ field }) => <Input type="password" {...field} />} />
+                  render={({ field }) => (
+                    <div className="relative">
+                      <Input 
+                        type={showPassword ? "text" : "password"} 
+                        {...field} 
+                        className="pr-10"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-500" />
+                        )}
+                      </Button>
+                    </div>
+                  )} />
                 
                 {error && (
                   <Alert variant="destructive">
