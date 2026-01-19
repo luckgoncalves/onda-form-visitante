@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { SlidersHorizontal, X, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { SlidersHorizontal, X, Loader2, Check, ChevronsUpDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 import { EmpresaContactChannel } from '@/types/empresa';
 
 interface EmpresaFiltersProps {
@@ -44,6 +45,27 @@ export function EmpresaFilters({
   isFetchingOptions = false,
 }: EmpresaFiltersProps) {
   const [open, setOpen] = useState(false);
+  const [ramosPopoverOpen, setRamosPopoverOpen] = useState(false);
+  const [ramosSearchValue, setRamosSearchValue] = useState('');
+  const ramosDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ramosDropdownRef.current && !ramosDropdownRef.current.contains(event.target as Node)) {
+        setRamosPopoverOpen(false);
+        setRamosSearchValue('');
+      }
+    };
+
+    if (ramosPopoverOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [ramosPopoverOpen]);
 
   const handleRamoToggle = (ramo: string) => {
     const exists = selectedRamos.includes(ramo);
@@ -118,17 +140,91 @@ export function EmpresaFilters({
                   Cadastre empresas para habilitar esta filtragem.
                 </p>
               ) : (
-                <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
-                  {availableRamos.map(ramo => (
-                    <label key={ramo} className="flex items-center gap-2 text-sm">
-                      <Checkbox
-                        id={`ramo-${ramo}`}
-                        checked={selectedRamos.includes(ramo)}
-                        onCheckedChange={() => handleRamoToggle(ramo)}
-                      />
-                      <span className="truncate">{ramo}</span>
-                    </label>
-                  ))}
+                <div className="relative" ref={ramosDropdownRef}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setRamosPopoverOpen(!ramosPopoverOpen);
+                      if (!ramosPopoverOpen) {
+                        setRamosSearchValue('');
+                      }
+                    }}
+                    className="w-full justify-between bg-white border-gray-300 hover:bg-gray-50 text-left font-normal"
+                  >
+                    <span className="truncate">
+                      {selectedRamos.length > 0
+                        ? `${selectedRamos.length} ramo${selectedRamos.length > 1 ? 's' : ''} selecionado${selectedRamos.length > 1 ? 's' : ''}`
+                        : 'Selecione os ramos...'}
+                    </span>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                  {ramosPopoverOpen && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                      <div className="p-2 border-b space-y-2">
+                        <Input
+                          placeholder="Buscar ramo..."
+                          value={ramosSearchValue}
+                          onChange={(e) => setRamosSearchValue(e.target.value)}
+                          className="w-full"
+                          autoFocus
+                        />
+                        {selectedRamos.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              onRamosChange([]);
+                            }}
+                            className="w-full text-xs text-red-600 hover:text-red-700 hover:bg-red-50 h-8"
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Limpar tudo
+                          </Button>
+                        )}
+                      </div>
+                      <div className="max-h-[300px] overflow-y-auto">
+                        {availableRamos
+                          .filter(ramo => 
+                            ramo.toLowerCase().includes(ramosSearchValue.toLowerCase())
+                          )
+                          .length === 0 ? (
+                          <div className="p-4 text-sm text-center text-gray-500">
+                            Nenhum ramo encontrado.
+                          </div>
+                        ) : (
+                          <div className="p-1">
+                            {availableRamos
+                              .filter(ramo => 
+                                ramo.toLowerCase().includes(ramosSearchValue.toLowerCase())
+                              )
+                              .map((ramo) => {
+                                const isSelected = selectedRamos.includes(ramo);
+                                return (
+                                  <div
+                                    key={ramo}
+                                    onClick={() => {
+                                      handleRamoToggle(ramo);
+                                    }}
+                                    className={cn(
+                                      "flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-sm hover:bg-gray-100",
+                                      isSelected && "bg-onda-darkBlue/10"
+                                    )}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "h-4 w-4",
+                                        isSelected ? "opacity-100 text-onda-darkBlue" : "opacity-0"
+                                      )}
+                                    />
+                                    <span>{ramo}</span>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
