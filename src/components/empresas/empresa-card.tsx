@@ -12,7 +12,6 @@ import {
   Facebook,
   Linkedin,
   Pencil,
-  Trash2,
   User,
   ChevronDown,
   Copy
@@ -72,11 +71,48 @@ export default function EmpresaCard({
   return (
     <Card className="h-full hover:shadow-lg transition-all border-2 border-onda-darkBlue/20">
       <CardHeader className="pb-3 border-none border-gray-100">
-        <div className="flex items-start justify-between">
-          <CardTitle className="text-lg text-onda-darkBlue font-gotham">{empresa.nomeNegocio}</CardTitle>
-          <Badge variant="secondary" className="text-xs bg-onda-darkBlue/10 text-onda-darkBlue border-onda-darkBlue/20">
-            {empresa.ramoAtuacao}
-          </Badge>
+        <div className="flex flex-col gap-2">
+          {/* Botão excluir no topo direito */}
+          {showActions && canDelete() && (
+            <div className="flex justify-end">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="h-auto px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white"
+                  >
+                    Excluir
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza que deseja excluir a empresa &quot;{empresa.nomeNegocio}&quot;?
+                      Esta ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => onDelete?.(empresa.id)}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Excluir
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
+          {/* Título e badge */}
+          <div className="flex items-start justify-between">
+            <CardTitle className="text-lg text-onda-darkBlue font-gotham">{empresa.nomeNegocio}</CardTitle>
+            <Badge variant="secondary" className="text-xs bg-onda-darkBlue/10 text-onda-darkBlue border-onda-darkBlue/20">
+              {empresa.ramoAtuacao}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
 
@@ -151,7 +187,7 @@ export default function EmpresaCard({
 
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <MapPin className="h-4 w-4 text-onda-darkBlue" />
-            <span className="truncate">{empresa.endereco}</span>
+            <span className="truncate">{empresa.endereco || 'N/A'}</span>
           </div>
         </div>
 
@@ -231,51 +267,17 @@ export default function EmpresaCard({
         </div>
 
         {/* Ações */}
-        {showActions && (onEdit || onDelete) && (
+        {showActions && onEdit && (
           <div className="flex gap-2 pt-2">
-            {onEdit && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(empresa)}
-                className="flex-1 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40 text-onda-darkBlue"
-              >
-                <Pencil className="h-4 w-4 mr-2" />
-                Editar
-              </Button>
-            )}
-
-            {canDelete() && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Tem certeza que deseja excluir a empresa &quot;{empresa.nomeNegocio}&quot;?
-                      Esta ação não pode ser desfeita.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => onDelete?.(empresa.id)}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Excluir
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(empresa)}
+              className="flex-1 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40 text-onda-darkBlue"
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
           </div>
         )}
       </CardContent>

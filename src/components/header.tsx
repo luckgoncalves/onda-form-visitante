@@ -50,7 +50,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
             >
               <User className="h-4 w-4 mr-2 text-white" />
               <span className="hidden sm:block text-base font-medium text-white">{userName}</span>
-              <ChevronDown className="h-4 w-4 ml-1" />
+              <ChevronDown className="h-4 w-4 ml-1 text-white" />
             </Button>
           {isMenuOpen && (
             <Card className="absolute right-0 mt-2 w-56 py-2 bg-white rounded-xl shadow-lg z-10 border-none">

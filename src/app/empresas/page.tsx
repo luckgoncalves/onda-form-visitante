@@ -127,6 +127,10 @@ export default function EmpresasPage() {
       if (requestId === requestIdRef.current) {
         setEmpresas((prev) => (append ? [...prev, ...data.empresas] : data.empresas));
         setPagination(data.pagination);
+        // Recarregar filtros quando não for append para incluir novos ramos
+        if (!append) {
+          fetchFilterOptions();
+        }
       }
 
     } catch (error) {
