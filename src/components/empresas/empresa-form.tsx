@@ -210,7 +210,7 @@ export default function EmpresaForm({
                                     className="cursor-pointer"
                                   >
                                     <Plus className="mr-2 h-4 w-4" />
-                                    Criar "{ramoValue}"
+                                    Criar &quot;{ramoValue}&quot;
                                   </CommandItem>
                                 </CommandGroup>
                               )}
