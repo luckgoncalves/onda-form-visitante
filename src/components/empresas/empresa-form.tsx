@@ -62,7 +62,9 @@ export default function EmpresaForm({
   const fetchRamos = async () => {
     try {
       setIsLoadingRamos(true);
-      const response = await fetch('/api/empresas/filters');
+      const response = await fetch('/api/empresas/filters', {
+        cache: 'no-store',
+      });
       if (response.ok) {
         const data = await response.json();
         setAvailableRamos(data.ramos || []);

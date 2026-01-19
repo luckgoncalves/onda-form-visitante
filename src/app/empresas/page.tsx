@@ -162,7 +162,9 @@ export default function EmpresasPage() {
   const fetchFilterOptions = async () => {
     try {
       setIsFetchingFilterOptions(true);
-      const response = await fetch('/api/empresas/filters');
+      const response = await fetch('/api/empresas/filters', {
+        cache: 'no-store',
+      });
 
       if (!response.ok) {
         throw new Error('Erro ao carregar filtros');
