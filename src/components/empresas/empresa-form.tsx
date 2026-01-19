@@ -174,7 +174,7 @@ export default function EmpresaForm({
               name="endereco"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Endereço</FormLabel>
+                  <FormLabel>Endereço (opcional)</FormLabel>
                   <FormControl>
                     <Input placeholder="Rua, número, bairro, cidade" {...field} />
                   </FormControl>
@@ -206,7 +206,7 @@ export default function EmpresaForm({
                 <FormItem>
                   <FormLabel>Instagram (opcional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="@empresa ou https://instagram.com/empresa" {...field} />
+                    <Input type="url" placeholder="https://instagram.com/empresa" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
