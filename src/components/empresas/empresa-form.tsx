@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,11 +8,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { useToast } from '@/hooks/use-toast';
 import { cn, formatPhone } from '@/lib/utils';
 import { empresaSchema, EmpresaFormData } from '@/lib/validations/empresa';
 import { Empresa } from '@/types/empresa';
 import ButtonForm from '@/components/button-form';
+import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 
 interface EmpresaFormProps {
   onModal?: boolean;
@@ -34,6 +36,48 @@ export default function EmpresaForm({
   isLoading = false 
 }: EmpresaFormProps) {
   const { toast } = useToast();
+  const [ramosOpen, setRamosOpen] = useState(false);
+  const [availableRamos, setAvailableRamos] = useState<string[]>([]);
+  const [isLoadingRamos, setIsLoadingRamos] = useState(false);
+  const ramosDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ramosDropdownRef.current && !ramosDropdownRef.current.contains(event.target as Node)) {
+        setRamosOpen(false);
+      }
+    };
+
+    if (ramosOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [ramosOpen]);
+
+  // Função para buscar ramos existentes
+  const fetchRamos = async () => {
+    try {
+      setIsLoadingRamos(true);
+      const response = await fetch('/api/empresas/filters');
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableRamos(data.ramos || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar ramos:', error);
+    } finally {
+      setIsLoadingRamos(false);
+    }
+  };
+
+  // Buscar ramos existentes na inicialização
+  useEffect(() => {
+    fetchRamos();
+  }, []);
 
   const form = useForm<EmpresaFormData>({
     resolver: zodResolver(empresaSchema),
@@ -54,6 +98,9 @@ export default function EmpresaForm({
   const handleSubmit = async (data: EmpresaFormData) => {
     try {
       await onSubmit(data);
+      // Recarregar lista de ramos após criar/editar empresa com sucesso
+      // para incluir novos ramos que possam ter sido criados
+      await fetchRamos();
     } catch (error) {
       console.error('Erro ao submeter formulário:', error);
       toast({
@@ -100,15 +147,130 @@ export default function EmpresaForm({
             <FormField
               control={form.control}
               name="ramoAtuacao"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ramo de Atuação</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Beleza e Estética" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const ramoValue = field.value || '';
+                const ramoExists = availableRamos.some(
+                  ramo => ramo.toLowerCase() === ramoValue.toLowerCase()
+                );
+                const filteredRamos = availableRamos.filter(ramo =>
+                  ramo.toLowerCase().includes(ramoValue.toLowerCase())
+                );
+
+                return (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Ramo de Atuação</FormLabel>
+                    <div className="relative" ref={ramosDropdownRef}>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            placeholder="Ex: Beleza e Estética"
+                            value={ramoValue}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              setRamosOpen(true);
+                            }}
+                            onFocus={async () => {
+                              // Recarregar ramos ao focar no campo para garantir lista atualizada
+                              await fetchRamos();
+                              if (availableRamos.length > 0 || ramoValue) {
+                                setRamosOpen(true);
+                              }
+                            }}
+                            className="pr-10"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={async () => {
+                              if (!ramosOpen) {
+                                // Recarregar ramos ao abrir dropdown para garantir lista atualizada
+                                await fetchRamos();
+                              }
+                              setRamosOpen(!ramosOpen);
+                            }}
+                          >
+                            <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                          </Button>
+                        </div>
+                      </FormControl>
+                      {ramosOpen && (ramoValue || filteredRamos.length > 0 || availableRamos.length > 0) && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                          <Command shouldFilter={false}>
+                            <CommandList className="max-h-[300px]">
+                              {ramoValue && !ramoExists && (
+                                <CommandGroup>
+                                  <CommandItem
+                                    value={`criar-${ramoValue}`}
+                                    onSelect={() => {
+                                      field.onChange(ramoValue);
+                                      setRamosOpen(false);
+                                    }}
+                                    className="cursor-pointer"
+                                  >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Criar "{ramoValue}"
+                                  </CommandItem>
+                                </CommandGroup>
+                              )}
+                              {filteredRamos.length > 0 ? (
+                                <CommandGroup>
+                                  {filteredRamos.map((ramo) => (
+                                    <CommandItem
+                                      key={ramo}
+                                      value={ramo}
+                                      onSelect={() => {
+                                        field.onChange(ramo);
+                                        setRamosOpen(false);
+                                      }}
+                                      className="cursor-pointer"
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          ramoValue.toLowerCase() === ramo.toLowerCase()
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {ramo}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              ) : (
+                                !ramoValue && availableRamos.length > 0 && (
+                                  <CommandGroup>
+                                    {availableRamos.map((ramo) => (
+                                      <CommandItem
+                                        key={ramo}
+                                        value={ramo}
+                                        onSelect={() => {
+                                          field.onChange(ramo);
+                                          setRamosOpen(false);
+                                        }}
+                                        className="cursor-pointer"
+                                      >
+                                        {ramo}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                )
+                              )}
+                              {!ramoValue && availableRamos.length === 0 && !isLoadingRamos && (
+                                <div className="p-4 text-sm text-center text-gray-500">
+                                  Nenhum ramo cadastrado. Digite para criar um novo.
+                                </div>
+                              )}
+                            </CommandList>
+                          </Command>
+                        </div>
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             {/* Detalhes do Serviço */}
