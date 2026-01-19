@@ -389,8 +389,8 @@ export default function UserCompanies({ userId, currentUser }: UserCompaniesProp
             {empresas.length > 0 && (
             <DialogTrigger asChild>
               <ButtonForm 
-                label="Nova Empresa"
-                icon={<Plus className="h-4 w-4 mr-2" />}
+                label="Empresa"
+                icon={<Plus className="h-4 w-4" />}
                 onClick={handleNewClick}
                 // size="sm"
               />

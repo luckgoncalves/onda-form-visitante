@@ -78,6 +78,18 @@ export default function EmpresasPage() {
     fetchFilterOptions();
   }, []); //eslint-disable-line
 
+  // Recarregar filtros quando a página ganha foco (para pegar novos ramos criados em outras abas)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchFilterOptions();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []); //eslint-disable-line
+
   // Recarregar empresas quando busca ou filtros mudarem
   useEffect(() => {
     fetchEmpresas(1, debouncedSearchTerm, filters);
@@ -283,6 +295,7 @@ export default function EmpresasPage() {
               onOwnerNameChange={handleOwnerNameChange}
               onClearAll={handleClearFilters}
               isFetchingOptions={isFetchingFilterOptions}
+              onRefreshFilters={fetchFilterOptions}
             />
           </div>
         </div>

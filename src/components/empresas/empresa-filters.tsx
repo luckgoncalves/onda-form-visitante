@@ -23,6 +23,7 @@ interface EmpresaFiltersProps {
   onOwnerNameChange: (value: string) => void;
   onClearAll: () => void;
   isFetchingOptions?: boolean;
+  onRefreshFilters?: () => void;
 }
 
 const channelLabelMap: Record<EmpresaContactChannel, string> = {
@@ -43,8 +44,17 @@ export function EmpresaFilters({
   onOwnerNameChange,
   onClearAll,
   isFetchingOptions = false,
+  onRefreshFilters,
 }: EmpresaFiltersProps) {
   const [open, setOpen] = useState(false);
+  
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    // Recarregar filtros quando o Sheet é aberto para pegar novos ramos
+    if (isOpen && onRefreshFilters) {
+      onRefreshFilters();
+    }
+  };
   const [ramosPopoverOpen, setRamosPopoverOpen] = useState(false);
   const [ramosSearchValue, setRamosSearchValue] = useState('');
   const ramosDropdownRef = useRef<HTMLDivElement>(null);
@@ -104,7 +114,7 @@ export function EmpresaFilters({
 
   return (
     <div className="flex flex-col gap-3">
-      <Sheet open={open} onOpenChange={setOpen}>
+      <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetTrigger asChild>
           <Button
             variant="outline"
@@ -144,9 +154,14 @@ export function EmpresaFilters({
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setRamosPopoverOpen(!ramosPopoverOpen);
-                      if (!ramosPopoverOpen) {
+                      const willOpen = !ramosPopoverOpen;
+                      setRamosPopoverOpen(willOpen);
+                      if (willOpen) {
                         setRamosSearchValue('');
+                        // Recarregar filtros ao abrir dropdown para pegar novos ramos
+                        if (onRefreshFilters) {
+                          onRefreshFilters();
+                        }
                       }
                     }}
                     className="w-full justify-between bg-white border-gray-300 hover:bg-gray-50 text-left font-normal"
