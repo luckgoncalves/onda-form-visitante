@@ -21,6 +21,7 @@ import { empresaSchema, EmpresaFormData } from '@/lib/validations/empresa';
 import ButtonForm from '@/components/button-form';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { MonthYearPicker } from '@/components/ui/month-year-picker';
 
 // Schema para dados do usuário
 const userFormSchema = userSchema;
@@ -53,6 +54,7 @@ export default function CreateUserPage() {
       email: '',
       phone: '',
       role: 'user',
+      dataMembresia: '',
     },
   });
 
@@ -138,7 +140,11 @@ export default function CreateUserPage() {
       
       // Primeiro, criar o usuário
       const userData = userForm.getValues();
-      const userResult = await createUser({ ...userData, password: 'ondadura' });
+      const userResult = await createUser({ 
+        ...userData, 
+        password: 'ondadura',
+        dataMembresia: userData.dataMembresia && userData.dataMembresia.trim() !== '' ? userData.dataMembresia : undefined,
+      });
       
       if (!userResult.success) {
         throw new Error('Erro ao criar usuário');
@@ -217,11 +223,11 @@ export default function CreateUserPage() {
             const Icon = step.icon;
             return (
               <div key={index} className="flex items-center">
-                <div className={`flex items-center gap-2 py-2 rounded-lg ${
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
                   index === currentStep 
                     ? 'bg-primary text-primary-foreground' 
                     : index < currentStep 
-                      ? 'bg-green-100 text-green-700 px-2' 
+                      ? 'bg-green-100 text-green-700' 
                       : 'bg-muted text-muted-foreground'
                 }`}>
                   <Icon className="h-4 w-4" />
@@ -236,7 +242,7 @@ export default function CreateUserPage() {
         </div>
 
         {/* Conteúdo do Step */}
-        <Card className="bg-white border-none">
+        <Card className="bg-white border-2 border-onda-darkBlue/20">
           <CardContent className="p-6">
             {currentStep === 0 && (
               <div className="space-y-6">
@@ -292,6 +298,23 @@ export default function CreateUserPage() {
                                 const mask = formatPhone(e.target.value);
                                 field.onChange(mask);
                               }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={userForm.control}
+                      name="dataMembresia"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Data de Membresia (opcional)</FormLabel>
+                          <FormControl>
+                            <MonthYearPicker
+                              value={field.value || ''}
+                              onChange={(value) => field.onChange(value || '')}
                             />
                           </FormControl>
                           <FormMessage />

@@ -8,7 +8,8 @@ export const userSchema = z.object({
       required_error: "Selecione um papel",
     }).refine(value => ['user', 'admin', 'base_pessoal'].includes(value), {
       message: "Papel inválido"
-    })
+    }),
+    dataMembresia: z.string().regex(/^\d{4}-\d{2}$/, "Formato inválido. Use YYYY-MM").optional().or(z.literal(''))
   });
   
 export const editUserPageSchema = userSchema.extend({

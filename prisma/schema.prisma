@@ -74,6 +74,7 @@ model users {
   role                  String   @default("user")
   requirePasswordChange Boolean  @default(true)
   approved              Boolean  @default(true)
+  dataMembresia         String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 

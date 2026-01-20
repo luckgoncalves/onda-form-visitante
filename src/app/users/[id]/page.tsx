@@ -19,6 +19,7 @@ import { checkAuth, checkIsAdmin, logout, updateUser } from '@/app/actions';
 import { editUserPageSchema, userSchema } from '../validate'; // Assuming validate.ts is in the parent users folder src/app/users/validate.ts
 import { formatPhone } from '@/lib/utils';
 import { ArrowLeft, User, Building2 } from 'lucide-react';
+import { MonthYearPicker } from '@/components/ui/month-year-picker';
 
 type UserData = {
   id: string;
@@ -26,6 +27,7 @@ type UserData = {
   email: string;
   phone?: string;
   role: string;
+  dataMembresia?: string;
   // requirePasswordChange: boolean; // This might be useful to display but not directly editable here
 };
 
@@ -51,6 +53,7 @@ export default function EditUserPage() {
       phone: '',
       role: 'user',
       password: '',
+      dataMembresia: '',
     },
   });
 
@@ -94,6 +97,7 @@ export default function EditUserPage() {
             phone: userData.phone || '',
             role: userData.role,
             password: '',
+            dataMembresia: userData.dataMembresia || '',
           });
         } else {
           setFetchError("ID do usuário não fornecido.");
@@ -121,19 +125,22 @@ export default function EditUserPage() {
     try {
       // Define the payload structure matching UpdateUserData from actions.ts
       // (name: string, email: string, role: string, password?: string, requirePasswordChange?: boolean)
+      // If fields are disabled (non-admin), use the original user values
       const updatePayload: {
         name: string;
         email: string;
         phone?: string;
         role: string;
         password?: string;
+        dataMembresia?: string;
         // requirePasswordChange is not part of this form, so we don't include it.
         // The updateUser action should handle if it's undefined.
       } = {
         name: data.name,     // This is string due to EditUserPageFormData
-        email: data.email,    // This is string
+        email: isAdminRef.current ? data.email : user.email,    // Use original value if disabled
         phone: data.phone,    // This is string or undefined
-        role: data.role,     // This is string
+        role: isAdminRef.current ? data.role : user.role,     // Use original value if disabled
+        dataMembresia: data.dataMembresia, // This is string or undefined
       };
 
       if (data.password && data.password.trim() !== '') {
@@ -254,12 +261,17 @@ export default function EditUserPage() {
                     <FormField
                       control={form.control}
                       name="email"
-                      disabled={!isAdminRef.current}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="exemplo@dominio.com" {...field} />
+                            <Input 
+                              type="email" 
+                              placeholder="exemplo@dominio.com" 
+                              {...field} 
+                              readOnly={!isAdminRef.current}
+                              className={!isAdminRef.current ? "cursor-not-allowed opacity-60" : ""}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -289,6 +301,22 @@ export default function EditUserPage() {
                     />
                     <FormField
                       control={form.control}
+                      name="dataMembresia"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Data de Membresia (opcional)</FormLabel>
+                          <FormControl>
+                            <MonthYearPicker
+                              value={field.value || ''}
+                              onChange={(value) => field.onChange(value || '')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
                       name="password"
                       render={({ field }) => (
                         <FormItem>
@@ -302,7 +330,6 @@ export default function EditUserPage() {
                     />
                     <FormField
                       control={form.control}
-                      disabled={!isAdminRef.current}
                       name="role"
                       render={({ field }) => (
                         <FormItem>
@@ -311,6 +338,8 @@ export default function EditUserPage() {
                             {/* Using a native select. Replace with ShadCN Select if preferred and available */}
                             <select
                               {...field}
+                              readOnly={!isAdminRef.current}
+                              disabled={!isAdminRef.current}
                               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               <option value="user">Usuário</option>

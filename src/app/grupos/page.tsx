@@ -162,7 +162,7 @@ export default function GruposPublicPage() {
         <HeaderPublic />
       )}
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-[72px]">
+      <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
         {/* Intro */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -185,7 +185,7 @@ export default function GruposPublicPage() {
                 <Select 
                   value={selectedDia} 
                   onChange={(e) => setSelectedDia(e.target.value)}
-                  className="w-full max-w-full p-1 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500 "
+                  className="w-full max-w-full p-1 bg-white rounded-md border border-gray-300 focus:border-gray-500 focus:ring-gray-500 "
                 >
                   <option value="todos">Todos os dias</option>
                   {availableDays.map((dia) => (
@@ -204,7 +204,7 @@ export default function GruposPublicPage() {
                 <Select 
                   value={selectedCategoria} 
                   onChange={(e) => setSelectedCategoria(e.target.value)}
-                  className="w-full p-1 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500 "
+                  className="w-full p-1 bg-white rounded-md border border-gray-300 focus:border-gray-500 focus:ring-gray-500 "
                 >
                   <option value="todas">Todas as categorias</option>
                   {availableCategories.map((categoria) => {

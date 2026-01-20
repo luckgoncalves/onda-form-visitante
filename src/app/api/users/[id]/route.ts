@@ -29,6 +29,7 @@ export async function GET(
         email: true,
         phone: true,
         role: true,
+        dataMembresia: true,
         requirePasswordChange: true, // If this field is relevant for the edit page
       },
     });

@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
           role: 'user', // Sempre 'user' para registro público
           requirePasswordChange: false,
           approved: false, // Usuário precisa ser aprovado por um administrador
+          dataMembresia: userData.dataMembresia && userData.dataMembresia.trim() !== '' ? userData.dataMembresia : null,
         }
       });
 

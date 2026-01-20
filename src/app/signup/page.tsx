@@ -17,6 +17,7 @@ import { empresaSchema, EmpresaFormData } from '@/lib/validations/empresa';
 import ButtonForm from '@/components/button-form';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { MonthYearPicker } from '@/components/ui/month-year-picker';
 import Image from 'next/image';
 import { z } from 'zod';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -39,6 +40,7 @@ export default function SignupPage() {
       email: '',
       phone: '',
       password: '',
+      dataMembresia: '',
     },
   });
 
@@ -290,6 +292,23 @@ export default function SignupPage() {
                                 const mask = formatPhone(e.target.value);
                                 field.onChange(mask);
                               }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={userForm.control}
+                      name="dataMembresia"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Data de Membresia (opcional)</FormLabel>
+                          <FormControl>
+                            <MonthYearPicker
+                              value={field.value || ''}
+                              onChange={(value) => field.onChange(value || '')}
                             />
                           </FormControl>
                           <FormMessage />

@@ -453,18 +453,21 @@ export async function canAccessRegister() {
   return { canAccess: user.role === 'admin' || user.role === 'base_pessoal' };
 }
 
-export async function createUser(data: { email: string; password?: string; name: string; phone?: string; role: string }) {
+export async function createUser(data: { email: string; password?: string; name: string; phone?: string; role: string; dataMembresia?: string }) {
   if (!data.password) {
     throw new Error('Senha é obrigatória para criar um usuário');
   }
   
   const hashedPassword = await bcrypt.hash(data.password, 10);
   
+  const { dataMembresia, ...userData } = data;
+  
   const user = await prismaClient.users.create({
     data: {
-      ...data,
+      ...userData,
       password: hashedPassword,
-      requirePasswordChange: true
+      requirePasswordChange: true,
+      dataMembresia: dataMembresia && dataMembresia.trim() !== '' ? dataMembresia : null,
     },
   });
 
@@ -516,6 +519,7 @@ type UpdateUserData = {
   phone?: string;
   role: string;
   password?: string;
+  dataMembresia?: string;
   requirePasswordChange?: boolean;
 };
 
@@ -525,6 +529,7 @@ export async function updateUser(id: string, data: UpdateUserData) {
     name: data.name,
     phone: data.phone,
     role: data.role,
+    dataMembresia: data.dataMembresia && data.dataMembresia.trim() !== '' ? data.dataMembresia : null,
     requirePasswordChange: data.requirePasswordChange
   };
 
