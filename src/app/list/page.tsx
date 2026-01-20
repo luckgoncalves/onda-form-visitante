@@ -166,11 +166,14 @@ export default function List() {
 
       const result = await response.json();
       
+      // Ensure visitantes is always an array
+      const visitantesArray = Array.isArray(result.visitantes) ? result.visitantes : [];
+      
       if (resetList) {
-        setVisitantes(result.visitantes);
+        setVisitantes(visitantesArray);
         setCurrentPage(1);
       } else {
-        setVisitantes(prev => [...prev, ...result.visitantes]);
+        setVisitantes(prev => [...prev, ...visitantesArray]);
         setCurrentPage(page);
       }
       
@@ -212,7 +215,7 @@ export default function List() {
       
       await updateMensagemEnviada(visitorId);
       
-      setVisitantes(visitantes.map((v: any) => 
+      setVisitantes((prevVisitantes) => (prevVisitantes || []).map((v: any) => 
         v.id === visitorId ? {...v, mensagem_enviada: !v.mensagem_enviada} : v
       ));
     }catch (error) {
@@ -440,7 +443,7 @@ export default function List() {
                   onItemClick={handleItemClick}
                   onWhatsAppClick={handleWhatsAppClick}
                   onMessageStatusChange={(id) => {
-                    setVisitantes(visitantes.map((v: any) => 
+                    setVisitantes((prevVisitantes) => (prevVisitantes || []).map((v: any) => 
                       v.id === id ? {...v, mensagem_enviada: !v.mensagem_enviada} : v
                     ));
                   }}
