@@ -22,6 +22,7 @@ interface EmpresaFiltersProps {
   onChannelsChange: (next: EmpresaContactChannel[]) => void;
   onOwnerNameChange: (value: string) => void;
   onClearAll: () => void;
+  onApplyFilters: (filters: { ramos: string[]; channels: EmpresaContactChannel[]; ownerName: string }) => void;
   isFetchingOptions?: boolean;
   onRefreshFilters?: () => void;
 }
@@ -43,16 +44,35 @@ export function EmpresaFilters({
   onChannelsChange,
   onOwnerNameChange,
   onClearAll,
+  onApplyFilters,
   isFetchingOptions = false,
   onRefreshFilters,
 }: EmpresaFiltersProps) {
   const [open, setOpen] = useState(false);
+  
+  // Estados locais para os filtros temporários (antes de aplicar)
+  const [tempRamos, setTempRamos] = useState<string[]>(selectedRamos);
+  const [tempChannels, setTempChannels] = useState<EmpresaContactChannel[]>(selectedChannels);
+  const [tempOwnerName, setTempOwnerName] = useState<string>(ownerName);
+
+  // Sincronizar estados locais quando os filtros aplicados mudarem
+  useEffect(() => {
+    setTempRamos(selectedRamos);
+    setTempChannels(selectedChannels);
+    setTempOwnerName(ownerName);
+  }, [selectedRamos, selectedChannels, ownerName]);
   
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     // Recarregar filtros quando o Sheet é aberto para pegar novos ramos
     if (isOpen && onRefreshFilters) {
       onRefreshFilters();
+    }
+    // Resetar filtros temporários quando fechar sem aplicar
+    if (!isOpen) {
+      setTempRamos(selectedRamos);
+      setTempChannels(selectedChannels);
+      setTempOwnerName(ownerName);
     }
   };
   const [ramosPopoverOpen, setRamosPopoverOpen] = useState(false);
@@ -78,29 +98,52 @@ export function EmpresaFilters({
   }, [ramosPopoverOpen]);
 
   const handleRamoToggle = (ramo: string) => {
-    const exists = selectedRamos.includes(ramo);
+    const exists = tempRamos.includes(ramo);
     const next = exists
-      ? selectedRamos.filter(item => item !== ramo)
-      : [...selectedRamos, ramo];
-    onRamosChange(next);
+      ? tempRamos.filter(item => item !== ramo)
+      : [...tempRamos, ramo];
+    setTempRamos(next);
   };
 
   const handleChannelToggle = (channel: EmpresaContactChannel) => {
-    const exists = selectedChannels.includes(channel);
+    const exists = tempChannels.includes(channel);
     const next = exists
-      ? selectedChannels.filter(item => item !== channel)
-      : [...selectedChannels, channel];
-    onChannelsChange(next);
+      ? tempChannels.filter(item => item !== channel)
+      : [...tempChannels, channel];
+    setTempChannels(next);
   };
 
   const handleOwnerInputChange = (value: string) => {
-    onOwnerNameChange(value);
+    setTempOwnerName(value);
+  };
+
+  const handleApply = () => {
+    onApplyFilters({
+      ramos: tempRamos,
+      channels: tempChannels,
+      ownerName: tempOwnerName,
+    });
+    setOpen(false);
   };
 
   const handleClear = () => {
+    setTempRamos([]);
+    setTempChannels([]);
+    setTempOwnerName('');
+    // Aplicar filtros vazios imediatamente ao limpar
+    onApplyFilters({
+      ramos: [],
+      channels: [],
+      ownerName: '',
+    });
     onClearAll();
     setOpen(false);
   };
+
+  const hasChanges = 
+    JSON.stringify(tempRamos.sort()) !== JSON.stringify(selectedRamos.sort()) ||
+    JSON.stringify(tempChannels.sort()) !== JSON.stringify(selectedChannels.sort()) ||
+    tempOwnerName !== ownerName;
 
   const hasActiveFilters =
     selectedRamos.length > 0 ||
@@ -167,8 +210,8 @@ export function EmpresaFilters({
                     className="w-full justify-between bg-white border-gray-300 hover:bg-gray-50 text-left font-normal"
                   >
                     <span className="truncate">
-                      {selectedRamos.length > 0
-                        ? `${selectedRamos.length} ramo${selectedRamos.length > 1 ? 's' : ''} selecionado${selectedRamos.length > 1 ? 's' : ''}`
+                      {tempRamos.length > 0
+                        ? `${tempRamos.length} ramo${tempRamos.length > 1 ? 's' : ''} selecionado${tempRamos.length > 1 ? 's' : ''}`
                         : 'Selecione os ramos...'}
                     </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -183,12 +226,12 @@ export function EmpresaFilters({
                           className="w-full"
                           autoFocus
                         />
-                        {selectedRamos.length > 0 && (
+                        {tempRamos.length > 0 && (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              onRamosChange([]);
+                              setTempRamos([]);
                             }}
                             className="w-full text-xs text-red-600 hover:text-red-700 hover:bg-red-50 h-8"
                           >
@@ -213,7 +256,7 @@ export function EmpresaFilters({
                                 ramo.toLowerCase().includes(ramosSearchValue.toLowerCase())
                               )
                               .map((ramo) => {
-                                const isSelected = selectedRamos.includes(ramo);
+                                const isSelected = tempRamos.includes(ramo);
                                 return (
                                   <div
                                     key={ramo}
@@ -258,7 +301,7 @@ export function EmpresaFilters({
                     <label key={channel} className="flex items-center gap-2 text-sm">
                       <Checkbox
                         id={`channel-${channel}`}
-                        checked={selectedChannels.includes(channel)}
+                        checked={tempChannels.includes(channel)}
                         onCheckedChange={() => handleChannelToggle(channel)}
                       />
                       <span>{channelLabelMap[channel]}</span>
@@ -273,7 +316,7 @@ export function EmpresaFilters({
             <div>
               <p className="text-sm font-medium mb-3">Responsável</p>
               <Input
-                value={ownerName}
+                value={tempOwnerName}
                 onChange={(event) => handleOwnerInputChange(event.target.value)}
                 placeholder="Buscar por nome..."
                 className="bg-white"
@@ -285,18 +328,27 @@ export function EmpresaFilters({
           </div>
 
           <SheetFooter className="flex flex-col gap-2">
-            {hasActiveFilters && (
+            <div className="flex gap-2 w-full">
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  className="flex-1 text-sm"
+                  onClick={handleClear}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Limpar
+                </Button>
+              )}
               <Button
-                variant="ghost"
-                className="w-full text-sm"
-                onClick={handleClear}
+                onClick={handleApply}
+                disabled={!hasChanges}
+                className="flex-1 bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <X className="h-4 w-4 mr-2" />
-                Limpar filtros
+                Aplicar filtros
               </Button>
-            )}
+            </div>
             <SheetClose asChild>
-              <Button className="w-full bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white">
+              <Button variant="outline" className="w-full">
                 Fechar
               </Button>
             </SheetClose>

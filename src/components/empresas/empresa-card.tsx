@@ -14,7 +14,8 @@ import {
   Pencil,
   User,
   ChevronDown,
-  Copy
+  Copy,
+  Loader2
 } from 'lucide-react';
 import { Empresa } from '@/types/empresa';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -31,6 +32,7 @@ interface EmpresaCardProps {
     id: string;
     role: string;
   } | null;
+  isDeleting?: boolean;
 }
 
 export default function EmpresaCard({
@@ -39,7 +41,8 @@ export default function EmpresaCard({
   onDelete,
   showActions = true,
   showOwner = false,
-  currentUser = null
+  currentUser = null,
+  isDeleting = false
 }: EmpresaCardProps) {
 
   const formatSocialLink = (link: string, platform: string) => {
@@ -94,12 +97,20 @@ export default function EmpresaCard({
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => onDelete?.(empresa.id)}
                       className="bg-red-600 hover:bg-red-700"
+                      disabled={isDeleting}
                     >
-                      Excluir
+                      {isDeleting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Excluindo...
+                        </>
+                      ) : (
+                        'Excluir'
+                      )}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

@@ -25,6 +25,7 @@ export default function EmpresasPage() {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [deletingEmpresaId, setDeletingEmpresaId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<{
     ramos: string[];
@@ -90,10 +91,10 @@ export default function EmpresasPage() {
     };
   }, []); //eslint-disable-line
 
-  // Recarregar empresas quando busca ou filtros mudarem
+  // Recarregar empresas apenas quando busca mudar (filtros agora são aplicados manualmente)
   useEffect(() => {
     fetchEmpresas(1, debouncedSearchTerm, filters);
-  }, [debouncedSearchTerm, filters]); //eslint-disable-line
+  }, [debouncedSearchTerm]); //eslint-disable-line
 
   const fetchEmpresas = async (
     page = 1,
@@ -183,6 +184,7 @@ export default function EmpresasPage() {
 
   const handleDeleteEmpresa = async (empresaId: string) => {
     try {
+      setDeletingEmpresaId(empresaId);
       const response = await fetch(`/api/empresas/${empresaId}`, {
         method: 'DELETE',
       });
@@ -205,6 +207,8 @@ export default function EmpresasPage() {
         description: 'Erro ao deletar empresa',
         variant: 'destructive',
       });
+    } finally {
+      setDeletingEmpresaId(null);
     }
   };
 
@@ -244,11 +248,14 @@ export default function EmpresasPage() {
   };
 
   const handleClearFilters = () => {
-    setFilters({
+    const clearedFilters = {
       ramos: [],
       channels: [],
       ownerName: '',
-    });
+    };
+    setFilters(clearedFilters);
+    // Recarregar empresas com filtros limpos
+    fetchEmpresas(1, debouncedSearchTerm, clearedFilters);
   };
 
   const handleOwnerNameChange = (value: string) => {
@@ -256,6 +263,16 @@ export default function EmpresasPage() {
       ...prev,
       ownerName: value,
     }));
+  };
+
+  const handleApplyFilters = (appliedFilters: { ramos: string[]; channels: EmpresaContactChannel[]; ownerName: string }) => {
+    setFilters({
+      ramos: appliedFilters.ramos,
+      channels: appliedFilters.channels,
+      ownerName: appliedFilters.ownerName,
+    });
+    // Recarregar empresas com os novos filtros
+    fetchEmpresas(1, debouncedSearchTerm, appliedFilters);
   };
 
   return (
@@ -296,6 +313,7 @@ export default function EmpresasPage() {
               onChannelsChange={handleChannelsChange}
               onOwnerNameChange={handleOwnerNameChange}
               onClearAll={handleClearFilters}
+              onApplyFilters={handleApplyFilters}
               isFetchingOptions={isFetchingFilterOptions}
               onRefreshFilters={fetchFilterOptions}
             />
@@ -322,6 +340,7 @@ export default function EmpresasPage() {
                   showActions={true}
                   showOwner={true}
                   currentUser={currentUser}
+                  isDeleting={deletingEmpresaId === empresa.id}
                 />
               ))}
             </div>
