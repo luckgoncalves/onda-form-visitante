@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +45,7 @@ export default function EmpresaCard({
   currentUser = null,
   isDeleting = false
 }: EmpresaCardProps) {
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const formatSocialLink = (link: string, platform: string) => {
     if (!link) return '';
@@ -78,14 +80,26 @@ export default function EmpresaCard({
           {/* Botão excluir no topo direito */}
           {showActions && canDelete() && (
             <div className="flex justify-end">
-              <AlertDialog>
+              <AlertDialog open={dialogOpen || isDeleting} onOpenChange={(open) => {
+                if (!isDeleting) {
+                  setDialogOpen(open);
+                }
+              }}>
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="destructive"
                     size="sm"
                     className="h-auto px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white"
+                    disabled={isDeleting}
                   >
-                    Excluir
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        Excluindo...
+                      </>
+                    ) : (
+                      'Excluir'
+                    )}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -97,9 +111,14 @@ export default function EmpresaCard({
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isDeleting} onClick={() => setDialogOpen(false)}>Cancelar</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={() => onDelete?.(empresa.id)}
+                      onClick={async () => {
+                        if (onDelete) {
+                          await onDelete(empresa.id);
+                          setDialogOpen(false);
+                        }
+                      }}
                       className="bg-red-600 hover:bg-red-700"
                       disabled={isDeleting}
                     >
