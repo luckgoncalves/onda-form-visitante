@@ -11,6 +11,7 @@ export const empresaSchema = z.object({
   facebook: z.string().optional().or(z.literal('')),
   linkedin: z.string().optional().or(z.literal('')),
   email: z.string().email("Email inválido"),
+  logoUrl: z.string().url("URL do logo inválida").optional().or(z.literal('')),
 });
 
 export const createEmpresaSchema = empresaSchema.extend({

@@ -22,6 +22,7 @@ import ButtonForm from '@/components/button-form';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { MonthYearPicker } from '@/components/ui/month-year-picker';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 // Schema para dados do usuário
 const userFormSchema = userSchema;
@@ -55,6 +56,7 @@ export default function CreateUserPage() {
       phone: '',
       role: 'user',
       dataMembresia: '',
+      profileImageUrl: '',
     },
   });
 
@@ -72,6 +74,7 @@ export default function CreateUserPage() {
       facebook: '',
       linkedin: '',
       email: '',
+      logoUrl: '',
     },
   });
 
@@ -144,6 +147,7 @@ export default function CreateUserPage() {
         ...userData, 
         password: 'ondadura',
         dataMembresia: userData.dataMembresia && userData.dataMembresia.trim() !== '' ? userData.dataMembresia : undefined,
+        profileImageUrl: userData.profileImageUrl && userData.profileImageUrl.trim() !== '' ? userData.profileImageUrl : undefined,
       });
       
       if (!userResult.success) {
@@ -277,6 +281,25 @@ export default function CreateUserPage() {
                           <FormLabel>E-mail</FormLabel>
                           <FormControl>
                             <Input type="email" placeholder="Digite o e-mail" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={userForm.control}
+                      name="profileImageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <ImageUpload
+                              value={field.value || undefined}
+                              onChange={(url) => field.onChange(url || '')}
+                              label="Foto de Perfil (opcional)"
+                              folder="users/profiles"
+                              maxSizeMB={5}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

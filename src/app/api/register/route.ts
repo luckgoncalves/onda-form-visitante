@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
           requirePasswordChange: false,
           approved: false, // Usuário precisa ser aprovado por um administrador
           dataMembresia: userData.dataMembresia && userData.dataMembresia.trim() !== '' ? userData.dataMembresia : null,
+          profileImageUrl: userData.profileImageUrl && userData.profileImageUrl.trim() !== '' ? userData.profileImageUrl : null,
         }
       });
 
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
               facebook: empresaData.facebook || null,
               linkedin: empresaData.linkedin || null,
               email: empresaData.email,
+              logoUrl: empresaData.logoUrl || null,
             }
           });
 

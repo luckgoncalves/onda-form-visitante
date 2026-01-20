@@ -15,6 +15,7 @@ import { empresaSchema, EmpresaFormData } from '@/lib/validations/empresa';
 import { Empresa } from '@/types/empresa';
 import ButtonForm from '@/components/button-form';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 interface EmpresaFormProps {
   onModal?: boolean;
@@ -94,6 +95,7 @@ export default function EmpresaForm({
       facebook: initialData?.facebook || '',
       linkedin: initialData?.linkedin || '',
       email: initialData?.email || '',
+      logoUrl: initialData?.logoUrl || '',
     },
   });
 
@@ -139,6 +141,26 @@ export default function EmpresaForm({
                   <FormLabel>Nome do Negócio</FormLabel>
                   <FormControl>
                     <Input placeholder="Ex.: Studio de Beleza Maria" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Logo da Empresa */}
+            <FormField
+              control={form.control}
+              name="logoUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <ImageUpload
+                      value={field.value || undefined}
+                      onChange={(url) => field.onChange(url || '')}
+                      label="Logo da Empresa (opcional)"
+                      folder="empresas/logos"
+                      maxSizeMB={5}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -15,6 +15,7 @@ const createEmpresaSchema = z.object({
   facebook: z.string().optional().or(z.literal('')),
   linkedin: z.string().optional().or(z.literal('')),
   email: z.string().email('Email inválido'),
+  logoUrl: z.string().url('URL do logo inválida').optional().or(z.literal('')),
   userId: z.string().min(1, 'ID do usuário é obrigatório'),
 });
 
@@ -171,14 +172,16 @@ export async function POST(request: NextRequest) {
     // Criar empresa e relacionamento em transação
     const resultado = await prisma.$transaction(async (tx) => {
       // Criar empresa
+      const { endereco, site, instagram, facebook, linkedin, logoUrl, ...restEmpresaData } = empresaData;
       const empresa = await tx.empresa.create({
         data: {
-          ...empresaData,
-          endereco: empresaData.endereco || null,
-          site: empresaData.site || null,
-          instagram: empresaData.instagram || null,
-          facebook: empresaData.facebook || null,
-          linkedin: empresaData.linkedin || null,
+          ...restEmpresaData,
+          endereco: endereco || null,
+          site: site && site.trim() !== '' ? site : null,
+          instagram: instagram && instagram.trim() !== '' ? instagram : null,
+          facebook: facebook && facebook.trim() !== '' ? facebook : null,
+          linkedin: linkedin && linkedin.trim() !== '' ? linkedin : null,
+          logoUrl: logoUrl && logoUrl.trim() !== '' ? logoUrl : null,
         }
       });
 

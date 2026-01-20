@@ -75,6 +75,7 @@ model users {
   requirePasswordChange Boolean  @default(true)
   approved              Boolean  @default(true)
   dataMembresia         String?
+  profileImageUrl       String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
@@ -115,6 +116,7 @@ model Empresa {
   facebook        String?
   linkedin        String?
   email           String
+  logoUrl         String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

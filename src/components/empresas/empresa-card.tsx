@@ -16,8 +16,10 @@ import {
   User,
   ChevronDown,
   Copy,
-  Loader2
+  Loader2,
+  Building2
 } from 'lucide-react';
+import Image from 'next/image';
 import { Empresa } from '@/types/empresa';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger }  from '@/components/ui/dropdown-menu';
@@ -134,6 +136,19 @@ export default function EmpresaCard({
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+            </div>
+          )}
+          {/* Logo da empresa */}
+          {empresa.logoUrl && (
+            <div className="flex justify-start mb-2">
+              <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                <Image
+                  src={empresa.logoUrl}
+                  alt={`Logo ${empresa.nomeNegocio}`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
             </div>
           )}
           {/* Título e badge */}

@@ -15,6 +15,7 @@ const updateEmpresaSchema = z.object({
   facebook: z.string().optional().or(z.literal('')),
   linkedin: z.string().optional().or(z.literal('')),
   email: z.string().email('Email inválido').optional(),
+  logoUrl: z.string().url('URL do logo inválida').optional().or(z.literal('')),
 });
 
 // GET /api/empresas/[id] - Buscar empresa específica
@@ -85,16 +86,19 @@ export async function PUT(
     
     // Tratar campos opcionais
     if ('site' in validatedData) {
-      updateData.site = validatedData.site || null;
+      updateData.site = validatedData.site && validatedData.site.trim() !== '' ? validatedData.site : null;
     }
     if ('instagram' in validatedData) {
-      updateData.instagram = validatedData.instagram || null;
+      updateData.instagram = validatedData.instagram && validatedData.instagram.trim() !== '' ? validatedData.instagram : null;
     }
     if ('facebook' in validatedData) {
-      updateData.facebook = validatedData.facebook || null;
+      updateData.facebook = validatedData.facebook && validatedData.facebook.trim() !== '' ? validatedData.facebook : null;
     }
     if ('linkedin' in validatedData) {
-      updateData.linkedin = validatedData.linkedin || null;
+      updateData.linkedin = validatedData.linkedin && validatedData.linkedin.trim() !== '' ? validatedData.linkedin : null;
+    }
+    if ('logoUrl' in validatedData) {
+      updateData.logoUrl = validatedData.logoUrl && validatedData.logoUrl.trim() !== '' ? validatedData.logoUrl : null;
     }
 
     // Atualizar empresa

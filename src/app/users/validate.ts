@@ -9,7 +9,8 @@ export const userSchema = z.object({
     }).refine(value => ['user', 'admin', 'base_pessoal'].includes(value), {
       message: "Papel inválido"
     }),
-    dataMembresia: z.string().regex(/^\d{4}-\d{2}$/, "Formato inválido. Use YYYY-MM").optional().or(z.literal(''))
+    dataMembresia: z.string().regex(/^\d{4}-\d{2}$/, "Formato inválido. Use YYYY-MM").optional().or(z.literal('')),
+    profileImageUrl: z.string().url("URL da imagem inválida").optional().or(z.literal(''))
   });
   
 export const editUserPageSchema = userSchema.extend({

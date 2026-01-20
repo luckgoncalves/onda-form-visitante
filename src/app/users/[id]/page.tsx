@@ -20,6 +20,7 @@ import { editUserPageSchema, userSchema } from '../validate'; // Assuming valida
 import { formatPhone } from '@/lib/utils';
 import { ArrowLeft, User, Building2 } from 'lucide-react';
 import { MonthYearPicker } from '@/components/ui/month-year-picker';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 type UserData = {
   id: string;
@@ -28,6 +29,7 @@ type UserData = {
   phone?: string;
   role: string;
   dataMembresia?: string;
+  profileImageUrl?: string;
   // requirePasswordChange: boolean; // This might be useful to display but not directly editable here
 };
 
@@ -54,6 +56,7 @@ export default function EditUserPage() {
       role: 'user',
       password: '',
       dataMembresia: '',
+      profileImageUrl: '',
     },
   });
 
@@ -98,6 +101,7 @@ export default function EditUserPage() {
             role: userData.role,
             password: '',
             dataMembresia: userData.dataMembresia || '',
+            profileImageUrl: userData.profileImageUrl || '',
           });
         } else {
           setFetchError("ID do usuário não fornecido.");
@@ -133,6 +137,7 @@ export default function EditUserPage() {
         role: string;
         password?: string;
         dataMembresia?: string;
+        profileImageUrl?: string;
         // requirePasswordChange is not part of this form, so we don't include it.
         // The updateUser action should handle if it's undefined.
       } = {
@@ -141,6 +146,7 @@ export default function EditUserPage() {
         phone: data.phone,    // This is string or undefined
         role: isAdminRef.current ? data.role : user.role,     // Use original value if disabled
         dataMembresia: data.dataMembresia, // This is string or undefined
+        profileImageUrl: data.profileImageUrl, // This is string or undefined
       };
 
       if (data.password && data.password.trim() !== '') {
@@ -271,6 +277,24 @@ export default function EditUserPage() {
                               {...field} 
                               readOnly={!isAdminRef.current}
                               className={!isAdminRef.current ? "cursor-not-allowed opacity-60" : ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="profileImageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <ImageUpload
+                              value={field.value || undefined}
+                              onChange={(url) => field.onChange(url || '')}
+                              label="Foto de Perfil (opcional)"
+                              folder="users/profiles"
+                              maxSizeMB={5}
                             />
                           </FormControl>
                           <FormMessage />

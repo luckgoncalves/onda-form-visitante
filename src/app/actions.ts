@@ -453,14 +453,14 @@ export async function canAccessRegister() {
   return { canAccess: user.role === 'admin' || user.role === 'base_pessoal' };
 }
 
-export async function createUser(data: { email: string; password?: string; name: string; phone?: string; role: string; dataMembresia?: string }) {
+export async function createUser(data: { email: string; password?: string; name: string; phone?: string; role: string; dataMembresia?: string; profileImageUrl?: string }) {
   if (!data.password) {
     throw new Error('Senha é obrigatória para criar um usuário');
   }
   
   const hashedPassword = await bcrypt.hash(data.password, 10);
   
-  const { dataMembresia, ...userData } = data;
+  const { dataMembresia, profileImageUrl, ...userData } = data;
   
   const user = await prismaClient.users.create({
     data: {
@@ -468,6 +468,7 @@ export async function createUser(data: { email: string; password?: string; name:
       password: hashedPassword,
       requirePasswordChange: true,
       dataMembresia: dataMembresia && dataMembresia.trim() !== '' ? dataMembresia : null,
+      profileImageUrl: profileImageUrl && profileImageUrl.trim() !== '' ? profileImageUrl : null,
     },
   });
 
@@ -520,6 +521,7 @@ type UpdateUserData = {
   role: string;
   password?: string;
   dataMembresia?: string;
+  profileImageUrl?: string;
   requirePasswordChange?: boolean;
 };
 
@@ -530,6 +532,7 @@ export async function updateUser(id: string, data: UpdateUserData) {
     phone: data.phone,
     role: data.role,
     dataMembresia: data.dataMembresia && data.dataMembresia.trim() !== '' ? data.dataMembresia : null,
+    profileImageUrl: data.profileImageUrl && data.profileImageUrl.trim() !== '' ? data.profileImageUrl : null,
     requirePasswordChange: data.requirePasswordChange
   };
 

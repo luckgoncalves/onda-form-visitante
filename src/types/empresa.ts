@@ -10,6 +10,7 @@ export interface Empresa {
   facebook?: string | null;
   linkedin?: string | null;
   email: string;
+  logoUrl?: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
   usuarios?: UserEmpresa[];
@@ -42,6 +43,7 @@ export interface EmpresaFormData {
   facebook?: string;
   linkedin?: string;
   email: string;
+  logoUrl?: string;
   userId?: string;
 }
 

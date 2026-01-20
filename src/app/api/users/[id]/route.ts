@@ -30,6 +30,7 @@ export async function GET(
         phone: true,
         role: true,
         dataMembresia: true,
+        profileImageUrl: true,
         requirePasswordChange: true, // If this field is relevant for the edit page
       },
     });
