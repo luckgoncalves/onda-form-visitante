@@ -138,7 +138,7 @@ export default function EmpresaForm({
                 <FormItem>
                   <FormLabel>Nome do Negócio</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: Studio de Beleza Maria" {...field} />
+                    <Input placeholder="Ex.: Studio de Beleza Maria" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -165,7 +165,7 @@ export default function EmpresaForm({
                       <FormControl>
                         <div className="relative">
                           <Input
-                            placeholder="Ex: Beleza e Estética"
+                            placeholder="Ex.: Beleza e Estética"
                             value={ramoValue}
                             onChange={(e) => {
                               field.onChange(e.target.value);
@@ -284,7 +284,7 @@ export default function EmpresaForm({
                   <FormLabel>Detalhes do Serviço/Produto</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Descreva os serviços ou produtos oferecidos..."
+                      placeholder="Descreva os serviços ou produtos oferecidos."
                       className="min-h-[100px]"
                       {...field} 
                     />

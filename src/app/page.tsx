@@ -109,7 +109,7 @@ export default function Home() {
             <Form {...form}>
               <form className="flex flex-col mx-auto gap-4" onSubmit={submitAction}>
 
-                <FormLabel>Email:</FormLabel>
+                <FormLabel>E-mail:</FormLabel>
                 <FormField 
                   control={form.control} 
                   name="email" 
