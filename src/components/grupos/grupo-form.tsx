@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getBairrosCuritiba, listUsers } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -177,14 +176,17 @@ export default function GrupoForm({ mode, initialData, onSubmit, onCancel, isLoa
                 <FormItem>
                   <FormLabel>Categoria</FormLabel>
                   <FormControl>
-                    <Select {...field}>
+                    <select
+                      {...field}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
                       <option value="">Selecione uma categoria</option>
                       {categorias.map((categoria) => (
                         <option key={categoria.value} value={categoria.value}>
                           {categoria.label}
                         </option>
                       ))}
-                    </Select>
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -199,14 +201,17 @@ export default function GrupoForm({ mode, initialData, onSubmit, onCancel, isLoa
                 <FormItem>
                   <FormLabel>Dia da Semana</FormLabel>
                   <FormControl>
-                    <Select {...field}>
+                    <select
+                      {...field}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
                       <option value="">Selecione um dia da semana</option>
                       {diasSemana.map((dia) => (
                         <option key={dia.value} value={dia.value}>
                           {dia.label}
                         </option>
                       ))}
-                    </Select>
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -240,14 +245,17 @@ export default function GrupoForm({ mode, initialData, onSubmit, onCancel, isLoa
                 <FormItem>
                   <FormLabel>Bairro (Opcional)</FormLabel>
                   <FormControl>
-                    <Select {...field}>
+                    <select
+                      {...field}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
                       <option value="">Selecione um bairro</option>
                       {bairros.map((bairro) => (
                         <option key={bairro.id} value={bairro.id}>
                           {bairro.nome}
                         </option>
                       ))}
-                    </Select>
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

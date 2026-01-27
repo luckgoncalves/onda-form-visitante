@@ -8,7 +8,6 @@ import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/header';
@@ -351,11 +350,16 @@ export default function CreateUserPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Papel</FormLabel>
-                          <Select onChange={field.onChange} value={field.value}>
-                            <option value="user">Usuário</option>
-                            <option value="base_pessoal">Base Pessoal</option>
-                            <option value="admin">Administrador</option>
-                          </Select>
+                          <FormControl>
+                            <select
+                              {...field}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <option value="user">Usuário</option>
+                              <option value="base_pessoal">Base Pessoal</option>
+                              <option value="admin">Administrador</option>
+                            </select>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from "react";
-import { User, ChevronDown, LayoutDashboard, LogOut, Users, UserCog, UsersRound, Building } from "lucide-react";
+import { User, ChevronDown, LayoutDashboard, LogOut, Users, UserCog, UsersRound, Building, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
@@ -83,6 +83,16 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
                   >
                     <UsersRound className="h-4 w-4 mr-2.5" />
                     Gp`s
+                  </Button>
+                )}
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
+                    onClick={() => router.push('/dashboard/forms')}
+                  >
+                    <FileText className="h-4 w-4 mr-2.5" />
+                    Formulários
                   </Button>
                 )}
                 

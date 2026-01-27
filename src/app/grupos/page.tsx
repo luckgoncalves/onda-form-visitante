@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Users, Filter } from 'lucide-react';
 import GrupoCard from '@/components/grupos/grupo-card';
 import GrupoCardsSkeleton from '@/components/grupos/grupo-cards-skeleton';
-import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/header';
 import { HeaderPublic } from '@/components/header-public';
@@ -182,10 +181,10 @@ export default function GruposPublicPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Dia da Semana
                 </label>
-                <Select 
+                <select 
                   value={selectedDia} 
                   onChange={(e) => setSelectedDia(e.target.value)}
-                  className="w-full max-w-full p-1 bg-white rounded-md border border-gray-300 focus:border-gray-500 focus:ring-gray-500 "
+                  className="w-full max-w-full p-2 bg-white rounded-md border border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                 >
                   <option value="todos">Todos os dias</option>
                   {availableDays.map((dia) => (
@@ -193,7 +192,7 @@ export default function GruposPublicPage() {
                       {formatDiaSemana(dia)}
                     </option>
                   ))}
-                </Select>
+                </select>
               </div>
 
               {/* Filtro Categoria */}
@@ -201,10 +200,10 @@ export default function GruposPublicPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Categoria
                 </label>
-                <Select 
+                <select 
                   value={selectedCategoria} 
                   onChange={(e) => setSelectedCategoria(e.target.value)}
-                  className="w-full p-1 bg-white rounded-md border border-gray-300 focus:border-gray-500 focus:ring-gray-500 "
+                  className="w-full p-2 bg-white rounded-md border border-gray-300 focus:border-gray-500 focus:ring-gray-500"
                 >
                   <option value="todas">Todas as categorias</option>
                   {availableCategories.map((categoria) => {
@@ -222,7 +221,7 @@ export default function GruposPublicPage() {
                       </option>
                     );
                   })}
-                </Select>
+                </select>
               </div>
             </div>
 

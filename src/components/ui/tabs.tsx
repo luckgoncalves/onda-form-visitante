@@ -11,7 +11,7 @@ interface TabsContextValue {
 const TabsContext = React.createContext<TabsContextValue | null>(null);
 
 interface TabsProps {
-  defaultValue: string;
+  defaultValue?: string;
   value?: string;
   onValueChange?: (value: string) => void;
   children: React.ReactNode;
@@ -20,7 +20,7 @@ interface TabsProps {
 
 const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
   ({ defaultValue, value, onValueChange, children, className, ...props }, ref) => {
-    const [internalValue, setInternalValue] = React.useState(defaultValue);
+    const [internalValue, setInternalValue] = React.useState(defaultValue || '');
     const currentValue = value ?? internalValue;
     
     const handleValueChange = React.useCallback((newValue: string) => {

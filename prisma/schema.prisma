@@ -27,6 +27,29 @@ enum DiaSemana {
   DOMINGO
 }
 
+// Enums para o model Form
+enum FormStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum FormVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum FieldType {
+  SHORT_TEXT
+  LONG_TEXT
+  EMAIL
+  NUMBER
+  PHONE
+  RADIO
+  CHECKBOX
+  SELECT
+}
+
 model bairros {
   id        String   @id @default(cuid())
   nome      String
@@ -87,6 +110,10 @@ model users {
 
   // Relação com empresas
   empresas UserEmpresa[]
+
+  // Relação com formulários
+  formsCreated  Form[]
+  formResponses FormResponse[] @relation("FormResponses")
 }
 
 model grupo {
@@ -135,4 +162,67 @@ model UserEmpresa {
   empresa Empresa @relation(fields: [empresaId], references: [id], onDelete: Cascade)
 
   @@unique([userId, empresaId])
+}
+
+// Models para Sistema de Formulários Dinâmicos
+model Form {
+  id           String         @id @default(cuid())
+  title        String
+  description  String?        @db.Text
+  status       FormStatus     @default(DRAFT)
+  visibility   FormVisibility @default(PUBLIC)
+  publicToken  String?        @unique
+  privateToken String?        @unique
+  requireAuth  Boolean        @default(false)
+  emailEnabled Boolean        @default(false)
+  emailSubject String?
+  emailBody    String?        @db.Text
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  createdById  String
+
+  // Relações
+  createdBy users          @relation(fields: [createdById], references: [id])
+  fields    FormField[]
+  responses FormResponse[]
+}
+
+model FormField {
+  id          String    @id @default(cuid())
+  formId      String
+  label       String
+  type        FieldType
+  required    Boolean   @default(false)
+  placeholder String?
+  helpText    String?
+  options     Json?
+  order       Int
+
+  // Relações
+  form    Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
+  answers FormAnswer[]
+}
+
+model FormResponse {
+  id               String   @id @default(cuid())
+  formId           String
+  respondentEmail  String?
+  respondentUserId String?
+  submittedAt      DateTime @default(now())
+
+  // Relações
+  form           Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
+  respondentUser users?       @relation("FormResponses", fields: [respondentUserId], references: [id])
+  answers        FormAnswer[]
+}
+
+model FormAnswer {
+  id         String @id @default(cuid())
+  responseId String
+  fieldId    String
+  value      String @db.Text
+
+  // Relações
+  response FormResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  field    FormField    @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 }

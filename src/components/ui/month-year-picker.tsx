@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
 interface MonthYearPickerProps {
@@ -26,6 +25,8 @@ const MONTHS = [
   { value: '11', label: 'Novembro' },
   { value: '12', label: 'Dezembro' },
 ];
+
+const selectClassName = "flex-1 h-10 pl-2 pr-2 rounded-md border border-gray-300 focus:border-onda-darkBlue focus:ring-onda-darkBlue bg-white py-2 text-sm focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function MonthYearPicker({
   value = '',
@@ -84,11 +85,11 @@ export function MonthYearPicker({
 
   return (
     <div className={cn('flex gap-2', className)}>
-      <Select
+      <select
         value={localMonth}
         onChange={handleMonthChange}
         disabled={disabled}
-        className="flex-1 h-10 pl-2 pr-0 rounded-md border border-gray-300 focus:border-onda-darkBlue focus:ring-onda-darkBlue bg-transparent py-2 text-sm focus-visible:outline-none focus-visible:ring-0"
+        className={selectClassName}
       >
         <option value="">Mês</option>
         {MONTHS.map((m) => (
@@ -96,13 +97,13 @@ export function MonthYearPicker({
             {m.label}
           </option>
         ))}
-      </Select>
+      </select>
 
-      <Select
+      <select
         value={localYear}
         onChange={handleYearChange}
         disabled={disabled}
-        className="flex-1 h-10 pl-2 pr-0 rounded-md border border-gray-300 focus:border-onda-darkBlue focus:ring-onda-darkBlue bg-transparent py-2 text-sm focus-visible:outline-none focus-visible:ring-0"
+        className={selectClassName}
       >
         <option value="">Ano</option>
         {years.map((y) => (
@@ -110,7 +111,7 @@ export function MonthYearPicker({
             {y}
           </option>
         ))}
-      </Select>
+      </select>
     </div>
   );
 }

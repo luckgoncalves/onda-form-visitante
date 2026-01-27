@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import type { Viewport } from 'next'
 import { PWARegister } from "@/components/pwa-register";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -72,6 +73,7 @@ export default function RootLayout({
       <body className={`${inter.className} ${gothamBold.variable} h-[100%]  min-h-screen  bg-white`}>
         <PWARegister />
         {children}
+        <Toaster />
       </body>
     </html>
   );
