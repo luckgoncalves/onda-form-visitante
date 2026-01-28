@@ -13,7 +13,6 @@ import { SkeletonCard } from "@/components/visitors/skeleton";
 import { SwipeInstruction } from "@/components/visitors/swipe-intruction";
 import LoadingOnda from "@/components/loading-onda";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { Select } from "@/components/ui/select";
 import { format } from "date-fns";
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from "@/components/ui/sheet";
 
@@ -341,7 +340,7 @@ export default function List() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Culto</label>
                     <div className="relative">
-                      <Select
+                      <select
                         value={filtersDraft.culto}
                         onChange={(event) =>
                           setFiltersDraft((prev) => ({ ...prev, culto: event.target.value }))
@@ -354,7 +353,7 @@ export default function List() {
                         <option value="domingo-noite">Domingo noite</option>
                         <option value="new">New</option>
                         <option value="evento">Evento</option>
-                      </Select>
+                      </select>
                     </div>
                   </div>
                   <div className="space-y-2">
