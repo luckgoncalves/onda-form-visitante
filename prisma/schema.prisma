@@ -50,6 +50,17 @@ enum FieldType {
   SELECT
 }
 
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relação com usuários
+  users users[]
+}
+
 model bairros {
   id        String   @id @default(cuid())
   nome      String
@@ -94,13 +105,17 @@ model users {
   password              String
   name                  String
   phone                 String?
-  role                  String   @default("user")
+  role                  String   @default("user") // Campo legado - será removido após migração
+  roleId                String?
   requirePasswordChange Boolean  @default(true)
   approved              Boolean  @default(true)
   dataMembresia         String?
   profileImageUrl       String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+
+  // Relação com Role
+  roleRelation Role? @relation(fields: [roleId], references: [id])
 
   // Add relation to Visitantes
   registeredVisitors visitantes[]

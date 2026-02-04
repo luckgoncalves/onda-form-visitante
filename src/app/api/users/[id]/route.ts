@@ -29,6 +29,11 @@ export async function GET(
         email: true,
         phone: true,
         role: true,
+        roleRelation: {
+          select: {
+            name: true
+          }
+        },
         dataMembresia: true,
         profileImageUrl: true,
         requirePasswordChange: true, // If this field is relevant for the edit page
@@ -39,7 +44,11 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    // Retornar com role mapeado da relação
+    return NextResponse.json({
+      ...user,
+      role: user.roleRelation?.name || user.role
+    });
   } catch (error) {
     console.error('[API USERS GET]', error);
     // Avoid sending detailed error messages to the client in production

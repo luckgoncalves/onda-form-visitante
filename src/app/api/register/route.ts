@@ -29,6 +29,11 @@ export async function POST(request: NextRequest) {
     // Hash da senha
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
+    // Buscar o roleId para 'user'
+    const userRole = await prisma.role.findUnique({
+      where: { name: 'user' }
+    });
+
     // Criar usuário e empresas em transação
     const resultado = await prisma.$transaction(async (tx) => {
       // Criar usuário com role 'user', requirePasswordChange: false e approved: false
@@ -40,11 +45,15 @@ export async function POST(request: NextRequest) {
           email: userData.email,
           phone: userData.phone || null,
           password: hashedPassword,
-          role: 'user', // Sempre 'user' para registro público
+          role: 'user', // Campo legado - sempre 'user' para registro público
+          roleId: userRole?.id || null, // Novo campo com referência à tabela Role
           requirePasswordChange: false,
           approved: false, // Usuário precisa ser aprovado por um administrador
           dataMembresia: userData.dataMembresia && userData.dataMembresia.trim() !== '' ? userData.dataMembresia : null,
           profileImageUrl: userData.profileImageUrl && userData.profileImageUrl.trim() !== '' ? userData.profileImageUrl : null,
+        },
+        include: {
+          roleRelation: true
         }
       });
 
@@ -94,7 +103,7 @@ export async function POST(request: NextRequest) {
         name: resultado.user.name,
         email: resultado.user.email,
         phone: resultado.user.phone,
-        role: resultado.user.role,
+        role: resultado.user.roleRelation?.name || resultado.user.role,
         approved: resultado.user.approved,
         requirePasswordChange: resultado.user.requirePasswordChange,
       },

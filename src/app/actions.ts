@@ -106,9 +106,12 @@ export const save = async (data: any) => {
  export async function login(email: string, password: string) {
   // const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Buscar usuário (sem select para incluir todos os campos, incluindo approved se existir)
+  // Buscar usuário com a relação de role
   const user = await prismaClient.users.findUnique({
     where: { email },
+    include: {
+      roleRelation: true
+    }
   });
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -127,8 +130,11 @@ export const save = async (data: any) => {
     return { success: false, message: 'Sua conta ainda não foi aprovada por um administrador. Aguarde a aprovação.' };
   }
 
+  // Usar o nome da role da relação, ou fallback para o campo legado
+  const roleName = user.roleRelation?.name || user.role;
+
   const token = sign(
-    { userId: user.id, email: user.email, role: user.role },
+    { userId: user.id, email: user.email, role: roleName },
     process.env.JWT_SECRET!,
     { expiresIn: '1d' }
   );
@@ -147,7 +153,7 @@ export const save = async (data: any) => {
       id: user.id, 
       name: user.name, 
       email: user.email, 
-      role: user.role,
+      role: roleName,
       requirePasswordChange: user.requirePasswordChange 
     } 
   };
@@ -170,6 +176,11 @@ export async function checkAuth() {
         name: true, 
         email: true, 
         role: true,
+        roleRelation: {
+          select: {
+            name: true
+          }
+        },
         requirePasswordChange: true
       }
     });
@@ -201,7 +212,19 @@ export async function checkAuth() {
       // Se o campo não existir ainda no banco, ignorar erro e permitir login (usuários antigos)
     }
 
-    return { isAuthenticated: true, user };
+    // Usar o nome da role da relação, ou fallback para o campo legado
+    const roleName = user.roleRelation?.name || user.role;
+
+    return { 
+      isAuthenticated: true, 
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: roleName,
+        requirePasswordChange: user.requirePasswordChange
+      }
+    };
   } catch (error) {
     return { isAuthenticated: false, user: null };
   }
@@ -460,16 +483,26 @@ export async function createUser(data: { email: string; password?: string; name:
   
   const hashedPassword = await bcrypt.hash(data.password, 10);
   
-  const { dataMembresia, profileImageUrl, ...userData } = data;
+  // Buscar o roleId baseado no nome da role
+  const roleRecord = await prismaClient.role.findUnique({
+    where: { name: data.role }
+  });
+  
+  const { dataMembresia, profileImageUrl, role, ...userData } = data;
   
   const user = await prismaClient.users.create({
     data: {
       ...userData,
       password: hashedPassword,
+      role: role, // Manter campo legado por compatibilidade
+      roleId: roleRecord?.id || null,
       requirePasswordChange: true,
       dataMembresia: dataMembresia && dataMembresia.trim() !== '' ? dataMembresia : null,
       profileImageUrl: profileImageUrl && profileImageUrl.trim() !== '' ? profileImageUrl : null,
     },
+    include: {
+      roleRelation: true
+    }
   });
 
   return { success: true, user: { 
@@ -477,7 +510,7 @@ export async function createUser(data: { email: string; password?: string; name:
     name: user.name, 
     email: user.email, 
     phone: user.phone,
-    role: user.role,
+    role: user.roleRelation?.name || user.role,
     requirePasswordChange: user.requirePasswordChange 
   } };
 }
@@ -495,6 +528,11 @@ export async function listUsers(searchTerm?: string) {
       email: true,
       phone: true,
       role: true,
+      roleRelation: {
+        select: {
+          name: true
+        }
+      },
       createdAt: true,
       requirePasswordChange: true,
     },
@@ -503,7 +541,11 @@ export async function listUsers(searchTerm?: string) {
     }
   });
 
-  return users;
+  // Mapear para usar o nome da role da relação
+  return users.map(user => ({
+    ...user,
+    role: user.roleRelation?.name || user.role
+  }));
 }
 
 export async function deleteUser(id: string) {
@@ -526,11 +568,17 @@ type UpdateUserData = {
 };
 
 export async function updateUser(id: string, data: UpdateUserData) {
+  // Buscar o roleId baseado no nome da role
+  const roleRecord = await prismaClient.role.findUnique({
+    where: { name: data.role }
+  });
+
   const updateData: any = {
     email: data.email,
     name: data.name,
     phone: data.phone,
-    role: data.role,
+    role: data.role, // Manter campo legado por compatibilidade
+    roleId: roleRecord?.id || null,
     dataMembresia: data.dataMembresia && data.dataMembresia.trim() !== '' ? data.dataMembresia : null,
     profileImageUrl: data.profileImageUrl && data.profileImageUrl.trim() !== '' ? data.profileImageUrl : null,
     requirePasswordChange: data.requirePasswordChange
@@ -547,6 +595,9 @@ export async function updateUser(id: string, data: UpdateUserData) {
   const user = await prismaClient.users.update({
     where: { id },
     data: updateData,
+    include: {
+      roleRelation: true
+    }
   });
 
   return { success: true, user: { 
@@ -554,7 +605,7 @@ export async function updateUser(id: string, data: UpdateUserData) {
     name: user.name, 
     email: user.email, 
     phone: user.phone,
-    role: user.role,
+    role: user.roleRelation?.name || user.role,
     requirePasswordChange: user.requirePasswordChange 
   } };
 }

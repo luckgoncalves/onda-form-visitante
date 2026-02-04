@@ -66,6 +66,11 @@ export async function PATCH(
           email: true,
           phone: true,
           role: true,
+          roleRelation: {
+            select: {
+              name: true
+            }
+          },
           approved: true,
           createdAt: true,
         },
@@ -74,7 +79,10 @@ export async function PATCH(
       return NextResponse.json({
         success: true,
         message: 'Usuário aprovado com sucesso',
-        user: updatedUser,
+        user: {
+          ...updatedUser,
+          role: updatedUser.roleRelation?.name || updatedUser.role
+        },
       });
     } else {
       // Rejeitar = deletar usuário e suas empresas vinculadas

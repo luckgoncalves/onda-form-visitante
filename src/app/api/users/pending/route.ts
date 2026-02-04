@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar usuários pendentes com suas empresas
-    const [users, total] = await Promise.all([
+    const [usersRaw, total] = await Promise.all([
       prisma.users.findMany({
         where,
         skip,
@@ -54,6 +54,11 @@ export async function GET(request: NextRequest) {
           email: true,
           phone: true,
           role: true,
+          roleRelation: {
+            select: {
+              name: true
+            }
+          },
           approved: true,
           createdAt: true,
           empresas: {
@@ -73,6 +78,12 @@ export async function GET(request: NextRequest) {
       }),
       prisma.users.count({ where }),
     ]);
+
+    // Mapear para usar o nome da role da relação
+    const users = usersRaw.map(user => ({
+      ...user,
+      role: user.roleRelation?.name || user.role
+    }));
 
     return NextResponse.json({
       users,
