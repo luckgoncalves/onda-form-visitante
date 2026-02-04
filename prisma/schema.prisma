@@ -177,6 +177,7 @@ model Form {
   emailEnabled Boolean        @default(false)
   emailSubject String?
   emailBody    String?        @db.Text
+  expiresAt    DateTime?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   createdById  String

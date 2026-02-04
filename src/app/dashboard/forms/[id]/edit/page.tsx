@@ -23,7 +23,7 @@ import { FormPreview } from '@/components/forms/form-preview';
 import { EmailVariablesList } from '@/components/forms/email-variables-list';
 import { FormFieldConfig, FormStatus, FormVisibility } from '@/types/form';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Save, Eye, Loader2, Link2, Copy, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Loader2, Link2, Copy, ExternalLink, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function EditFormPage() {
@@ -47,6 +47,7 @@ export default function EditFormPage() {
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
+  const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [fields, setFields] = useState<FormFieldConfig[]>([]);
   const [publicToken, setPublicToken] = useState<string | null>(null);
   const [privateToken, setPrivateToken] = useState<string | null>(null);
@@ -101,6 +102,7 @@ export default function EditFormPage() {
       setEmailEnabled(form.emailEnabled);
       setEmailSubject(form.emailSubject || '');
       setEmailBody(form.emailBody || '');
+      setExpiresAt(form.expiresAt ? new Date(form.expiresAt) : null);
       setPublicToken(form.publicToken);
       setPrivateToken(form.privateToken);
       setFields(
@@ -171,6 +173,7 @@ export default function EditFormPage() {
         emailEnabled,
         emailSubject: emailEnabled ? (emailSubject || null) : null,
         emailBody: emailEnabled ? (emailBody || null) : null,
+        expiresAt: expiresAt ? expiresAt.toISOString() : null,
         fields: fields.map((field, index) => ({
           ...field,
           order: index,
@@ -440,6 +443,35 @@ export default function EditFormPage() {
                     </div>
                   </div>
                 )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="expiresAt">Data de Expiração</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="expiresAt"
+                      type="datetime-local"
+                      value={expiresAt ? new Date(expiresAt.getTime() - expiresAt.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setExpiresAt(val ? new Date(val) : null);
+                      }}
+                      className="w-full"
+                    />
+                    {expiresAt && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setExpiresAt(null)}
+                        title="Limpar data"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Opcional. O formulário deixará de aceitar respostas após esta data e hora.
+                  </p>
+                </div>
               </div>
             </Card>
           </TabsContent>

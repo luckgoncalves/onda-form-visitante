@@ -110,6 +110,7 @@ export async function POST(request: NextRequest) {
       emailEnabled: formData.emailEnabled,
       emailSubject: formData.emailEnabled ? (formData.emailSubject || null) : null,
       emailBody: formData.emailEnabled ? (formData.emailBody || null) : null,
+      expiresAt: formData.expiresAt ? new Date(formData.expiresAt) : null,
       publicToken,
       privateToken,
       createdById: user.id,

@@ -6,7 +6,7 @@ import { FormPublicRender } from '@/components/forms/form-public-render';
 import { FormFieldConfig } from '@/types/form';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertCircle, Lock } from 'lucide-react';
+import { Loader2, AlertCircle, Lock, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 interface FormData {
@@ -25,6 +25,7 @@ export default function PublicFormPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [requireAuth, setRequireAuth] = useState(false);
+  const [isExpired, setIsExpired] = useState(false);
   const [formData, setFormData] = useState<FormData | null>(null);
 
   useEffect(() => {
@@ -48,6 +49,10 @@ export default function PublicFormPage() {
           setRequireAuth(true);
           return;
         }
+        if (response.status === 410) {
+          setIsExpired(true);
+          return;
+        }
         throw new Error(data.error || 'Erro ao carregar formulário');
       }
 
@@ -67,6 +72,30 @@ export default function PublicFormPage() {
           <Loader2 className="h-8 w-8 animate-spin text-onda-darkBlue mx-auto mb-4" />
           <p className="text-gray-500">Carregando formulário...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Expired state
+  if (isExpired) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-8 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="h-16 w-16 rounded-full bg-yellow-100 flex items-center justify-center">
+              <Clock className="h-8 w-8 text-yellow-600" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Formulário Expirado
+          </h2>
+          <p className="text-gray-600 mb-6">
+            O prazo para preenchimento deste formulário encerrou e ele não aceita mais respostas.
+          </p>
+          <Link href="/">
+            <Button variant="outline">Voltar ao início</Button>
+          </Link>
+        </Card>
       </div>
     );
   }

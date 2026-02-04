@@ -42,6 +42,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Check expiration
+    if (form.expiresAt && new Date() > new Date(form.expiresAt)) {
+      return NextResponse.json(
+        { error: 'Este formulário expirou e não aceita mais respostas.' },
+        { status: 410 }
+      );
+    }
+
     // Check if auth is required
     const isPrivateToken = form.privateToken === token;
     
@@ -106,6 +114,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         { error: 'Formulário não encontrado ou não está publicado' },
         { status: 404 }
+      );
+    }
+
+    // Check expiration
+    if (form.expiresAt && new Date() > new Date(form.expiresAt)) {
+      return NextResponse.json(
+        { error: 'Este formulário expirou e não aceita mais respostas.' },
+        { status: 410 }
       );
     }
 

@@ -103,6 +103,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       emailEnabled: formData.emailEnabled,
       emailSubject: formData.emailEnabled ? (formData.emailSubject || null) : null,
       emailBody: formData.emailEnabled ? (formData.emailBody || null) : null,
+      expiresAt: formData.expiresAt ? new Date(formData.expiresAt) : null,
     };
 
     // Update form and fields in a transaction

@@ -48,6 +48,7 @@ export const formSchema = z.object({
   emailEnabled: z.boolean().default(false),
   emailSubject: z.string().nullish(),
   emailBody: z.string().nullish(),
+  expiresAt: z.union([z.date(), z.string()]).nullish(),
   fields: z.array(formFieldSchema).min(1, 'Adicione pelo menos um campo'),
 }).refine(
   (data) => {

@@ -16,6 +16,7 @@ export interface Form {
   emailEnabled: boolean;
   emailSubject: string | null;
   emailBody: string | null;
+  expiresAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   createdById: string;
@@ -98,6 +99,7 @@ export interface FormConfig {
   emailEnabled: boolean;
   emailSubject?: string;
   emailBody?: string;
+  expiresAt?: Date | null;
   fields: FormFieldConfig[];
 }
 
