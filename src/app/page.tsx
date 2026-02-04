@@ -58,8 +58,9 @@ export default function Home() {
       title: 'Grupos Pequenos',
       description: 'Encontre um grupo pequeno perto de você e conecte-se com outras pessoas.',
       icon: UsersRound,
-      href: '/grupos',
+      href: 'https://ondaduracuritiba.inpeaceapp.com/groups',
       color: 'bg-onda-teal',
+      external: true,
     },
     {
       title: 'Empresas',
@@ -67,6 +68,7 @@ export default function Home() {
       icon: Building,
       href: '/empresas',
       color: 'bg-onda-skyBlue',
+      external: false,
     },
   ];
 
@@ -122,7 +124,12 @@ export default function Home() {
             {publicPages.map((page) => {
               const Icon = page.icon;
               return (
-                <Link key={page.href} href={page.href} className="group">
+                <Link 
+                  key={page.href} 
+                  href={page.href} 
+                  className="group"
+                  {...(page.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                >
                   <Card className="h-full bg-white/10 backdrop-blur border-white/20 hover:bg-white/20 transition-all duration-300 cursor-pointer">
                     <CardHeader>
                       <div className={`w-12 h-12 rounded-xl ${page.color} flex items-center justify-center mb-4`}>
