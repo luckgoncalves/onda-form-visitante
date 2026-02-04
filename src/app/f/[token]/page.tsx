@@ -87,7 +87,7 @@ export default function PublicFormPage() {
           <p className="text-gray-600 mb-6">
             Este formulário requer autenticação. Por favor, faça login para continuar.
           </p>
-          <Link href="/">
+          <Link href="/login">
             <Button className="bg-onda-darkBlue hover:bg-onda-darkBlue/90">
               Fazer Login
             </Button>

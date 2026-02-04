@@ -144,7 +144,7 @@ export default function SignupPage() {
 
       // Redirecionar para página de login após alguns segundos
       setTimeout(() => {
-        router.push('/');
+        router.push('/login');
       }, 3000);
 
     } catch (error) {

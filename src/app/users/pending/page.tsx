@@ -39,6 +39,7 @@ export default function PendingUsersPage() {
   const [userName, setUserName] = useState("");
   const [userId, setUserId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
@@ -119,6 +120,7 @@ export default function PendingUsersPage() {
   const handleApproveUser = async (userId: string, approve: boolean) => {
     try {
       setIsLoading(true);
+      setLoadingUserId(userId);
       const response = await fetch(`/api/users/${userId}/approve`, {
         method: 'PATCH',
         headers: {
@@ -150,6 +152,7 @@ export default function PendingUsersPage() {
       });
     } finally {
       setIsLoading(false);
+      setLoadingUserId(null);
     }
   };
 
@@ -278,8 +281,17 @@ export default function PendingUsersPage() {
                             disabled={isLoading}
                             className="w-full sm:w-auto"
                           >
-                            <Check className="h-4 w-4 mr-2" />
-                            Aprovar
+                            {loadingUserId === user.id ? (
+                              <>
+                                <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                Processando...
+                              </>
+                            ) : (
+                              <>
+                                <Check className="h-4 w-4 mr-2" />
+                                Aprovar
+                              </>
+                            )}
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -295,12 +307,12 @@ export default function PendingUsersPage() {
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleApproveUser(user.id, true)}
                               disabled={isLoading}
                             >
-                              Aprovar
+                              {loadingUserId === user.id ? 'Aprovando...' : 'Aprovar'}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -314,8 +326,17 @@ export default function PendingUsersPage() {
                             disabled={isLoading}
                             className="w-full sm:w-auto"
                           >
-                            <X className="h-4 w-4 mr-2" />
-                            Rejeitar
+                            {loadingUserId === user.id ? (
+                              <>
+                                <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                Processando...
+                              </>
+                            ) : (
+                              <>
+                                <X className="h-4 w-4 mr-2" />
+                                Rejeitar
+                              </>
+                            )}
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -323,17 +344,18 @@ export default function PendingUsersPage() {
                             <AlertDialogTitle>Confirmar Rejeição</AlertDialogTitle>
                             <AlertDialogDescription>
                               Tem certeza que deseja rejeitar o usuário <strong>{user.name}</strong>?
-                              Esta ação impedirá que o usuário faça login no sistema.
+                              <br /><br />
+                              <strong className="text-red-600">Atenção:</strong> Esta ação irá remover permanentemente o usuário e todas as empresas vinculadas a ele do sistema.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleApproveUser(user.id, false)}
                               disabled={isLoading}
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
-                              Rejeitar
+                              {loadingUserId === user.id ? 'Removendo...' : 'Rejeitar e Remover'}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>

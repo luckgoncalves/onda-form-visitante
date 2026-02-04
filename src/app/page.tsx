@@ -1,26 +1,17 @@
 'use client';
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Form, FormField, FormLabel } from "@/components/ui/form";
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { login, checkAuth, checkIsAdmin } from "./actions";
-import ButtonForm from "@/components/button-form";
-import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import Image from 'next/image';
+import { checkAuth, checkIsAdmin } from "./actions";
 import LoadingOnda from "@/components/loading-onda";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { UsersRound, Building, LogIn, UserPlus, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PWAInstallButton } from "@/components/pwa-install-button";
 
 export default function Home() {
-  const form = useForm();
   const router = useRouter();
   const [isCheckingAuthentication, setIsCheckingAuthentication] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const checkAuthentication = async () => {
@@ -46,148 +37,151 @@ export default function Home() {
               router.push('/grupos');
             }
           }
+          return;
         }
       } catch (error) {
         console.error('Error checking authentication:', error);
       } finally {
         setIsCheckingAuthentication(false);
       }
-      
     };
 
     checkAuthentication();
   }, [router]);
 
-  const submitAction = form.handleSubmit(async (formData) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await login(formData.email, formData.password);
-      const { isAdmin } = await checkIsAdmin();
-
-      if (result.success) {
-        if (result.user?.requirePasswordChange) {
-          router.push('/change-password');
-        } else {
-          if (isAdmin) {
-            router.push('/list');
-          } else if (result.user?.role === 'base_pessoal') {
-            router.push('/register');
-          } else if (result.user?.role === 'user') {
-            router.push('/grupos');
-          }
-        }
-      } else {
-        setError(result.message || 'Ocorreu um erro');
-      }
-    } catch (error) {
-      setError('Ocorreu um erro ao fazer login. Tente novamente.');
-    } finally {
-      setIsLoading(false);
-    }
-  });
-
   if (isCheckingAuthentication) {
-    return (
-      <LoadingOnda />
-    );
+    return <LoadingOnda />;
   }
 
+  const publicPages = [
+    {
+      title: 'Grupos Pequenos',
+      description: 'Encontre um grupo pequeno perto de você e conecte-se com outras pessoas.',
+      icon: UsersRound,
+      href: '/grupos',
+      color: 'bg-onda-teal',
+    },
+    {
+      title: 'Empresas',
+      description: 'Conheça as empresas e negócios dos membros da nossa comunidade.',
+      icon: Building,
+      href: '/empresas',
+      color: 'bg-onda-skyBlue',
+    },
+  ];
+
   return (
-    <main className="flex w-full h-[100%] justify-center  min-h-screen flex-col  items-center gap-4 p-4 bg-onda-darkBlue">
-      <h1 className="text-white tracking-[-0.1em] text-5xl md:text-7xl font-bold">onda.</h1>
-      <Card className="p-4 w-full md:w-1/2 lg:w-1/3 bg-white border-none">
-      {isCheckingAuthentication ? (
-        <div className="flex justify-center items-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 dark:border-white"></div>
-        </div>
-      ) : (
-        <>
-        {/* <CardHeader className="text-center">
-          <Image 
-            src="/onda.png" 
-            alt="Onda Logo" 
-            width={150} 
-            height={150} 
-            className="mx-auto w-[150px] h-[150px] rounded-full object-cover"
-            placeholder="blur"
-            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQrJyEwPENBLzMzLy0zPVBCR0JHMz1DcWl5VGR2h4iIl5eXqqqq+vr6////2wBDAR"
-            priority
-          />
-        </CardHeader> */}
-        <CardContent className="p-10">
-          {/* {showLogin && ( */}
-            <Form {...form}>
-              <form className="flex flex-col mx-auto gap-4" onSubmit={submitAction}>
-
-                <FormLabel>E-mail:</FormLabel>
-                <FormField 
-                  control={form.control} 
-                  name="email" 
-                  render={({ field }) => <Input type="email" {...field} />} />
-
-                <FormLabel>Senha:</FormLabel>
-                <FormField 
-                  control={form.control} 
-                  name="password"
-                  render={({ field }) => (
-                    <div className="relative">
-                      <Input 
-                        type={showPassword ? "text" : "password"} 
-                        {...field} 
-                        className="pr-10"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-500" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-500" />
-                        )}
-                      </Button>
-                    </div>
-                  )} />
-                
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-                
-                <ButtonForm className="w-full mx-auto" type="submit" label={isLoading ? 'Carregando...' : 'Entrar'} disabled={isLoading} />
-                
-                <div className="text-center mt-4">
-                  <p className="text-sm text-muted-foreground">
-                    Não tem uma conta?{' '}
-                    <Link href="/signup" className="text-primary hover:underline font-medium">
-                      Criar conta
-                    </Link>
-                  </p>
-                </div>
-              </form>
-            </Form>
-          {/* )} */}
-        </CardContent>
-        {/* <CardFooter className="w-full">
-          <div className="flex flex-col items-center justify-center gap-4 w-full">
-            {!showLogin && (
-              <ButtonForm 
-              type="button" 
-              className={!showLogin ? "w-full sm:w-1/2" : "text-[#00205b] hover:bg-transparent hover:underline bg-transparent border-none cursor-pointer p-0"} 
-              onClick={() => setShowLogin(true)} 
-              label="Entrar" />
-            )}
+    <main className="min-h-screen bg-gradient-to-b from-onda-darkBlue to-[#001540]">
+      {/* Header */}
+      <header className="w-full px-4 sm:px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <h1 className="text-white tracking-[-0.1em] text-3xl font-bold">onda.</h1>
+          <div className="flex items-center gap-2">
+            <PWAInstallButton />
+            <Link href="/login">
+              <Button 
+                variant="ghost" 
+                className="text-white hover:bg-white/10"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Entrar</span>
+              </Button>
+            </Link>
+            <Link href="/signup">
+              <Button 
+                className="bg-white text-onda-darkBlue hover:bg-white/90"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Criar conta</span>
+              </Button>
+            </Link>
           </div>
-        </CardFooter> */}
-        </>
-      )}
-      </Card>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="px-4 sm:px-6 py-12 sm:py-20">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-white text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+            Bem-vindo à <span className="text-white tracking-[-0.1em]">onda.</span>
+          </h2>
+          <p className="text-white/80 text-lg sm:text-xl max-w-2xl mx-auto mb-8">
+            Conecte-se com nossa comunidade, encontre grupos pequenos e descubra empresas de membros.
+          </p>
+        </div>
+      </section>
+
+      {/* Public Pages Section */}
+      <section className="px-4 sm:px-6 pb-12 sm:pb-20">
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-white/90 text-center text-lg font-medium mb-8">
+            Explore sem precisar de login
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {publicPages.map((page) => {
+              const Icon = page.icon;
+              return (
+                <Link key={page.href} href={page.href} className="group">
+                  <Card className="h-full bg-white/10 backdrop-blur border-white/20 hover:bg-white/20 transition-all duration-300 cursor-pointer">
+                    <CardHeader>
+                      <div className={`w-12 h-12 rounded-xl ${page.color} flex items-center justify-center mb-4`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      <CardTitle className="text-white flex items-center justify-between">
+                        {page.title}
+                        <ArrowRight className="h-5 w-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                      </CardTitle>
+                      <CardDescription className="text-white/70">
+                        {page.description}
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Login CTA Section */}
+      <section className="px-4 sm:px-6 pb-12 sm:pb-20">
+        <div className="max-w-4xl mx-auto">
+          <Card className="bg-white border-none shadow-2xl">
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-onda-darkBlue text-xl">
+                Já tem uma conta?
+              </CardTitle>
+              <CardDescription>
+                Faça login para acessar todas as funcionalidades
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/login" className="flex-1 sm:flex-none">
+                <Button className="w-full bg-onda-darkBlue hover:bg-onda-darkBlue/90">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Entrar
+                </Button>
+              </Link>
+              <Link href="/signup" className="flex-1 sm:flex-none">
+                <Button variant="outline" className="w-full border-onda-darkBlue text-onda-darkBlue hover:bg-onda-darkBlue/5">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Criar conta
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="px-4 sm:px-6 py-8 border-t border-white/10">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="text-white/50 text-sm">
+            © {new Date().getFullYear()} Onda Dura. Todos os direitos reservados.
+          </p>
+        </div>
+      </footer>
     </main>
   );
 }

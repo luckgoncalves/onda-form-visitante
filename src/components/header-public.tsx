@@ -30,7 +30,7 @@ export function HeaderPublic() {
           <Button
             variant="ghost"
             className="flex items-center hover:bg-white/20 transition-colors text-white"
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/login')}
           >
             <LogIn className="h-4 w-4 mr-2" />
             <span className="text-base font-medium">Entrar</span>

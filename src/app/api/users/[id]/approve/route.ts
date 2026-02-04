@@ -55,28 +55,66 @@ export async function PATCH(
       );
     }
 
-    // Atualizar status de aprovação
-    const updatedUser = await prisma.users.update({
-      where: { id: userId },
-      data: { approved },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-        approved: true,
-        createdAt: true,
-      },
-    });
+    // Se aprovado, atualizar status. Se rejeitado, deletar usuário e empresas
+    if (approved) {
+      const updatedUser = await prisma.users.update({
+        where: { id: userId },
+        data: { approved },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+          approved: true,
+          createdAt: true,
+        },
+      });
 
-    return NextResponse.json({
-      success: true,
-      message: approved 
-        ? 'Usuário aprovado com sucesso' 
-        : 'Usuário rejeitado com sucesso',
-      user: updatedUser,
-    });
+      return NextResponse.json({
+        success: true,
+        message: 'Usuário aprovado com sucesso',
+        user: updatedUser,
+      });
+    } else {
+      // Rejeitar = deletar usuário e suas empresas vinculadas
+      await prisma.$transaction(async (tx) => {
+        // Buscar empresas vinculadas apenas a este usuário
+        const userEmpresas = await tx.userEmpresa.findMany({
+          where: { userId },
+          select: { empresaId: true },
+        });
+
+        const empresaIds = userEmpresas.map((ue) => ue.empresaId);
+
+        // Para cada empresa, verificar se tem outros usuários vinculados
+        for (const empresaId of empresaIds) {
+          const otherUsers = await tx.userEmpresa.count({
+            where: {
+              empresaId,
+              userId: { not: userId },
+            },
+          });
+
+          // Se não tem outros usuários, deletar a empresa
+          if (otherUsers === 0) {
+            await tx.empresa.delete({
+              where: { id: empresaId },
+            });
+          }
+        }
+
+        // Deletar o usuário (UserEmpresa será deletado em cascade)
+        await tx.users.delete({
+          where: { id: userId },
+        });
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Usuário rejeitado e removido do sistema',
+      });
+    }
 
   } catch (error) {
     if (error instanceof z.ZodError) {
