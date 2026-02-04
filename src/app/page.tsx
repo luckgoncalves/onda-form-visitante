@@ -30,7 +30,7 @@ export default function Home() {
             reject(new Error('Timeout'));
           }, 10000);
         });
-        const authPromise =await Promise.all([checkAuth(), checkIsAdmin()]);
+        const authPromise = Promise.all([checkAuth(), checkIsAdmin()]);
 
         const [{isAuthenticated, user}, {isAdmin}] = await Promise.race([authPromise, timeoutPromise]) as [Awaited<ReturnType<typeof checkAuth>>, Awaited<ReturnType<typeof checkIsAdmin>>];
 

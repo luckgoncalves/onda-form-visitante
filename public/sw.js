@@ -1,5 +1,5 @@
-// Service Worker básico para PWA
-const CACHE_NAME = 'onda-app-v2';
+// Service Worker para PWA - Network First Strategy
+const CACHE_NAME = 'onda-app-v3';
 const urlsToCache = [
   '/',
   '/list',
@@ -9,36 +9,48 @@ const urlsToCache = [
 
 // Instalação do Service Worker
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Força ativação imediata
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(urlsToCache);
-      })
+      .then((cache) => cache.addAll(urlsToCache))
   );
 });
 
 // Ativação do Service Worker
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      self.clients.claim(), // Assume controle imediato
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME) {
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+    ])
   );
 });
 
-// Interceptação de requisições
+// Network-first: tenta rede primeiro, cache como fallback
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        // Retorna do cache se disponível, senão busca da rede
-        return response || fetch(event.request);
+        // Atualiza cache com resposta nova
+        if (response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Se rede falhar, usa cache
+        return caches.match(event.request);
       })
   );
 });
