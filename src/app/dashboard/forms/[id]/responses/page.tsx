@@ -23,15 +23,17 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, Eye, Download, Loader2 } from 'lucide-react';
+import { ArrowLeft, Eye, Download, Loader2, Copy, Check } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import * as XLSX from 'xlsx';
+import { FieldOption } from '@/types/form';
 
 interface FormField {
   id: string;
   label: string;
   type: string;
   order: number;
+  options?: FieldOption[];
 }
 
 interface FormAnswer {
@@ -69,6 +71,40 @@ interface ResponsesData {
     totalPages: number;
   };
 }
+
+// Componente auxiliar para valor copiável
+const CopyableValue = ({ value }: { value: string }) => {
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar abrir modal se estiver na tabela
+    if (value === '-') return;
+    
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast({
+      description: "Copiado para a área de transferência",
+      duration: 2000,
+    });
+  };
+
+  if (!value || value === '-') return <span>{value}</span>;
+
+  return (
+    <div className="flex items-center gap-2 group min-w-0">
+      <span className="truncate">{value}</span>
+      <button
+        onClick={handleCopy}
+        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded text-gray-500 shrink-0"
+        title="Copiar"
+      >
+        {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+      </button>
+    </div>
+  );
+};
 
 export default function FormResponsesPage() {
   const router = useRouter();
@@ -145,14 +181,32 @@ export default function FormResponsesPage() {
     const answer = response.answers.find((a) => a.fieldId === fieldId);
     if (!answer) return '-';
 
+    // Helper to format option value
+    const formatOptionValue = (value: string, options?: FieldOption[]) => {
+      if (options && options.length > 0) {
+        const option = options.find((opt) => opt.value === value);
+        if (option) return option.label;
+      }
+      // Fallback: replace underscores with spaces and capitalize
+      return value
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
     // Handle checkbox (JSON array)
     try {
       const parsed = JSON.parse(answer.value);
       if (Array.isArray(parsed)) {
-        return parsed.join(', ');
+        return parsed.map((v) => formatOptionValue(v, answer.field.options)).join(', ');
       }
     } catch {
-      // Not JSON, return as is
+      // Not JSON, continue
+    }
+
+    // Handle single value fields (Radio, Select)
+    if (['RADIO', 'SELECT'].includes(answer.field.type)) {
+      return formatOptionValue(answer.value, answer.field.options);
     }
 
     return answer.value || '-';
@@ -321,14 +375,20 @@ export default function FormResponsesPage() {
                         {format(new Date(response.submittedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {response.respondentEmail || response.respondentUser?.email || '-'}
+                        <CopyableValue value={response.respondentEmail || response.respondentUser?.email || '-'} />
                       </TableCell>
                       {data.form.fields
                         .sort((a, b) => a.order - b.order)
                         .slice(0, 3)
                         .map((field) => (
-                          <TableCell key={field.id} className="max-w-[200px] truncate text-sm">
-                            {getAnswerValue(response, field.id)}
+                          <TableCell key={field.id} className="max-w-[200px] text-sm">
+                            {['EMAIL', 'PHONE'].includes(field.type) ? (
+                              <CopyableValue value={getAnswerValue(response, field.id)} />
+                            ) : (
+                              <span className="truncate block">
+                                {getAnswerValue(response, field.id)}
+                              </span>
+                            )}
                           </TableCell>
                         ))}
                       <TableCell>
@@ -351,12 +411,13 @@ export default function FormResponsesPage() {
 
       {/* Response Detail Dialog */}
       <Dialog open={!!selectedResponse} onOpenChange={() => setSelectedResponse(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-6 pb-4 border-b">
             <DialogTitle>Detalhes da Resposta</DialogTitle>
           </DialogHeader>
 
-          {selectedResponse && (
+          <div className="flex-1 overflow-y-auto p-6 pt-4">
+            {selectedResponse && (
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div>
@@ -367,9 +428,9 @@ export default function FormResponsesPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">E-mail</p>
-                  <p className="font-medium">
-                    {selectedResponse.respondentEmail || selectedResponse.respondentUser?.email || '-'}
-                  </p>
+                  <div className="font-medium">
+                    <CopyableValue value={selectedResponse.respondentEmail || selectedResponse.respondentUser?.email || '-'} />
+                  </div>
                 </div>
               </div>
 
@@ -379,14 +440,19 @@ export default function FormResponsesPage() {
                   .map((field) => (
                     <div key={field.id} className="border-b pb-4 last:border-0">
                       <p className="text-sm text-gray-500 mb-1">{field.label}</p>
-                      <p className="font-medium whitespace-pre-wrap">
-                        {getAnswerValue(selectedResponse, field.id)}
-                      </p>
+                      <div className="font-medium whitespace-pre-wrap">
+                        {['EMAIL', 'PHONE'].includes(field.type) ? (
+                          <CopyableValue value={getAnswerValue(selectedResponse, field.id)} />
+                        ) : (
+                          getAnswerValue(selectedResponse, field.id)
+                        )}
+                      </div>
                     </div>
                   ))}
               </div>
             </div>
           )}
+          </div>
         </DialogContent>
       </Dialog>
     </>
