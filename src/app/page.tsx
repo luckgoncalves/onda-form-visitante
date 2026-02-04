@@ -24,24 +24,35 @@ export default function Home() {
 
   useEffect(() => {
     const checkAuthentication = async () => {
-      const { isAuthenticated, user } = await checkAuth();
-      const { isAdmin } = await checkIsAdmin();
-      
-      
-      if (isAuthenticated) {
-        if (user?.requirePasswordChange) {
-          router.push('/change-password');
-        } else {
-          if (isAdmin) {
-            router.push('/list');
-          } else if (user?.role === 'base_pessoal') {
-            router.push('/register');
-          } else if (user?.role === 'user') {
-            router.push('/grupos');
+      try {
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Timeout'));
+          }, 10000);
+        });
+        const authPromise =await Promise.all([checkAuth(), checkIsAdmin()]);
+
+        const [{isAuthenticated, user}, {isAdmin}] = await Promise.race([authPromise, timeoutPromise]) as [Awaited<ReturnType<typeof checkAuth>>, Awaited<ReturnType<typeof checkIsAdmin>>];
+
+        if (isAuthenticated) {
+          if (user?.requirePasswordChange) {
+            router.push('/change-password');
+          } else {
+            if (isAdmin) {
+              router.push('/list');
+            } else if (user?.role === 'base_pessoal') {
+              router.push('/register');
+            } else if (user?.role === 'user') {
+              router.push('/grupos');
+            }
           }
         }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+      } finally {
+        setIsCheckingAuthentication(false);
       }
-      setIsCheckingAuthentication(false);
+      
     };
 
     checkAuthentication();

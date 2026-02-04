@@ -1,5 +1,5 @@
 // Service Worker básico para PWA
-const CACHE_NAME = 'onda-app-v1';
+const CACHE_NAME = 'onda-app-v2';
 const urlsToCache = [
   '/',
   '/list',
