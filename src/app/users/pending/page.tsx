@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Check, X, Search, ArrowLeft, Building, Mail, Phone, Calendar } from "lucide-react";
+import { Check, X, Search, ArrowLeft, Building, Mail, Phone, Calendar, MapPin } from "lucide-react";
 import { SearchInput } from "@/components/search-input";
 import { useDebounce } from "../hooks/useDebounce";
 import LoadingOnda from "@/components/loading-onda";
@@ -23,6 +23,7 @@ type PendingUser = {
   role: string;
   approved: boolean;
   createdAt: string;
+  campusNome?: string | null;
   empresas: Array<{
     empresa: {
       id: string;
@@ -229,8 +230,8 @@ export default function PendingUsersPage() {
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h3 className="text-lg font-semibold mb-1">{user.name}</h3>
-                          <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                          <h3 className="text-lg font-semibold mb-3">{user.name}</h3>
+                          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <Mail className="h-4 w-4" />
                               {user.email}
@@ -245,19 +246,28 @@ export default function PendingUsersPage() {
                               <Calendar className="h-4 w-4" />
                               {formatDate(user.createdAt)}
                             </div>
+                            {user.campusNome && (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-4 w-4" />
+                                {user.campusNome}
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <Badge variant="secondary" className="ml-2">
-                          Pendente
-                        </Badge>
+                        <div className="flex flex-col items-end gap-1">
+                          <Badge variant={user.empresas?.length ? "default" : "outline"} className="text-xs">
+                            <Building className="h-3 w-3 mr-1" />
+                            {user.empresas?.length ? `${user.empresas.length} empresa(s)` : "Sem empresa"}
+                          </Badge>
+                        </div>
                       </div>
 
-                      {/* Empresas */}
+                      {/* Empresas vinculadas */}
                       {user.empresas && user.empresas.length > 0 && (
-                        <div className="mt-4">
+                        <div className="mt-4 pt-4 border-t">
                           <div className="flex items-center gap-2 mb-2">
                             <Building className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">Empresas ({user.empresas.length})</span>
+                            <span className="text-sm font-medium">Empresas vinculadas ({user.empresas.length})</span>
                           </div>
                           <div className="grid gap-2 pl-6">
                             {user.empresas.map((userEmpresa) => (

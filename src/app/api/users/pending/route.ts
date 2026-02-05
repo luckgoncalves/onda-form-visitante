@@ -29,10 +29,9 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const skip = (page - 1) * limit;
 
-    // Construir filtros
+    // Construir filtros (todos os pendentes, de qualquer campus)
     const where: any = {
       approved: false, // Apenas usuários não aprovados
-      ...(currentUser?.campusId ? { campusId: currentUser.campusId } : {}),
     };
 
     if (search) {
