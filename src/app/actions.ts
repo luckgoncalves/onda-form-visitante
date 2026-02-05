@@ -29,6 +29,7 @@ export const save = async (data: any) => {
 
   if (user) {
     createData.registeredById = user.id;
+    createData.campusId = user.campusId; // Vincular ao campus do usuário
   }
 
    const visitante = await prisma.visitantes.create({
@@ -39,7 +40,10 @@ export const save = async (data: any) => {
  }
 
  export const findAll = async () => {
+    const { user } = await checkAuth();
+    
     return await prisma.visitantes.findMany({
+        where: user?.campusId ? { campusId: user.campusId } : undefined,
         orderBy: {
             created_at: 'desc'
         },
@@ -55,10 +59,14 @@ export const save = async (data: any) => {
  }
 
  export const findAllPaginated = async (page: number = 1, limit: number = 20) => {
+    const { user } = await checkAuth();
     const skip = (page - 1) * limit;
+    
+    const whereClause = user?.campusId ? { campusId: user.campusId } : undefined;
     
     const [visitantes, total] = await Promise.all([
         prisma.visitantes.findMany({
+            where: whereClause,
             skip,
             take: limit,
             orderBy: {
@@ -72,7 +80,7 @@ export const save = async (data: any) => {
                 }
             }
         }),
-        prisma.visitantes.count()
+        prisma.visitantes.count({ where: whereClause })
     ]);
 
     return {
@@ -106,11 +114,12 @@ export const save = async (data: any) => {
  export async function login(email: string, password: string) {
   // const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Buscar usuário com a relação de role
+  // Buscar usuário com a relação de role e campus
   const user = await prismaClient.users.findUnique({
     where: { email },
     include: {
-      roleRelation: true
+      roleRelation: true,
+      campus: true
     }
   });
 
@@ -134,7 +143,7 @@ export const save = async (data: any) => {
   const roleName = user.roleRelation?.name || user.role;
 
   const token = sign(
-    { userId: user.id, email: user.email, role: roleName },
+    { userId: user.id, email: user.email, role: roleName, campusId: user.campusId },
     process.env.JWT_SECRET!,
     { expiresIn: '1d' }
   );
@@ -154,6 +163,8 @@ export const save = async (data: any) => {
       name: user.name, 
       email: user.email, 
       role: roleName,
+      campusId: user.campusId,
+      campusNome: user.campus?.nome,
       requirePasswordChange: user.requirePasswordChange 
     } 
   };
@@ -167,7 +178,7 @@ export async function checkAuth() {
   }
 
   try {
-    const decoded = verify(authToken, process.env.JWT_SECRET!) as { userId: string, email: string, role: string };
+    const decoded = verify(authToken, process.env.JWT_SECRET!) as { userId: string, email: string, role: string, campusId?: string };
     
     const user = await prismaClient.users.findUnique({
       where: { id: decoded.userId },
@@ -176,9 +187,16 @@ export async function checkAuth() {
         name: true, 
         email: true, 
         role: true,
+        campusId: true,
         roleRelation: {
           select: {
             name: true
+          }
+        },
+        campus: {
+          select: {
+            id: true,
+            nome: true
           }
         },
         requirePasswordChange: true
@@ -222,6 +240,8 @@ export async function checkAuth() {
         name: user.name,
         email: user.email,
         role: roleName,
+        campusId: user.campusId,
+        campusNome: user.campus?.nome,
         requirePasswordChange: user.requirePasswordChange
       }
     };
@@ -251,6 +271,8 @@ export async function logout() {
 }
 
 export async function getVisitStats({ startDate, endDate }: { startDate: string, endDate: string }) {
+  const { user } = await checkAuth();
+  
   // Ajusta as datas para incluir o dia inteiro, considerando UTC
   const start = new Date(startDate + 'T00:00:00.000Z');
   const end = new Date(endDate + 'T23:59:59.999Z');
@@ -270,6 +292,7 @@ export async function getVisitStats({ startDate, endDate }: { startDate: string,
         gte: start,
         lte: end,
       },
+      ...(user?.campusId ? { campusId: user.campusId } : {}),
     },
     select: {
       created_at: true,
@@ -311,6 +334,7 @@ export async function deleteVisitante(id: string) {
 
 export async function getVisitStatsDetailed(params: { startDate: string, endDate: string }) {
   try {
+    const { user } = await checkAuth();
     const start = new Date(params.startDate + 'T00:00:00.000Z');
     const end = new Date(params.endDate + 'T23:59:59.999Z');
 
@@ -320,6 +344,7 @@ export async function getVisitStatsDetailed(params: { startDate: string, endDate
           gte: start,
           lte: end,
         },
+        ...(user?.campusId ? { campusId: user.campusId } : {}),
       },
       select: {
         id: true,
@@ -355,13 +380,16 @@ export async function getVisitStatsDetailed(params: { startDate: string, endDate
 
 export async function getGenderStats({ startDate, endDate }: { startDate: string; endDate: string }) {
   try {
+    const { user } = await checkAuth();
+    
     const visits = await prisma.visitantes.groupBy({
       by: ['culto', 'genero'],
       where: {
         created_at: {
           gte: new Date(startDate),
           lte: new Date(endDate)
-        }
+        },
+        ...(user?.campusId ? { campusId: user.campusId } : {}),
       },
       _count: {
         id: true
@@ -393,12 +421,15 @@ export async function getGenderStats({ startDate, endDate }: { startDate: string
 
 export async function getAgeStats({ startDate, endDate }: { startDate: string; endDate: string }) {
   try {
+    const { user } = await checkAuth();
+    
     const visits = await prisma.visitantes.findMany({
       where: {
         created_at: {
           gte: new Date(startDate),
           lte: new Date(endDate)
-        }
+        },
+        ...(user?.campusId ? { campusId: user.campusId } : {}),
       },
       select: {
         idade: true,
@@ -476,10 +507,12 @@ export async function canAccessRegister() {
   return { canAccess: user.role === 'admin' || user.role === 'base_pessoal' };
 }
 
-export async function createUser(data: { email: string; password?: string; name: string; phone?: string; role: string; dataMembresia?: string; profileImageUrl?: string }) {
+export async function createUser(data: { email: string; password?: string; name: string; phone?: string; role: string; campusId?: string; dataMembresia?: string; profileImageUrl?: string }) {
   if (!data.password) {
     throw new Error('Senha é obrigatória para criar um usuário');
   }
+  
+  const { user: currentUser } = await checkAuth();
   
   const hashedPassword = await bcrypt.hash(data.password, 10);
   
@@ -488,7 +521,10 @@ export async function createUser(data: { email: string; password?: string; name:
     where: { name: data.role }
   });
   
-  const { dataMembresia, profileImageUrl, role, ...userData } = data;
+  const { dataMembresia, profileImageUrl, role, campusId, ...userData } = data;
+  
+  // Usar campusId fornecido ou o campus do usuário logado
+  const userCampusId = campusId || currentUser?.campusId;
   
   const user = await prismaClient.users.create({
     data: {
@@ -496,12 +532,14 @@ export async function createUser(data: { email: string; password?: string; name:
       password: hashedPassword,
       role: role, // Manter campo legado por compatibilidade
       roleId: roleRecord?.id || null,
+      campusId: userCampusId || null,
       requirePasswordChange: true,
       dataMembresia: dataMembresia && dataMembresia.trim() !== '' ? dataMembresia : null,
       profileImageUrl: profileImageUrl && profileImageUrl.trim() !== '' ? profileImageUrl : null,
     },
     include: {
-      roleRelation: true
+      roleRelation: true,
+      campus: true
     }
   });
 
@@ -511,26 +549,35 @@ export async function createUser(data: { email: string; password?: string; name:
     email: user.email, 
     phone: user.phone,
     role: user.roleRelation?.name || user.role,
+    campusId: user.campusId,
+    campusNome: user.campus?.nome,
     requirePasswordChange: user.requirePasswordChange 
   } };
 }
 
 export async function listUsers(searchTerm?: string) {
+  const { user: currentUser } = await checkAuth();
+  
   const users = await prismaClient.users.findMany({
-    where: searchTerm ? {
-      name: {
-        contains: searchTerm
-      }
-    } : undefined,
+    where: {
+      ...(searchTerm ? { name: { contains: searchTerm } } : {}),
+      ...(currentUser?.campusId ? { campusId: currentUser.campusId } : {}),
+    },
     select: {
       id: true,
       name: true,
       email: true,
       phone: true,
       role: true,
+      campusId: true,
       roleRelation: {
         select: {
           name: true
+        }
+      },
+      campus: {
+        select: {
+          nome: true
         }
       },
       createdAt: true,
@@ -544,7 +591,8 @@ export async function listUsers(searchTerm?: string) {
   // Mapear para usar o nome da role da relação
   return users.map(user => ({
     ...user,
-    role: user.roleRelation?.name || user.role
+    role: user.roleRelation?.name || user.role,
+    campusNome: user.campus?.nome
   }));
 }
 

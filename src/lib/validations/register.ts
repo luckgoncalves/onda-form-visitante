@@ -12,6 +12,7 @@ export const registerUserSchema = userSchema.omit({ role: true }).extend({
 export const registerSchema = z.object({
   user: registerUserSchema.extend({
     role: z.literal('user').optional(),
+    campusId: z.string().min(1, 'Selecione um campus').optional(),
   }),
   empresas: z.array(empresaSchema).min(0, 'Você pode adicionar empresas opcionalmente'),
 });

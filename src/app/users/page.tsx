@@ -32,6 +32,7 @@ export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [userName, setUserName] = useState("");
   const [userId, setUserId] = useState("");
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,6 +57,7 @@ export default function Users() {
       if (authResult.user) {
         setUserName(authResult.user.name);
         setUserId(authResult.user.id);
+        setCampusNome(authResult.user.campusNome || null);
       }
 
       fetchUsers();
@@ -144,7 +146,7 @@ export default function Users() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-full overflow-x-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Membros</h1>

@@ -34,6 +34,7 @@ export default function EditFormPage() {
 
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('fields');
@@ -69,6 +70,7 @@ export default function EditFormPage() {
 
       setUserName(user.name);
       setUserId(user.id);
+      setCampusNome(user.campusNome || null);
       fetchForm();
     }
     checkAuthentication();
@@ -240,7 +242,7 @@ export default function EditFormPage() {
   if (isLoading) {
     return (
       <>
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <div className="p-4 sm:p-6 mt-[72px]">
           <Skeleton className="h-10 w-64 mb-4" />
           <Skeleton className="h-6 w-96 mb-6" />
@@ -252,7 +254,7 @@ export default function EditFormPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
 
       <div className="p-4 sm:p-6 mt-[72px]">
         {/* Page Header */}

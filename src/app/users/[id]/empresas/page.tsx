@@ -22,6 +22,7 @@ export default function UserEmpresasPage() {
   const { toast } = useToast();
   
   const [userName, setUserName] = useState('');
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
   const [user, setUser] = useState<{ id: string; name: string; email: string; phone?: string | null } | null>(null);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
@@ -41,6 +42,7 @@ export default function UserEmpresasPage() {
       const authResult = await checkAuth();
       if (authResult.user) {
         setUserName(authResult.user.name);
+        setCampusNome(authResult.user.campusNome || null);
         setCurrentUser({
           id: authResult.user.id,
           role: authResult.user.role,
@@ -213,14 +215,14 @@ export default function UserEmpresasPage() {
   if (!userName) {
     return (
       <main className="flex w-full h-[100%] min-h-screen flex-col items-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       </main>
     );
   }
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
         {/* Header da página */}
         <div className="flex items-center justify-between gap-4 mb-6">

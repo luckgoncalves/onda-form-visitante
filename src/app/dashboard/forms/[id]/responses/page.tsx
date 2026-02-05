@@ -114,6 +114,7 @@ export default function FormResponsesPage() {
 
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<ResponsesData | null>(null);
   const [selectedResponse, setSelectedResponse] = useState<FormResponse | null>(null);
@@ -136,6 +137,7 @@ export default function FormResponsesPage() {
 
       setUserName(user.name);
       setUserId(user.id);
+      setCampusNome(user.campusNome || null);
       fetchResponses();
     }
     checkAuthentication();
@@ -269,7 +271,7 @@ export default function FormResponsesPage() {
   if (isLoading) {
     return (
       <>
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <div className="p-4 sm:p-6 mt-[72px]">
           <Skeleton className="h-10 w-64 mb-4" />
           <Skeleton className="h-6 w-96 mb-6" />
@@ -285,7 +287,7 @@ export default function FormResponsesPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
 
       <div className="p-4 sm:p-6 mt-[72px]">
         {/* Page Header */}

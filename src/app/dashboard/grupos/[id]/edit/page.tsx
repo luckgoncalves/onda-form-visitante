@@ -28,6 +28,7 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -42,6 +43,7 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
         }
         setUserName(user.name);
         setUserId(user.id);
+        setCampusNome(user.campusNome || null);
         // Carregar dados do grupo
         await loadGrupo();
       } catch (error) {
@@ -134,7 +136,7 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
   if (isLoadingData) {
     return (
       <>
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <div className="p-2 sm:p-6 mt-[72px]">
           <GrupoFormSkeleton mode="edit" />
         </div>
@@ -145,7 +147,7 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
   if (!grupo) {
     return (
       <>
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <div className="p-2 sm:p-6 mt-[72px]">
           <div className="max-w-2xl mx-auto">
             <div className="flex justify-center py-8">
@@ -159,7 +161,7 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       
       <div className="p-2 sm:p-6 mt-[72px]">
         <GrupoForm

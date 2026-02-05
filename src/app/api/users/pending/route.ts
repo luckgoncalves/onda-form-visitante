@@ -6,7 +6,7 @@ import { checkAuth, checkIsAdmin } from '@/app/actions';
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticação
-    const { isAuthenticated } = await checkAuth();
+    const { isAuthenticated, user: currentUser } = await checkAuth();
     if (!isAuthenticated) {
       return NextResponse.json(
         { error: 'Não autorizado' },
@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     // Construir filtros
     const where: any = {
       approved: false, // Apenas usuários não aprovados
+      ...(currentUser?.campusId ? { campusId: currentUser.campusId } : {}),
     };
 
     if (search) {
@@ -54,9 +55,15 @@ export async function GET(request: NextRequest) {
           email: true,
           phone: true,
           role: true,
+          campusId: true,
           roleRelation: {
             select: {
               name: true
+            }
+          },
+          campus: {
+            select: {
+              nome: true
             }
           },
           approved: true,
@@ -82,7 +89,8 @@ export async function GET(request: NextRequest) {
     // Mapear para usar o nome da role da relação
     const users = usersRaw.map(user => ({
       ...user,
-      role: user.roleRelation?.name || user.role
+      role: user.roleRelation?.name || user.role,
+      campusNome: user.campus?.nome
     }));
 
     return NextResponse.json({

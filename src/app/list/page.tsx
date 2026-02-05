@@ -78,6 +78,7 @@ export default function List() {
   const router = useRouter();
   const [userName, setUserName] = useState("");
   const [userId, setUserId] = useState("");
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const isAdminRef = useRef(false);
@@ -131,6 +132,7 @@ export default function List() {
 
       setUserName(user.name);
       setUserId(user.id);
+      setCampusNome(user.campusNome || null);
     }
     fetchData();
   }, [router]);
@@ -260,7 +262,7 @@ export default function List() {
   if (selectedItem) {
     return (
       <>
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <DetailView 
           item={selectedItem} 
           onBack={handleBackToList}
@@ -272,7 +274,7 @@ export default function List() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px]">
         <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full">

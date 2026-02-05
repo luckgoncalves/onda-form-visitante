@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,8 +23,16 @@ import Image from 'next/image';
 import { z } from 'zod';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
+import { CampusCombobox } from '@/components/campus-combobox';
 
 type RegisterUserData = z.infer<typeof registerUserSchema>;
+
+type Campus = {
+  id: string;
+  nome: string;
+  cidade: string;
+  estado: string;
+};
 
 export default function SignupPage() {
   const router = useRouter();
@@ -32,6 +40,28 @@ export default function SignupPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [empresas, setEmpresas] = useState<EmpresaFormData[]>([]);
+  const [campusList, setCampusList] = useState<Campus[]>([]);
+  const [selectedCampusId, setSelectedCampusId] = useState<string>('');
+
+  // Buscar lista de campus ao carregar a página
+  useEffect(() => {
+    async function fetchCampus() {
+      try {
+        const response = await fetch('/api/campus');
+        if (response.ok) {
+          const data = await response.json();
+          setCampusList(data);
+          // Se houver apenas um campus, seleciona automaticamente
+          if (data.length === 1) {
+            setSelectedCampusId(data[0].id);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar campus:', error);
+      }
+    }
+    fetchCampus();
+  }, []);
 
   // Form para dados do usuário
   const userForm = useForm<RegisterUserData>({
@@ -110,11 +140,21 @@ export default function SignupPage() {
         return;
       }
 
+      if (campusList.length > 0 && !selectedCampusId) {
+        toast({
+          title: 'Erro de validação',
+          description: 'Selecione um campus.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       // Preparar payload (sempre definir role como 'user' para registro público)
       const payload = {
         user: {
           ...userForm.getValues(),
           role: 'user' as const,
+          campusId: selectedCampusId || undefined,
         },
         empresas: empresas,
       };
@@ -214,7 +254,7 @@ export default function SignupPage() {
             const Icon = step.icon;
             return (
               <div key={index} className="flex items-center">
-                <div className={`flex items-center gap-2 py-2 rounded-lg ${
+                <div className={`flex items-center gap-2 p-2 rounded-lg ${
                   index === currentStep 
                     ? 'bg-primary text-primary-foreground' 
                     : index < currentStep 
@@ -233,7 +273,7 @@ export default function SignupPage() {
         </div>
 
         {/* Conteúdo do Step */}
-        <Card className="bg-white border-none">
+        <Card className="bg-white border border-slate-200">
           <CardContent className="p-6">
             {currentStep === 0 && (
               <div className="space-y-6">
@@ -279,6 +319,17 @@ export default function SignupPage() {
                         </FormItem>
                       )}
                     />
+
+                    {campusList.length > 0 && (
+                      <CampusCombobox
+                        label="Campus"
+                        options={campusList}
+                        value={selectedCampusId}
+                        onChange={setSelectedCampusId}
+                        placeholder="Selecione um campus"
+                        required
+                      />
+                    )}
 
                     <FormField
                       control={userForm.control}

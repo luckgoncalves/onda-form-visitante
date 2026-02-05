@@ -61,6 +61,24 @@ model Role {
   users users[]
 }
 
+model Campus {
+  id        String   @id @default(cuid())
+  nome      String
+  cidade    String
+  estado    String   @db.VarChar(2)
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  users      users[]
+  visitantes visitantes[]
+  grupos     grupo[]
+  forms      Form[]
+
+  @@unique([cidade, estado])
+}
+
 model bairros {
   id        String   @id @default(cuid())
   nome      String
@@ -94,9 +112,13 @@ model visitantes {
   responsavel_telefone  String?
   mensagem_enviada      Boolean  @default(false)
 
-  // Add relation to User
+  // Relação com User
   registeredById String?
   registeredBy   users?  @relation(fields: [registeredById], references: [id])
+
+  // Relação com Campus
+  campusId String?
+  campus   Campus? @relation(fields: [campusId], references: [id])
 }
 
 model users {
@@ -107,6 +129,7 @@ model users {
   phone                 String?
   role                  String   @default("user") // Campo legado - será removido após migração
   roleId                String?
+  campusId              String?
   requirePasswordChange Boolean  @default(true)
   approved              Boolean  @default(true)
   dataMembresia         String?
@@ -117,7 +140,10 @@ model users {
   // Relação com Role
   roleRelation Role? @relation(fields: [roleId], references: [id])
 
-  // Add relation to Visitantes
+  // Relação com Campus
+  campus Campus? @relation(fields: [campusId], references: [id])
+
+  // Relação com Visitantes
   registeredVisitors visitantes[]
 
   // Relação com grupos liderados
@@ -138,11 +164,13 @@ model grupo {
   diaSemana DiaSemana
   horario   String
   bairroId  String?
+  campusId  String?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
   // Relações
   bairro  bairros? @relation(fields: [bairroId], references: [id])
+  campus  Campus?  @relation(fields: [campusId], references: [id])
   lideres users[]
 }
 
@@ -193,12 +221,14 @@ model Form {
   emailSubject String?
   emailBody    String?        @db.Text
   expiresAt    DateTime?
+  campusId     String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   createdById  String
 
   // Relações
   createdBy users          @relation(fields: [createdById], references: [id])
+  campus    Campus?        @relation(fields: [campusId], references: [id])
   fields    FormField[]
   responses FormResponse[]
 }

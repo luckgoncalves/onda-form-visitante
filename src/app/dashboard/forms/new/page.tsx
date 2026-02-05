@@ -30,6 +30,7 @@ export default function NewFormPage() {
 
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('fields');
 
@@ -60,6 +61,7 @@ export default function NewFormPage() {
 
       setUserName(user.name);
       setUserId(user.id);
+      setCampusNome(user.campusNome || null);
     }
     checkAuthentication();
   }, [router]);
@@ -149,7 +151,7 @@ export default function NewFormPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
 
       <div className="p-4 sm:p-6 mt-[72px]">
         {/* Page Header */}

@@ -22,6 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { MonthYearPicker } from '@/components/ui/month-year-picker';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { CampusCombobox } from '@/components/campus-combobox';
 
 // Schema para dados do usuário
 const userFormSchema = userSchema;
@@ -42,9 +43,12 @@ export default function CreateUserPage() {
   const { toast } = useToast();
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [empresas, setEmpresas] = useState<EmpresaFormData[]>([]);
+  const [campusList, setCampusList] = useState<{ id: string; nome: string; cidade: string; estado: string }[]>([]);
+  const [selectedCampusId, setSelectedCampusId] = useState<string>('');
 
   // Form para dados do usuário
   const userForm = useForm<z.infer<typeof userFormSchema>>({
@@ -89,6 +93,26 @@ export default function CreateUserPage() {
       if (authResult.user) {
         setUserName(authResult.user.name);
         setUserId(authResult.user.id);
+        setCampusNome(authResult.user.campusNome || null);
+        // Pre-select user's campus
+        if (authResult.user.campusId) {
+          setSelectedCampusId(authResult.user.campusId);
+        }
+      }
+
+      // Fetch campus list
+      try {
+        const response = await fetch('/api/campus');
+        if (response.ok) {
+          const data = await response.json();
+          setCampusList(data);
+          // If only one campus, auto-select it
+          if (data.length === 1) {
+            setSelectedCampusId(data[0].id);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar campus:', error);
       }
     }
 
@@ -145,6 +169,7 @@ export default function CreateUserPage() {
       const userResult = await createUser({ 
         ...userData, 
         password: 'ondadura',
+        campusId: selectedCampusId || undefined,
         dataMembresia: userData.dataMembresia && userData.dataMembresia.trim() !== '' ? userData.dataMembresia : undefined,
         profileImageUrl: userData.profileImageUrl && userData.profileImageUrl.trim() !== '' ? userData.profileImageUrl : undefined,
       });
@@ -200,14 +225,14 @@ export default function CreateUserPage() {
   if (!userName) {
     return (
       <main className="flex w-full h-[100%] min-h-screen flex-col items-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       </main>
     );
   }
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
         {/* Header da página */}
         <div className="flex items-center justify-between gap-4 mb-6">
@@ -364,6 +389,16 @@ export default function CreateUserPage() {
                         </FormItem>
                       )}
                     />
+
+                    {campusList.length > 0 && (
+                      <CampusCombobox
+                        label="Campus"
+                        options={campusList}
+                        value={selectedCampusId}
+                        onChange={setSelectedCampusId}
+                        placeholder="Selecione um campus"
+                      />
+                    )}
                   </div>
 
                   <div className="mt-6 p-4 bg-muted rounded-lg">

@@ -11,6 +11,7 @@ export default function NovoGrupoPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -25,6 +26,7 @@ export default function NovoGrupoPage() {
         }
         setUserName(user.name);
         setUserId(user.id);
+        setCampusNome(user.campusNome || null);
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         toast({
@@ -83,7 +85,7 @@ export default function NovoGrupoPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       
       <div className="p-2 sm:p-6 mt-[72px]">
         <GrupoForm

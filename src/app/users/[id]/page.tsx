@@ -44,6 +44,7 @@ export default function EditUserPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingUser, setIsFetchingUser] = useState(true);
   const [userName, setUserName] = useState("");
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
   const isAdminRef = useRef(false);
@@ -69,6 +70,7 @@ export default function EditUserPage() {
           return;
         }
         setUserName(auth.user.name);
+        setCampusNome(auth.user.campusNome || null);
         setCurrentUser({
           id: auth.user.id,
           role: auth.user.role,
@@ -168,7 +170,7 @@ export default function EditUserPage() {
   if (isFetchingUser) {
     return (
       <>
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <Skeleton className="h-8 w-48" />
@@ -208,7 +210,7 @@ export default function EditUserPage() {
   if (fetchError || !user) {
     return (
       <>
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto flex flex-col items-center justify-center text-center">
           <h1 className="text-xl sm:text-2xl font-bold mb-4">{fetchError || 'Usuário não encontrado'}</h1>
           <Button variant="outline" onClick={() => router.push('/users')}>Voltar para Usuários</Button>
@@ -219,7 +221,7 @@ export default function EditUserPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">Editar Perfil</h1>

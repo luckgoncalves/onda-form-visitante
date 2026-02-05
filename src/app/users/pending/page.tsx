@@ -38,6 +38,7 @@ export default function PendingUsersPage() {
   const [users, setUsers] = useState<PendingUser[]>([]);
   const [userName, setUserName] = useState("");
   const [userId, setUserId] = useState("");
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
@@ -64,6 +65,7 @@ export default function PendingUsersPage() {
       if (authResult.user) {
         setUserName(authResult.user.name);
         setUserId(authResult.user.id);
+        setCampusNome(authResult.user.campusNome || null);
       }
 
       fetchPendingUsers();
@@ -173,7 +175,7 @@ export default function PendingUsersPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between gap-4 mb-6">

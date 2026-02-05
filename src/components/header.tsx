@@ -9,7 +9,14 @@ import { checkIsAdmin } from "@/app/actions";
 import { Separator } from "./ui/separator";
 import { PWAInstallButton } from "@/components/pwa-install-button";
 
-export function Header({ userName, userId, onLogout }: { userName: string, userId: string, onLogout: () => void }) {
+type HeaderProps = {
+  userName: string;
+  userId: string;
+  campusNome?: string | null;
+  onLogout: () => void;
+};
+
+export function Header({ userName, userId, campusNome, onLogout }: HeaderProps) {
 
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,7 +33,7 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
   return (
     <header className="bg-onda-darkBlue shadow-lg fixed top-0 left-0 right-0 z-50">
       <div className=" mx-auto px-2 sm:px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <div 
             className="cursor-pointer" 
             onClick={() => router.push('/list')}
@@ -39,6 +46,11 @@ export function Header({ userName, userId, onLogout }: { userName: string, userI
             /> */}
             <p className="text-white tracking-[-0.1em] text-3xl font-bold">onda.</p>
           </div>
+          {campusNome && (
+            <span className="hidden sm:inline-block text-white/70 text-sm font-medium px-2 py-1 rounded bg-white/10">
+              {campusNome}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <PWAInstallButton />

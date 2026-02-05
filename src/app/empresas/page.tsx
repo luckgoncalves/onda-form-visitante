@@ -19,6 +19,7 @@ export default function EmpresasPage() {
   const { toast } = useToast();
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -58,6 +59,7 @@ export default function EmpresasPage() {
           setIsAuthenticated(true);
           setUserName(authResult.user.name);
           setUserId(authResult.user.id);
+          setCampusNome(authResult.user.campusNome || null);
           setCurrentUser({
             id: authResult.user.id,
             role: authResult.user.role,
@@ -278,7 +280,7 @@ export default function EmpresasPage() {
   return (
     <>
       {isAuthenticated ? (
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       ) : (
         <HeaderPublic />
       )}

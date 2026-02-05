@@ -38,6 +38,7 @@ export default function GruposPublicPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const { toast } = useToast();
 
@@ -49,6 +50,7 @@ export default function GruposPublicPage() {
         if (auth && user) {
           setUserName(user.name);
           setUserId(user.id);
+          setCampusNome(user.campusNome || null);
         }
       } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
@@ -156,7 +158,7 @@ export default function GruposPublicPage() {
   return (
     <div className="min-h-screen">
       {isAuthenticated ? (
-        <Header userId={userId} userName={userName} onLogout={handleLogout} />
+        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       ) : (
         <HeaderPublic />
       )}

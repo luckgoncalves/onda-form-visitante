@@ -47,13 +47,15 @@ export async function POST(request: NextRequest) {
           password: hashedPassword,
           role: 'user', // Campo legado - sempre 'user' para registro público
           roleId: userRole?.id || null, // Novo campo com referência à tabela Role
+          campusId: userData.campusId || null, // Campus selecionado no registro
           requirePasswordChange: false,
           approved: false, // Usuário precisa ser aprovado por um administrador
           dataMembresia: userData.dataMembresia && userData.dataMembresia.trim() !== '' ? userData.dataMembresia : null,
           profileImageUrl: userData.profileImageUrl && userData.profileImageUrl.trim() !== '' ? userData.profileImageUrl : null,
         },
         include: {
-          roleRelation: true
+          roleRelation: true,
+          campus: true
         }
       });
 
@@ -104,6 +106,8 @@ export async function POST(request: NextRequest) {
         email: resultado.user.email,
         phone: resultado.user.phone,
         role: resultado.user.roleRelation?.name || resultado.user.role,
+        campusId: resultado.user.campusId,
+        campusNome: resultado.user.campus?.nome,
         approved: resultado.user.approved,
         requirePasswordChange: resultado.user.requirePasswordChange,
       },

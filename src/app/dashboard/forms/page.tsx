@@ -35,6 +35,7 @@ export default function FormsListPage() {
   
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
+  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [forms, setForms] = useState<FormListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,6 +60,7 @@ export default function FormsListPage() {
 
       setUserName(user.name);
       setUserId(user.id);
+      setCampusNome(user.campusNome || null);
       fetchForms();
     }
     checkAuthentication();
@@ -219,7 +221,7 @@ export default function FormsListPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} onLogout={handleLogout} />
+      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       
       <div className="p-4 sm:p-6 mt-[72px]">
         {/* Page Header */}
