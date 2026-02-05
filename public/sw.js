@@ -1,5 +1,5 @@
 // Service Worker para PWA - Network First Strategy
-const CACHE_NAME = 'onda-app-v3';
+const CACHE_NAME = 'onda-app-v4';
 const urlsToCache = [
   '/',
   '/list',
