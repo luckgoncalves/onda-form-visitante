@@ -49,9 +49,14 @@ export async function sendFormConfirmationEmail({
   }
 
   try {
-    // Use Resend's default domain or your verified domain
+    // Use your verified domain email. With onboarding@resend.dev you can only send to your own email.
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-    
+    if (!process.env.RESEND_FROM_EMAIL) {
+      console.warn(
+        'RESEND_FROM_EMAIL não definido. Defina no .env com um e-mail do seu domínio verificado (ex: noreply@seudominio.com) para enviar a qualquer destinatário.'
+      );
+    }
+
     const { data, error } = await resend.emails.send({
       from: `${fromName} <${fromEmail}>`,
       to: [to],
@@ -61,6 +66,11 @@ export async function sendFormConfirmationEmail({
 
     if (error) {
       console.error('Resend error:', error);
+      if (error.message?.includes('only send testing emails to your own')) {
+        console.error(
+          'Solução: adicione RESEND_FROM_EMAIL no .env com um e-mail do domínio verificado no Resend (ex: noreply@ondaduracuritiba.com.br) e reinicie o servidor.'
+        );
+      }
       return { success: false, error: error.message };
     }
 

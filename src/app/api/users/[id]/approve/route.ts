@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { checkAuth, checkIsAdmin } from '@/app/actions';
+import { sendFormConfirmationEmail } from '@/lib/email/resend';
 
 const approveUserSchema = z.object({
   approved: z.boolean(),
@@ -74,6 +75,18 @@ export async function PATCH(
           approved: true,
           createdAt: true,
         },
+      });
+
+      // Enviar e-mail de confirmação de aprovação (usa a mesma config dos formulários)
+      const userName = updatedUser.name || 'Usuário';
+      const loginUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.ondaduracuritiba.com.br';
+      sendFormConfirmationEmail({
+        to: updatedUser.email,
+        subject: 'Sua conta foi aprovada - Onda Dura',
+        body: `Olá ${userName},\n\nSua conta no App Onda Dura foi aprovada por um administrador.\n\nAgora você já pode acessar o sistema usando o e-mail e a senha cadastrados.\n\nAcesse: ${loginUrl}/login\n\nSe você tiver qualquer dúvida, entre em contato com a equipe.\n\nAtenciosamente,\nEquipe Onda Dura`,
+        fromName: 'Onda Dura',
+      }).catch((err) => {
+        console.error('Falha ao enviar e-mail de aprovação:', err);
       });
 
       return NextResponse.json({
