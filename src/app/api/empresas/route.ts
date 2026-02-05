@@ -79,7 +79,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const usuarioWhere: any = {};
+    const usuarioWhere: any = {
+      user: { approved: true }, // só empresas de usuários aprovados
+    };
 
     if (userId) {
       usuarioWhere.userId = userId;
@@ -87,17 +89,14 @@ export async function GET(request: NextRequest) {
 
     if (ownerName) {
       usuarioWhere.user = {
-        name: {
-          contains: ownerName,
-        },
+        ...usuarioWhere.user,
+        name: { contains: ownerName },
       };
     }
 
-    if (Object.keys(usuarioWhere).length > 0) {
-      where.usuarios = {
-        some: usuarioWhere,
-      };
-    }
+    where.usuarios = {
+      some: usuarioWhere,
+    };
 
     const [empresas, total] = await Promise.all([
       prisma.empresa.findMany({

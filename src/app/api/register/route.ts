@@ -59,36 +59,34 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      // Criar empresas se fornecidas
+      // Criar empresas se fornecidas (array validado pelo schema)
       const createdEmpresas = [];
-      if (empresas && empresas.length > 0) {
-        for (const empresaData of empresas) {
-          const empresa = await tx.empresa.create({
-            data: {
-              nomeNegocio: empresaData.nomeNegocio,
-              ramoAtuacao: empresaData.ramoAtuacao,
-              detalhesServico: empresaData.detalhesServico,
-              whatsapp: empresaData.whatsapp,
-              endereco: empresaData.endereco || null,
-              site: empresaData.site || null,
-              instagram: empresaData.instagram || null,
-              facebook: empresaData.facebook || null,
-              linkedin: empresaData.linkedin || null,
-              email: empresaData.email,
-              logoUrl: empresaData.logoUrl || null,
-            }
-          });
+      const empresasToCreate = Array.isArray(empresas) ? empresas : [];
+      for (const empresaData of empresasToCreate) {
+        const empresa = await tx.empresa.create({
+          data: {
+            nomeNegocio: empresaData.nomeNegocio,
+            ramoAtuacao: empresaData.ramoAtuacao,
+            detalhesServico: empresaData.detalhesServico,
+            whatsapp: empresaData.whatsapp,
+            email: empresaData.email,
+            endereco: (empresaData.endereco && String(empresaData.endereco).trim()) ? String(empresaData.endereco).trim() : null,
+            site: (empresaData.site && String(empresaData.site).trim()) ? String(empresaData.site).trim() : null,
+            instagram: (empresaData.instagram && String(empresaData.instagram).trim()) ? String(empresaData.instagram).trim() : null,
+            facebook: (empresaData.facebook && String(empresaData.facebook).trim()) ? String(empresaData.facebook).trim() : null,
+            linkedin: (empresaData.linkedin && String(empresaData.linkedin).trim()) ? String(empresaData.linkedin).trim() : null,
+            logoUrl: (empresaData.logoUrl && String(empresaData.logoUrl).trim()) ? String(empresaData.logoUrl).trim() : null,
+          }
+        });
 
-          // Criar relacionamento com usuário
-          await tx.userEmpresa.create({
-            data: {
-              userId: user.id,
-              empresaId: empresa.id,
-            }
-          });
+        await tx.userEmpresa.create({
+          data: {
+            userId: user.id,
+            empresaId: empresa.id,
+          }
+        });
 
-          createdEmpresas.push(empresa);
-        }
+        createdEmpresas.push(empresa);
       }
 
       return { user, empresas: createdEmpresas };

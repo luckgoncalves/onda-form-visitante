@@ -149,6 +149,32 @@ export default function SignupPage() {
         return;
       }
 
+      // Incluir empresas já adicionadas +, se estiver no step 2, a empresa preenchida no formulário (sem precisar clicar em "Adicionar Empresa")
+      let empresasToSend = Array.isArray(empresas) ? [...empresas] : [];
+      if (currentStep === 1) {
+        const empresaAtual = empresaForm.getValues();
+        const temDadosEmpresa = Boolean(
+          (empresaAtual.nomeNegocio?.trim?.() ?? '') ||
+          (empresaAtual.ramoAtuacao?.trim?.() ?? '') ||
+          (empresaAtual.detalhesServico?.trim?.() ?? '') ||
+          (empresaAtual.whatsapp?.trim?.() ?? '') ||
+          (empresaAtual.email?.trim?.() ?? '')
+        );
+        if (temDadosEmpresa) {
+          const empresaValida = await empresaForm.trigger();
+          if (empresaValida) {
+            empresasToSend = [...empresasToSend, empresaForm.getValues()];
+          } else {
+            toast({
+              title: 'Erro de validação',
+              description: 'Complete os campos obrigatórios da empresa (Nome do Negócio, Ramo, Detalhes, WhatsApp e E-mail) ou remova os dados para continuar.',
+              variant: 'destructive',
+            });
+            return;
+          }
+        }
+      }
+
       // Preparar payload (sempre definir role como 'user' para registro público)
       const payload = {
         user: {
@@ -156,7 +182,7 @@ export default function SignupPage() {
           role: 'user' as const,
           campusId: selectedCampusId || undefined,
         },
-        empresas: empresas,
+        empresas: empresasToSend,
       };
 
       // Validar payload completo
@@ -179,7 +205,7 @@ export default function SignupPage() {
 
       toast({
         title: 'Cadastro realizado com sucesso!',
-        description: data.message || `Sua conta foi criada. ${empresas.length > 0 ? `${empresas.length} empresa(s) cadastrada(s).` : ''} Aguarde a aprovação de um administrador para fazer login.`,
+        description: data.message || `Sua conta foi criada. ${empresasToSend.length > 0 ? `${empresasToSend.length} empresa(s) cadastrada(s).` : ''} Aguarde a aprovação de um administrador para fazer login.`,
       });
 
       // Redirecionar para página de login após alguns segundos
