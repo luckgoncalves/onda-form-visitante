@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from "react";
-import { User, ChevronDown, LayoutDashboard, LogOut, Users, UserCog, UsersRound, Building, FileText } from "lucide-react";
+import { User, ChevronDown, LayoutDashboard, LogOut, Users, UserCog, UsersRound, Building, FileText, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
@@ -148,6 +148,18 @@ export function Header({ userName, userId, campusNome, onLogout }: HeaderProps) 
                 >
                   <User className="h-4 w-4 mr-2.5" />
                   {userName}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    window.open('https://vox.devstack.com.br/board/de2454a0-1502-43d8-a4f7-4b2ff8992f07', '_blank');
+                  }}
+                >
+                  <MessageSquare className="h-4 w-4 mr-2.5" />
+                  Feedback
                 </Button>
 
                 <Button
