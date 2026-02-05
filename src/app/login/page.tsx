@@ -72,7 +72,7 @@ export default function LoginPage() {
           } else if (result.user?.role === 'base_pessoal') {
             router.push('/register');
           } else if (result.user?.role === 'user') {
-            router.push('/grupos');
+            router.push('/empresas');
           }
         }
       } else {
