@@ -3,7 +3,6 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { checkAuth, updateMensagemEnviada, logout, checkIsAdmin } from "../actions"
 import { LayoutGrid, LayoutList, MessageCircle, Plus, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ButtonForm from "@/components/button-form";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { DetailView } from "@/components/visitors/details-view";
@@ -288,8 +287,8 @@ export default function List() {
   return (
     <>
       <div className="p-2 sm:p-6 mt-[72px]">
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full">
+        <div className="mb-4 flex items-center gap-2 sm:gap-4 sm:justify-between">
+          <div className="relative min-w-0 flex-1">
             <Input
               type="text"
               placeholder="Buscar visitantes..."
@@ -309,7 +308,7 @@ export default function List() {
               </Button>
             )}
           </div>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex shrink-0 gap-2">
             <Sheet>
               <SheetTrigger asChild>
                 <Button
@@ -421,7 +420,6 @@ export default function List() {
             >
               {isGridView ? <LayoutList size={20} /> : <LayoutGrid size={20} />}
             </Button>
-            <ButtonForm type="button" onClick={() => router.push('/register')} label={`Visitante`} icon={<Plus size={20} />} />
           </div>
         </div>
         
