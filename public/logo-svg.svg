@@ -2,8 +2,8 @@
   <style>
     .bg {
       fill: transparent;
-      stroke: black;
-      stroke-width: 4;
+      stroke: #d1d5db;
+      stroke-width: 6;
     }
 
     .letter {
@@ -11,8 +11,8 @@
       font-weight: bold;
       font-size: 60px;
       fill: none;
-      stroke: black;
-      stroke-width: 2;
+      stroke: #d1d5db;
+      stroke-width: 3;
       stroke-dasharray: 300;
       stroke-dashoffset: 300;
       animation: draw 3s forwards;
