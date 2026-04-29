@@ -62,6 +62,16 @@ export async function GET(request: NextRequest) {
               name: true,
             },
           },
+          etiquetas: {
+            select: {
+              id: true,
+              nome: true,
+              cor: true,
+            },
+            orderBy: {
+              nome: 'asc',
+            },
+          },
         },
       }),
       prisma.visitantes.count({

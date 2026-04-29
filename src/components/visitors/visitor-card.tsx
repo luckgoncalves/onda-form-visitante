@@ -10,6 +10,7 @@ import { MapPin, MessageCircleMore } from "lucide-react";
 import { formatCulto } from "@/lib/utils";
 import { AlertDialog, AlertDialogCancel, AlertDialogDescription, AlertDialogTitle, AlertDialogHeader, AlertDialogContent, AlertDialogTrigger, AlertDialogFooter, AlertDialogAction } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 
 // Define a more specific type for the visitante prop
 interface Visitor {
@@ -29,6 +30,11 @@ interface Visitor {
   interesse_em_conhecer: string[];
   responsavel_nome?: string | null;
   responsavel_telefone?: string | null;
+  etiquetas?: {
+    id: string;
+    nome: string;
+    cor: string;
+  }[];
 }
 
 function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusChange }: { 
@@ -85,6 +91,23 @@ function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusC
                     Responsável: {visitante.responsavel_nome || '-'}
                     {visitante.responsavel_telefone ? ` • ${visitante.responsavel_telefone}` : ''}
                   </p>
+                )}
+                {visitante.etiquetas && visitante.etiquetas.length > 0 && (
+                  <div className="hidden sm:flex flex-wrap gap-1.5 mt-3">
+                    {visitante.etiquetas.map((etiqueta) => (
+                      <Badge
+                        key={etiqueta.id}
+                        variant="outline"
+                        className="border-transparent"
+                        style={{
+                          backgroundColor: `${etiqueta.cor}1A`,
+                          color: etiqueta.cor,
+                        }}
+                      >
+                        {etiqueta.nome}
+                      </Badge>
+                    ))}
+                  </div>
                 )}
               </div>
               <div className="flex gap-2 items-center text-sm text-gray-600 flex-wrap">

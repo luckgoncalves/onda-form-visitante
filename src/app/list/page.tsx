@@ -40,6 +40,11 @@ interface Visitante {
   } | null;
   responsavel_nome?: string | null;
   responsavel_telefone?: string | null;
+  etiquetas?: {
+    id: string;
+    nome: string;
+    cor: string;
+  }[];
 }
 
 interface PaginationInfo {
@@ -239,6 +244,15 @@ export default function List() {
     }
   };
 
+  const handleEtiquetasChange = (id: string, etiquetas: NonNullable<Visitante['etiquetas']>) => {
+    setVisitantes((prevVisitantes) =>
+      prevVisitantes.map((visitante) =>
+        visitante.id === id ? { ...visitante, etiquetas } : visitante
+      )
+    );
+    setSelectedItem((prev) => (prev?.id === id ? { ...prev, etiquetas } : prev));
+  };
+
   const handleClearSearch = () => {
     setSearchTerm('');
   };
@@ -267,6 +281,7 @@ export default function List() {
           item={selectedItem} 
           onBack={handleBackToList}
           onDelete={handleDeleteVisitor}
+          onEtiquetasChange={handleEtiquetasChange}
         />
       </>
     )

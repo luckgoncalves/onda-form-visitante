@@ -75,6 +75,7 @@ model Campus {
   visitantes visitantes[]
   grupos     grupo[]
   forms      Form[]
+  etiquetas  Etiqueta[]
 
   @@unique([cidade, estado])
 }
@@ -119,6 +120,24 @@ model visitantes {
   // Relação com Campus
   campusId String?
   campus   Campus? @relation(fields: [campusId], references: [id])
+
+  // Relação com Etiquetas
+  etiquetas Etiqueta[]
+}
+
+model Etiqueta {
+  id        String   @id @default(cuid())
+  nome      String
+  cor       String
+  campusId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  campus     Campus       @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  visitantes visitantes[]
+
+  @@unique([campusId, nome])
 }
 
 model users {

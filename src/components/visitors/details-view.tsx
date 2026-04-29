@@ -5,8 +5,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "../ui/toaster";
 import { formatCulto, formatDate, formatInteresse } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { Badge } from "../ui/badge";
+import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
+
+interface Etiqueta {
+  id: string;
+  nome: string;
+  cor: string;
+}
 
 // Define a more specific type for the item prop
 interface VisitorDetails {
@@ -29,19 +38,57 @@ interface VisitorDetails {
   } | null;
   responsavel_nome?: string | null;
   responsavel_telefone?: string | null;
+  etiquetas?: Etiqueta[];
 }
 
-function DetailView({ item, onBack, onDelete }: { 
+function DetailView({ item, onBack, onDelete, onEtiquetasChange }: { 
     item: VisitorDetails, // Use the defined interface
     onBack: () => void,
-    onDelete: (id: string) => Promise<void> 
+    onDelete: (id: string) => Promise<void>,
+    onEtiquetasChange?: (id: string, etiquetas: Etiqueta[]) => void
   }) {
     const { toast } = useToast()
     const [isDeleting, setIsDeleting] = React.useState(false);
+    const [availableEtiquetas, setAvailableEtiquetas] = React.useState<Etiqueta[]>([]);
+    const [selectedEtiquetaIds, setSelectedEtiquetaIds] = React.useState<string[]>(
+      () => item.etiquetas?.map((etiqueta) => etiqueta.id) || []
+    );
+    const [isLoadingEtiquetas, setIsLoadingEtiquetas] = React.useState(false);
+    const [isSavingEtiquetas, setIsSavingEtiquetas] = React.useState(false);
   
     React.useEffect(() => {
       window.scrollTo(0, 0);
     }, []);
+
+    React.useEffect(() => {
+      setSelectedEtiquetaIds(item.etiquetas?.map((etiqueta) => etiqueta.id) || []);
+    }, [item.etiquetas]);
+
+    React.useEffect(() => {
+      async function fetchEtiquetas() {
+        try {
+          setIsLoadingEtiquetas(true);
+          const response = await fetch('/api/etiquetas');
+
+          if (!response.ok) {
+            throw new Error('Erro ao buscar etiquetas');
+          }
+
+          const data = await response.json();
+          setAvailableEtiquetas(Array.isArray(data) ? data : []);
+        } catch (error) {
+          toast({
+            variant: "destructive",
+            title: "Erro ao carregar etiquetas",
+            description: "Não foi possível carregar as etiquetas do campus.",
+          });
+        } finally {
+          setIsLoadingEtiquetas(false);
+        }
+      }
+
+      fetchEtiquetas();
+    }, [toast]);
   
     const handleDelete = async () => {
       setIsDeleting(true);
@@ -60,6 +107,55 @@ function DetailView({ item, onBack, onDelete }: {
         
       } finally {
         setIsDeleting(false);
+      }
+    };
+
+    const handleToggleEtiqueta = (etiquetaId: string, checked: boolean) => {
+      setSelectedEtiquetaIds((prev) => {
+        if (checked) {
+          return Array.from(new Set([...prev, etiquetaId]));
+        }
+
+        return prev.filter((id) => id !== etiquetaId);
+      });
+    };
+
+    const handleSaveEtiquetas = async () => {
+      try {
+        setIsSavingEtiquetas(true);
+        const response = await fetch(`/api/visitors/${item.id}/etiquetas`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            etiquetaIds: selectedEtiquetaIds,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Erro ao salvar etiquetas');
+        }
+
+        const updatedEtiquetas = data.etiquetas || [];
+
+        onEtiquetasChange?.(item.id, updatedEtiquetas);
+        setSelectedEtiquetaIds(updatedEtiquetas.map((etiqueta: Etiqueta) => etiqueta.id));
+
+        toast({
+          title: "Etiquetas atualizadas",
+          description: "As etiquetas do visitante foram salvas com sucesso.",
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao salvar etiquetas",
+          description: error instanceof Error ? error.message : "Não foi possível salvar as etiquetas.",
+        });
+      } finally {
+        setIsSavingEtiquetas(false);
       }
     };
   
@@ -103,6 +199,64 @@ function DetailView({ item, onBack, onDelete }: {
             </AlertDialog>
           </div>
           <h2 className="text-2xl font-bold mb-3">{item.nome}</h2>
+          <div className="mb-6 rounded-lg border border-gray-200 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h4 className="text-base font-semibold">Etiquetas</h4>
+                <p className="text-sm text-gray-500">
+                  Selecione uma ou mais etiquetas para categorizar este visitante.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={handleSaveEtiquetas}
+                disabled={isSavingEtiquetas || isLoadingEtiquetas}
+                className="bg-onda-darkBlue hover:bg-onda-darkBlue/90"
+              >
+                {isSavingEtiquetas && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Salvar etiquetas
+              </Button>
+            </div>
+            <div className="mt-4">
+              {isLoadingEtiquetas ? (
+                <p className="text-sm text-gray-500">Carregando etiquetas...</p>
+              ) : availableEtiquetas.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  Nenhuma etiqueta cadastrada para este campus.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-3">
+                  {availableEtiquetas.map((etiqueta) => {
+                    const checked = selectedEtiquetaIds.includes(etiqueta.id);
+
+                    return (
+                      <Label
+                        key={etiqueta.id}
+                        className="flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2"
+                        style={{
+                          borderColor: checked ? etiqueta.cor : undefined,
+                        }}
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(value) => handleToggleEtiqueta(etiqueta.id, value === true)}
+                        />
+                        <Badge
+                          variant="outline"
+                          style={{
+                            borderColor: etiqueta.cor,
+                            color: etiqueta.cor,
+                          }}
+                        >
+                          {etiqueta.nome}
+                        </Badge>
+                      </Label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
           <div>
           <h4 className="text-base font-semibold">Estado cívil</h4>
           <p className="text-gray-600 mb-3"> {item.estado_civil}</p>
