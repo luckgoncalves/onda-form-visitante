@@ -12,13 +12,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 import { cn } from '@/lib/utils';
 
 type MoreMenuSheetProps = {
@@ -77,15 +77,15 @@ export function MoreMenuSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent side="right" className="w-full max-w-sm overflow-y-auto pb-8">
-        <SheetHeader className="text-left">
-          <SheetTitle>Menu</SheetTitle>
-          <SheetDescription>
+    <Drawer open={open} onOpenChange={setOpen} direction="right">
+      <DrawerTrigger asChild>{children}</DrawerTrigger>
+      <DrawerContent side="right" className="w-full max-w-sm overflow-y-auto pb-8">
+        <DrawerHeader className="text-left">
+          <DrawerTitle>Menu</DrawerTitle>
+          <DrawerDescription>
             {campusNome ? `${campusNome} · ${userName}` : userName}
-          </SheetDescription>
-        </SheetHeader>
+          </DrawerDescription>
+        </DrawerHeader>
 
         <div className="mt-6 space-y-6">
           {Object.entries(sections).map(([section, items]) => (
@@ -154,7 +154,7 @@ export function MoreMenuSheet({
             </div>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
