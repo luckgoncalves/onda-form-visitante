@@ -47,8 +47,7 @@ export const navigationItems: NavigationItem[] = [
     href: '/dashboard',
     icon: LayoutDashboard,
     adminOnly: true,
-    desktopPrimary: true,
-    mobilePrimaryAdmin: true,
+    section: 'Gestão',
   },
   {
     label: 'Formulários',
@@ -75,7 +74,8 @@ export const navigationItems: NavigationItem[] = [
     label: 'Empresas',
     href: '/empresas',
     icon: Building,
-    section: 'Comunidade',
+    desktopPrimary: true,
+    mobilePrimaryAdmin: true,
     mobilePrimaryUser: true,
   },
   {
