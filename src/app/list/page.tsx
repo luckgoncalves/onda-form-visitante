@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { DetailView } from "@/components/visitors/details-view";
 import { VisitorCard } from "@/components/visitors/visitor-card";
 import { SkeletonCard } from "@/components/visitors/skeleton";
-import { SwipeInstruction } from "@/components/visitors/swipe-intruction";
 import LoadingOnda from "@/components/loading-onda";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { format } from "date-fns";
@@ -425,18 +424,18 @@ export default function List() {
         
         {/* Show search results count */}
         {pagination && (
-          <div className="mb-4 text-sm text-gray-600">
+          <div className="mb-4 text-sm text-end text-gray-600">
             {searchTerm.trim() ? (
               <span>
                 {pagination.total} visitante{pagination.total !== 1 ? 's' : ''} encontrado{pagination.total !== 1 ? 's' : ''} para &quot;{searchTerm}&quot;
               </span>
             ) : (
-              <span>Mostrando {visitantes.length} de {pagination.total} visitantes</span>
+              <span>{visitantes.length} de {pagination.total} visitantes</span>
             )}
           </div>
         )}
         
-        <SwipeInstruction />
+        
         {loading ? (
           // Show skeleton cards while loading
           <div className={`grid gap-4 ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
