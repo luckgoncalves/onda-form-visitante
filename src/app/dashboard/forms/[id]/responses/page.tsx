@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { checkAuth, checkIsAdmin, logout } from '@/app/actions';
-import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -271,7 +270,6 @@ export default function FormResponsesPage() {
   if (isLoading) {
     return (
       <>
-        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <div className="p-4 sm:p-6 mt-[72px]">
           <Skeleton className="h-10 w-64 mb-4" />
           <Skeleton className="h-6 w-96 mb-6" />
@@ -287,7 +285,6 @@ export default function FormResponsesPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
 
       <div className="p-4 sm:p-6 mt-[72px]">
         {/* Page Header */}

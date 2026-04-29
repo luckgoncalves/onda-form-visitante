@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { checkAuth, checkIsAdmin, logout } from '@/app/actions';
-import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -221,7 +220,6 @@ export default function FormsListPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       
       <div className="p-4 sm:p-6 mt-[72px]">
         {/* Page Header */}

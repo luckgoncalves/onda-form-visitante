@@ -8,13 +8,13 @@ import StepZero from "@/components/step-zero";
 import { Card } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { checkAuth, logout, save, canAccessRegister } from "../actions";
+import { checkAuth, save, canAccessRegister } from "../actions";
 import Done from "@/components/done";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step1Schema, step2Schema, step3Schema } from "./validate";
 import { useRouter } from "next/navigation";
-import { Header } from "@/components/header";
 import ErrorBoundary from "@/components/error-boundary";
+import LoadingOnda from "@/components/loading-onda";
 
 export default function Home() {
   const [step, setStep] = useState(0);
@@ -24,8 +24,6 @@ export default function Home() {
   const router = useRouter();
   const [formData, setFormData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userId, setUserId] = useState('');
-  const [campusNome, setCampusNome] = useState<string | null>(null);
   // Função para obter o schema correto baseado no step
   const getSchemaForStep = (currentStep: number) => {
     switch (currentStep) {
@@ -88,8 +86,6 @@ export default function Home() {
         }
 
         setUserName(user.name);
-        setUserId(user.id);
-        setCampusNome(user.campusNome || null);
         setIsLoading(false);
       } catch (error) {
         console.error('Error checking authentication:', error);
@@ -133,25 +129,13 @@ export default function Home() {
     }
   });
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
-
   if (!isMounted || isLoading || !userName) {
-    return (
-      <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center justify-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <div className="flex justify-center items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 dark:border-white"></div>
-        </div>
-      </main>
-    )
+    return <LoadingOnda />;
   }
 
   return (
     <ErrorBoundary>
       <main className="flex w-full h-[100%]  min-h-screen flex-col  items-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <div className="flex justify-between items-center w-full">
           <h1>Ficha - visitantes</h1>
         </div>

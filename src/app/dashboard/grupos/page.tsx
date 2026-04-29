@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Header } from '@/components/header';
 import { checkAuth, logout } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
@@ -218,7 +217,6 @@ export default function GruposPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       
       <div className="p-2 sm:p-6 mt-[72px]">
         {/* Search Bar */}

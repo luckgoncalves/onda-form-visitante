@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Edit, Loader2, Plus, Search, Tag, Trash2 } from 'lucide-react';
 import { checkAuth, checkIsAdmin, logout } from '@/app/actions';
-import { Header } from '@/components/header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -223,7 +222,6 @@ export default function EtiquetasPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
 
       <div className="p-4 sm:p-6 mt-[72px]">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

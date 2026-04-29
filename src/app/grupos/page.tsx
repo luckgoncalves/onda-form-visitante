@@ -1,15 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Filter } from 'lucide-react';
 import GrupoCard from '@/components/grupos/grupo-card';
 import GrupoCardsSkeleton from '@/components/grupos/grupo-cards-skeleton';
 import { Button } from '@/components/ui/button';
-import { Header } from '@/components/header';
 import { HeaderPublic } from '@/components/header-public';
-import { checkAuth, logout } from '@/app/actions';
+import LoadingOnda from '@/components/loading-onda';
+import { checkAuth } from '@/app/actions';
 
 interface Grupo {
   id: string;
@@ -29,29 +28,20 @@ interface Grupo {
 }
 
 export default function GruposPublicPage() {
-  const router = useRouter();
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [filteredGrupos, setFilteredGrupos] = useState<Grupo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDia, setSelectedDia] = useState<string>('todos');
   const [selectedCategoria, setSelectedCategoria] = useState<string>('todas');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [userId, setUserId] = useState('');
-  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     async function checkAuthentication() {
       try {
-        const { isAuthenticated: auth, user } = await checkAuth();
+        const { isAuthenticated: auth } = await checkAuth();
         setIsAuthenticated(auth);
-        if (auth && user) {
-          setUserName(user.name);
-          setUserId(user.id);
-          setCampusNome(user.campusNome || null);
-        }
       } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
       } finally {
@@ -146,22 +136,13 @@ export default function GruposPublicPage() {
     return dias[dia] || dia;
   };
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
-
   if (isCheckingAuth) {
-    return null; // Ou um loading spinner
+    return <LoadingOnda />;
   }
 
   return (
     <div className="min-h-screen">
-      {isAuthenticated ? (
-        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
-      ) : (
-        <HeaderPublic />
-      )}
+      {!isAuthenticated && <HeaderPublic />}
       {/* Content */}
       <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
         {/* Intro */}

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import ButtonForm from "@/components/button-form";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { Header } from "@/components/header";
 import { DetailView } from "@/components/visitors/details-view";
 import { VisitorCard } from "@/components/visitors/visitor-card";
 import { SkeletonCard } from "@/components/visitors/skeleton";
@@ -276,7 +275,6 @@ export default function List() {
   if (selectedItem) {
     return (
       <>
-        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <DetailView 
           item={selectedItem} 
           onBack={handleBackToList}
@@ -289,7 +287,6 @@ export default function List() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px]">
         <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full">

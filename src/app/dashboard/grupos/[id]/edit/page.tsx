@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/header';
 import { checkAuth, logout } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import GrupoForm, { GrupoFormData } from '@/components/grupos/grupo-form';
@@ -136,7 +135,6 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
   if (isLoadingData) {
     return (
       <>
-        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <div className="p-2 sm:p-6 mt-[72px]">
           <GrupoFormSkeleton mode="edit" />
         </div>
@@ -147,7 +145,6 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
   if (!grupo) {
     return (
       <>
-        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
         <div className="p-2 sm:p-6 mt-[72px]">
           <div className="max-w-2xl mx-auto">
             <div className="flex justify-center py-8">
@@ -161,7 +158,6 @@ export default function EditarGrupoPage({ params }: { params: { id: string } }) 
 
   return (
     <>
-      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       
       <div className="p-2 sm:p-6 mt-[72px]">
         <GrupoForm

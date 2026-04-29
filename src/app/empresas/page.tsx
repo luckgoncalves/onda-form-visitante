@@ -1,25 +1,20 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Header } from '@/components/header';
 import { HeaderPublic } from '@/components/header-public';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { checkAuth, logout } from '@/app/actions';
+import { checkAuth } from '@/app/actions';
 import { useDebounce } from '@/app/users/hooks/useDebounce';
 import EmpresaCard from '@/components/empresas/empresa-card';
 import { EmpresasGridSkeleton } from '@/components/empresas/empresa-skeleton';
 import { Empresa, EmpresaListResponse, EmpresaFiltersResponse, EmpresaContactChannel, EMPRESA_CONTACT_CHANNELS } from '@/types/empresa';
 import { SearchInput } from '@/components/search-input';
 import { EmpresaFilters } from '@/components/empresas/empresa-filters';
+import LoadingOnda from '@/components/loading-onda';
 
 export default function EmpresasPage() {
-  const router = useRouter();
   const { toast } = useToast();
-  const [userName, setUserName] = useState('');
-  const [userId, setUserId] = useState('');
-  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -57,9 +52,6 @@ export default function EmpresasPage() {
         const authResult = await checkAuth();
         if (authResult.isAuthenticated && authResult.user) {
           setIsAuthenticated(true);
-          setUserName(authResult.user.name);
-          setUserId(authResult.user.id);
-          setCampusNome(authResult.user.campusNome || null);
           setCurrentUser({
             id: authResult.user.id,
             role: authResult.user.role,
@@ -214,11 +206,6 @@ export default function EmpresasPage() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
-
   const handleLoadMore = async () => {
     if (pagination.page < pagination.totalPages && !isLoadingMore) {
       setIsLoadingMore(true);
@@ -277,13 +264,13 @@ export default function EmpresasPage() {
     fetchEmpresas(1, debouncedSearchTerm, appliedFilters);
   };
 
+  if (isCheckingAuth) {
+    return <LoadingOnda />;
+  }
+
   return (
     <>
-      {isAuthenticated ? (
-        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
-      ) : (
-        <HeaderPublic />
-      )}
+      {!isAuthenticated && <HeaderPublic />}
       <div className="p-2 sm:p-6 max-w-7xl mx-auto mt-[72px]">
         {/* Header da página */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

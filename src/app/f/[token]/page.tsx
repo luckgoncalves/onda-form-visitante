@@ -6,8 +6,9 @@ import { FormPublicRender } from '@/components/forms/form-public-render';
 import { FormFieldConfig } from '@/types/form';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertCircle, Lock, Clock } from 'lucide-react';
+import { AlertCircle, Lock, Clock } from 'lucide-react';
 import Link from 'next/link';
+import LoadingOnda from '@/components/loading-onda';
 
 interface FormData {
   id: string;
@@ -66,14 +67,7 @@ export default function PublicFormPage() {
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-onda-darkBlue mx-auto mb-4" />
-          <p className="text-gray-500">Carregando formulário...</p>
-        </div>
-      </div>
-    );
+    return <LoadingOnda />;
   }
 
   // Expired state

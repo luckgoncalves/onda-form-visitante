@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState, useMemo } from "react";
-import { checkAuth, logout, checkIsAdmin } from "../actions";
+import { checkAuth, checkIsAdmin } from "../actions";
 import { useRouter } from "next/navigation";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { Header } from "@/components/header";
 import { ChartSkeleton } from "@/components/dashboard/skeleton";
+import LoadingOnda from "@/components/loading-onda";
 import { useExcel, ReportType } from "./hooks/use-excel.hook";
 import { useVisitStats } from "./hooks/use-visit-stats.hook";
 import { useDemographicStats } from "./hooks/use-demographic-stats.hook";
@@ -17,10 +17,8 @@ import { ChevronDown } from "lucide-react";
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
-  const [userName, setUserName] = useState("");
-  const [userId, setUserId] = useState("");
-  const [campusNome, setCampusNome] = useState<string | null>(null);
   const { exportToExcel, isExporting, startDate, setStartDate, endDate, setEndDate } = useExcel();
   
   const { stats, monthlyStats, isLoading: isLoadingVisits } = useVisitStats({ startDate, endDate });
@@ -43,42 +41,39 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function checkAuthentication() {
-      const { isAuthenticated, user } = await checkAuth();
-      const { isAdmin } = await checkIsAdmin();
-      
-      if (!isAuthenticated || !user) {
+      try {
+        const { isAuthenticated, user } = await checkAuth();
+        const { isAdmin } = await checkIsAdmin();
+        
+        if (!isAuthenticated || !user) {
+          router.push('/');
+          return;
+        }
+
+        if (!isAdmin) {
+          router.push('/list');
+          return;
+        }
+
+        setIsCheckingAuth(false);
+      } catch (error) {
+        console.error('Error checking authentication:', error);
         router.push('/');
-        return;
       }
-
-      if (!isAdmin) {
-        router.push('/list');
-        return;
-      }
-
-      setUserName(user.name);
-      setUserId(user.id);
-      setCampusNome(user.campusNome || null);
     }
     checkAuthentication();
   }, [router]);
-
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  }
 
   const handleExport = (type: ReportType) => {
     exportToExcel(type, dashboardStats.totalVisits);
   };
 
-  if (!mounted) {
-    return null;
+  if (!mounted || isCheckingAuth) {
+    return <LoadingOnda />;
   }
 
   return (
     <>
-      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px]">
         <div className="flex flex-col gap-2 sm:gap-4 justify-between mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">

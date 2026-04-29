@@ -10,9 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Header } from '@/components/header';
 import { useToast } from '@/hooks/use-toast';
-import { checkAuth, checkIsAdmin, createUser, logout } from '@/app/actions';
+import { checkAuth, checkIsAdmin, createUser } from '@/app/actions';
 import { formatPhone } from '@/lib/utils';
 import { ArrowLeft, ArrowRight, Plus, Trash2, User, Building } from 'lucide-react';
 import { userSchema } from '@/app/users/validate';
@@ -23,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MonthYearPicker } from '@/components/ui/month-year-picker';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { CampusCombobox } from '@/components/campus-combobox';
+import LoadingOnda from '@/components/loading-onda';
 
 // Schema para dados do usuário
 const userFormSchema = userSchema;
@@ -42,8 +42,6 @@ export default function CreateUserPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [userName, setUserName] = useState('');
-  const [userId, setUserId] = useState('');
-  const [campusNome, setCampusNome] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [empresas, setEmpresas] = useState<EmpresaFormData[]>([]);
@@ -92,8 +90,6 @@ export default function CreateUserPage() {
       const authResult = await checkAuth();
       if (authResult.user) {
         setUserName(authResult.user.name);
-        setUserId(authResult.user.id);
-        setCampusNome(authResult.user.campusNome || null);
         // Pre-select user's campus
         if (authResult.user.campusId) {
           setSelectedCampusId(authResult.user.campusId);
@@ -118,11 +114,6 @@ export default function CreateUserPage() {
 
     checkAdminAccess();
   }, [router]);
-
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
 
   const handleNextStep = async () => {
     if (currentStep === 0) {
@@ -223,16 +214,11 @@ export default function CreateUserPage() {
   ];
 
   if (!userName) {
-    return (
-      <main className="flex w-full h-[100%] min-h-screen flex-col items-center gap-4 p-2 sm:p-6 mt-[72px]">
-        <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
-      </main>
-    );
+    return <LoadingOnda />;
   }
 
   return (
     <>
-      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto">
         {/* Header da página */}
         <div className="flex items-center justify-between gap-4 mb-6">

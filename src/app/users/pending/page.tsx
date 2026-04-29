@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react";
 import { checkAuth, checkIsAdmin, logout } from "../../actions";
 import { useRouter } from "next/navigation";
-import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -176,7 +175,6 @@ export default function PendingUsersPage() {
 
   return (
     <>
-      <Header userId={userId} userName={userName} campusNome={campusNome} onLogout={handleLogout} />
       <div className="p-2 sm:p-6 mt-[72px] max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between gap-4 mb-6">
