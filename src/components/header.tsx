@@ -1,13 +1,14 @@
 'use client';
-import { useState, useEffect } from "react";
-import { User, ChevronDown, LayoutDashboard, LogOut, Users, UserCog, UsersRound, Building, FileText, MessageSquare, Tag } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import { checkIsAdmin } from "@/app/actions";
-import { Separator } from "./ui/separator";
 import { PWAInstallButton } from "@/components/pwa-install-button";
+import { getDesktopPrimaryItems, NavigationItem } from "@/config/navigation";
+import { MoreMenuSheet } from "@/components/navigation/more-menu-sheet";
+import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
+import { cn } from "@/lib/utils";
 
 type HeaderProps = {
   userName: string;
@@ -17,9 +18,8 @@ type HeaderProps = {
 };
 
 export function Header({ userName, userId, campusNome, onLogout }: HeaderProps) {
-
   const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -30,165 +30,101 @@ export function Header({ userName, userId, campusNome, onLogout }: HeaderProps) 
     checkAdmin();
   }, []);
 
+  useEffect(() => {
+    document.body.classList.add('has-mobile-bottom-nav');
+
+    return () => {
+      document.body.classList.remove('has-mobile-bottom-nav');
+    };
+  }, []);
+
+  const desktopPrimaryItems = getDesktopPrimaryItems(isAdmin);
+
+  const isActive = (item: NavigationItem) => {
+    if (!item.href) return false;
+    return pathname === item.href || pathname.startsWith(`${item.href}/`);
+  };
+
+  const handleNavigate = (item: NavigationItem) => {
+    if (item.externalHref) {
+      window.open(item.externalHref, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    if (item.href) {
+      router.push(item.href);
+    }
+  };
+
   return (
-    <header className="bg-onda-darkBlue shadow-lg fixed top-0 left-0 right-0 z-50">
-      <div className=" mx-auto px-2 sm:px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div 
-            className="cursor-pointer" 
-            onClick={() => router.push('/list')}
-          >
-            {/* <Image
-              src="/onda-transparente.png" 
-              alt="Onda Logo" 
-              width={50}
-              height={50}
-            /> */}
-            <p className="text-white tracking-[-0.1em] text-3xl font-bold">onda.</p>
-          </div>
-          {campusNome && (
-            <span className="hidden sm:inline-block text-white/70 text-sm font-medium px-2 py-1 rounded bg-white/10">
-              {campusNome}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <PWAInstallButton />
-          <div className="relative">
-            <Button
-              variant="ghost"
-              className="flex items-center hover:bg-white/20 transition-colors"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+    <>
+      <header className="bg-onda-darkBlue shadow-lg fixed top-0 left-0 right-0 z-50">
+        <div className="mx-auto flex items-center justify-between gap-3 px-3 py-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              className="shrink-0 cursor-pointer"
+              onClick={() => router.push(isAdmin ? '/list' : '/register')}
+              aria-label="Ir para início"
             >
-              <User className="h-4 w-4 mr-2 text-white" />
-              <span className="hidden sm:block text-base font-medium text-white">{userName}</span>
-              <ChevronDown className="h-4 w-4 ml-1 text-white" />
-            </Button>
-          {isMenuOpen && (
-            <Card className="absolute right-0 mt-2 w-56 py-2 bg-white rounded-xl shadow-lg z-10 border-none">
-              <div className="px-2 space-y-1">
-                {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                    onClick={() => router.push('/dashboard')}
-                  >
-                    <LayoutDashboard className="h-4 w-4 mr-2.5" />
-                    Dashboard
-                  </Button>
-                )}
-                {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                  onClick={() => router.push('/list')}
-                >
-                  <Users className="h-4 w-4 mr-2.5" />
-                  Visitantes
-                  </Button>
-                )}
-                {/* {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                    onClick={() => router.push('/dashboard/grupos')}
-                  >
-                    <UsersRound className="h-4 w-4 mr-2.5" />
-                    Gp`s
-                  </Button>
-                )} */}
-                {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                    onClick={() => router.push('/dashboard/forms')}
-                  >
-                    <FileText className="h-4 w-4 mr-2.5" />
-                    Formulários
-                  </Button>
-                )}
-                {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                    onClick={() => router.push('/dashboard/etiquetas')}
-                  >
-                    <Tag className="h-4 w-4 mr-2.5" />
-                    Etiquetas
-                  </Button>
-                )}
-                
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                  onClick={() => window.open('https://ondaduracuritiba.inpeaceapp.com/groups', '_blank')}
-                >
-                  <UsersRound className="h-4 w-4 mr-2.5" />
-                  Grupos
-                </Button>
+              <p className="text-3xl font-bold tracking-[-0.1em] text-white">onda.</p>
+            </button>
+            {campusNome && (
+              <span className="hidden truncate rounded bg-white/10 px-2 py-1 text-sm font-medium text-white/70 sm:inline-block">
+                {campusNome}
+              </span>
+            )}
+          </div>
 
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                  onClick={() => router.push('/empresas')}
-                >
-                  <Building className="h-4 w-4 mr-2.5" />
-                  Empresas
-                </Button>
-                {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                    onClick={() => router.push('/users')}
-                  >
-                    <UserCog className="h-4 w-4 mr-2.5" />
-                    Membros
-                  </Button>
-                )}
-                
-                <Separator className="bg-gray-200" />
+          <nav className="hidden items-center gap-1 md:flex">
+            {desktopPrimaryItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item);
 
+              return (
                 <Button
+                  key={item.label}
                   variant="ghost"
-                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    router.push(`/users/${userId}`);
-                  }}
+                  className={cn(
+                    "gap-2 text-white hover:bg-white/20 hover:text-white",
+                    active && "bg-white/15"
+                  )}
+                  onClick={() => handleNavigate(item)}
                 >
-                  <User className="h-4 w-4 mr-2.5" />
-                  {userName}
+                  <Icon className="h-4 w-4" />
+                  {item.label}
                 </Button>
+              );
+            })}
+          </nav>
 
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    window.open('https://vox.devstack.com.br/board/de2454a0-1502-43d8-a4f7-4b2ff8992f07', '_blank');
-                  }}
-                >
-                  <MessageSquare className="h-4 w-4 mr-2.5" />
-                  Feedback
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start px-3 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-onda-darkBlue rounded-lg transition-all duration-200"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    onLogout();
-                  }}
-                >
-                  <LogOut className="h-4 w-4 mr-2.5" />
-                  Sair
-                </Button>
-              </div>
-            </Card>
-          )}
+          <div className="flex items-center gap-2">
+            <PWAInstallButton />
+            <MoreMenuSheet
+              isAdmin={isAdmin}
+              userName={userName}
+              userId={userId}
+              campusNome={campusNome}
+              onLogout={onLogout}
+            >
+              <Button
+                variant="ghost"
+                className="hidden items-center gap-2 text-white hover:bg-white/20 hover:text-white md:flex"
+              >
+                <span className="max-w-36 truncate text-base font-medium">{userName || 'Menu'}</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </MoreMenuSheet>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+      <MobileBottomNav
+        isAdmin={isAdmin}
+        userName={userName}
+        userId={userId}
+        campusNome={campusNome}
+        onLogout={onLogout}
+      />
+    </>
   )
-} 
+}
