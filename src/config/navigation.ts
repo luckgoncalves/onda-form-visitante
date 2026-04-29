@@ -35,7 +35,7 @@ export const navigationItems: NavigationItem[] = [
     mobilePrimaryAdmin: true,
   },
   {
-    label: 'Novo',
+    label: 'Visitante',
     href: '/register',
     icon: Plus,
     desktopPrimary: true,
