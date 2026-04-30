@@ -161,10 +161,9 @@ export function EmpresaFilters({
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="w-full sm:w-auto justify-between sm:justify-start gap-2 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40 text-onda-darkBlue"
+            className="w-auto justify-start gap-2 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40 text-onda-darkBlue"
           >
             <SlidersHorizontal className="h-4 w-4" />
-            Filtros
             {activeCount > 0 && (
               <Badge variant="secondary" className="ml-1 bg-onda-darkBlue text-white">
                 {activeCount}

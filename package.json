@@ -16,6 +16,9 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-toast": "^1.2.4",
     "@react-email/render": "^2.0.4",
+    "@remotion/bundler": "^4.0.454",
+    "@remotion/cli": "^4.0.454",
+    "@remotion/renderer": "^4.0.454",
     "bcrypt": "^5.1.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -33,6 +36,7 @@
     "react-hook-form": "^7.52.1",
     "react-input-mask": "^2.0.4",
     "recharts": "^2.13.3",
+    "remotion": "^4.0.454",
     "resend": "^6.8.0",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
@@ -61,7 +65,11 @@
     "dev": "next dev",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "start": "next start"
+    "start": "next start",
+    "studio": "remotion studio remotion/index.ts",
+    "render": "remotion render remotion/index.ts OndaOnboarding out/onda-onboarding.mp4",
+    "render:square": "remotion render remotion/index.ts OndaOnboardingSquare out/onda-onboarding-square.mp4",
+    "render:gif": "remotion render remotion/index.ts OndaOnboarding out/onda-onboarding.gif"
   },
   "version": "0.1.0"
 }

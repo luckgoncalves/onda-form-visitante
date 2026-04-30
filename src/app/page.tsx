@@ -55,6 +55,14 @@ export default function Home() {
 
   const publicPages = [
     {
+      title: 'Hub',
+      description: 'Conheça as empresas e negócios dos membros da nossa comunidade.',
+      icon: Building,
+      href: '/empresas',
+      color: 'bg-onda-skyBlue',
+      external: false,
+    },
+    {
       title: 'Grupos Pequenos',
       description: 'Encontre um grupo pequeno perto de você e conecte-se com outras pessoas.',
       icon: UsersRound,
@@ -62,18 +70,10 @@ export default function Home() {
       color: 'bg-onda-teal',
       external: true,
     },
-    {
-      title: 'Empresas',
-      description: 'Conheça as empresas e negócios dos membros da nossa comunidade.',
-      icon: Building,
-      href: '/empresas',
-      color: 'bg-onda-skyBlue',
-      external: false,
-    },
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-onda-darkBlue to-[#001540]">
+    <main className="flex min-h-screen flex-col bg-gradient-to-b from-onda-darkBlue to-[#001540]">
       {/* Header */}
       <header className="w-full px-4 sm:px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -102,12 +102,12 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="px-4 sm:px-6 py-12 sm:py-20">
+      <section className="px-4 sm:px-6 py-12 sm:py-16">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-white text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
             Bem-vindo à <span className="text-white tracking-[-0.1em]">onda.</span>
           </h2>
-          <p className="text-white/80 text-lg sm:text-xl max-w-2xl mx-auto mb-8">
+          <p className="text-white/80 text-lg sm:text-xl max-w-2xl mx-auto">
             Conecte-se com nossa comunidade, encontre grupos pequenos e descubra empresas de membros.
           </p>
         </div>
@@ -116,9 +116,6 @@ export default function Home() {
       {/* Public Pages Section */}
       <section className="px-4 sm:px-6 pb-12 sm:pb-20">
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-white/90 text-center text-lg font-medium mb-8">
-            Explore sem precisar de login
-          </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {publicPages.map((page) => {
@@ -182,7 +179,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="px-4 sm:px-6 py-8 border-t border-white/10">
+      <footer className="mt-auto px-4 sm:px-6 py-8 border-t border-white/10">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-white/50 text-sm">
             © {new Date().getFullYear()} Onda Dura. Todos os direitos reservados.

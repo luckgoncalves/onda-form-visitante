@@ -78,7 +78,7 @@ export default function EmpresaCard({
   return (
     <Card className="h-full hover:shadow-lg transition-all border-2 border-onda-darkBlue/20">
       <CardHeader className="pb-3 border-none border-gray-100">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
           {/* Botão excluir no topo direito */}
           {showActions && canDelete() && (
             <div className="flex justify-end">
@@ -152,9 +152,9 @@ export default function EmpresaCard({
             </div>
           )}
           {/* Título e badge */}
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col gap-1 items-start justify-between">
             <CardTitle className="text-lg text-onda-darkBlue font-gotham">{empresa.nomeNegocio}</CardTitle>
-            <Badge variant="secondary" className="text-xs bg-onda-darkBlue/10 text-onda-darkBlue border-onda-darkBlue/20">
+            <Badge variant="secondary" className="text-xs bg-onda-teal/10 text-onda-teal border-onda-teal/20">
               {empresa.ramoAtuacao}
             </Badge>
           </div>
@@ -162,24 +162,24 @@ export default function EmpresaCard({
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {/* Proprietário */}
-        {showOwner && empresa.usuarios && empresa.usuarios.length > 0 && (
-          <div className="flex items-center gap-2 text-sm">
-            <User className="h-4 w-4 text-onda-darkBlue" />
-            <span className="text-gray-700 font-medium">{empresa.usuarios[0].user.name}</span>
-          </div>
-        )}
-
         {/* Detalhes do Serviço */}
         <p className="text-sm text-muted-foreground line-clamp-3 text-gray-500">
           {empresa.detalhesServico}
         </p>
 
+        
+
         {/* Contatos */}
         <div className="space-y-2">
+          {/* Proprietário */}
+          {showOwner && empresa.usuarios && empresa.usuarios.length > 0 && (
+            <div className="flex items-center gap-2 text-sm">
+              <User className="h-4 w-4 text-onda-darkBlue" />
+              <span className="text-gray-700 font-medium">{empresa.usuarios[0].user.name}</span>
+            </div>
+          )}
           <div className="flex items-center gap-2 text-sm text-gray-600">
-
-            <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+            <div className="flex items-center gap-1 text-xs text-gray-500">
               <div className="flex flex-col flex-wrap gap-2">
                 <DropdownMenu key={empresa.id}>
                   <DropdownMenuTrigger asChild>

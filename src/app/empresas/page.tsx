@@ -273,25 +273,22 @@ export default function EmpresasPage() {
       {!isAuthenticated && <HeaderPublic />}
       <div className="p-2 sm:p-6 max-w-7xl mx-auto mt-[72px]">
         {/* Header da página */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-4 mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-onda-darkBlue font-gotham">Empresas</h1>
-            <p className="text-gray-600 mt-1">
-              {pagination.total} empresa{pagination.total !== 1 ? 's' : ''} cadastrada{pagination.total !== 1 ? 's' : ''}
-            </p>
+            <h1 className="text-xl sm:text-2xl font-bold text-onda-darkBlue font-gotham">HUB</h1>
           </div>
         </div>
 
         {/* Barra de Pesquisa + Filtros */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
+        <div className="flex flex-row items-start justify-between gap-2 sm:gap-4 mb-6">
           <SearchInput
             value={searchTerm}
             onChange={setSearchTerm}
             placeholder="Buscar empresas..."
-            className="w-full sm:max-w-xl mb-0"
+            className="flex-1 min-w-0 sm:max-w-xl mb-0"
           />
 
-          <div className="w-full sm:w-auto">
+          <div className="shrink-0">
             <EmpresaFilters
               availableRamos={availableRamos}
               availableChannels={availableChannels || Array.from(EMPRESA_CONTACT_CHANNELS) as EmpresaContactChannel[]}
@@ -306,6 +303,14 @@ export default function EmpresasPage() {
               isFetchingOptions={isFetchingFilterOptions}
               onRefreshFilters={fetchFilterOptions}
             />
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4 mb-2">
+          <div>
+            <p className="text-gray-600 text-end mt-1">
+              {pagination.total} empresa{pagination.total !== 1 ? 's' : ''}
+            </p>
           </div>
         </div>
 
