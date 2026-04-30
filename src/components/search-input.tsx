@@ -22,7 +22,7 @@ export function SearchInput({
   };
 
   return (
-    <div className={`relative mb-6 ${className}`}>
+    <div className={`relative ${className}`}>
       <Input
         type="text"
         placeholder={placeholder}

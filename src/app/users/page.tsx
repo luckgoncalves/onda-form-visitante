@@ -168,6 +168,7 @@ export default function Users() {
           value={searchTerm}
           onChange={setSearchTerm}
           placeholder="Buscar membros por nome..."
+          className="w-full max-w-xl mb-6"
         />
 
         {/* Results count */}

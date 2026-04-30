@@ -271,89 +271,90 @@ export default function EmpresasPage() {
   return (
     <>
       {!isAuthenticated && <HeaderPublic />}
-      <div className="p-2 sm:p-6 max-w-7xl mx-auto mt-[72px]">
-        {/* Header da página */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-4 mb-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-onda-darkBlue font-gotham">HUB</h1>
+      <div className="min-h-screen bg-[#F7F9FB]">
+        <div className="p-4 sm:p-6 max-w-4xl mx-auto pt-[88px] sm:pt-[96px]">
+          {/* Título */}
+          <div className="mb-5">
+            <h1 className="text-2xl sm:text-3xl font-bold text-onda-darkBlue font-gotham tracking-tight">
+              HUB
+            </h1>
           </div>
-        </div>
 
-        {/* Barra de Pesquisa + Filtros */}
-        <div className="flex flex-row items-start justify-between gap-2 sm:gap-4 mb-6">
-          <SearchInput
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Buscar empresas..."
-            className="flex-1 min-w-0 sm:max-w-xl mb-0"
-          />
-
-          <div className="shrink-0">
-            <EmpresaFilters
-              availableRamos={availableRamos}
-              availableChannels={availableChannels || Array.from(EMPRESA_CONTACT_CHANNELS) as EmpresaContactChannel[]}
-              selectedRamos={filters.ramos}
-              selectedChannels={filters.channels}
-              ownerName={filters.ownerName}
-              onRamosChange={handleRamosChange}
-              onChannelsChange={handleChannelsChange}
-              onOwnerNameChange={handleOwnerNameChange}
-              onClearAll={handleClearFilters}
-              onApplyFilters={handleApplyFilters}
-              isFetchingOptions={isFetchingFilterOptions}
-              onRefreshFilters={fetchFilterOptions}
+          {/* Barra de Pesquisa + Filtros */}
+          <div className="flex flex-row flex-nowrap items-center gap-2 sm:gap-3">
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Buscar empresas..."
+              className="flex-1 min-w-0"
             />
-          </div>
-        </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4 mb-2">
-          <div>
-            <p className="text-gray-600 text-end mt-1">
+            <div className="shrink-0">
+              <EmpresaFilters
+                availableRamos={availableRamos}
+                availableChannels={availableChannels || Array.from(EMPRESA_CONTACT_CHANNELS) as EmpresaContactChannel[]}
+                selectedRamos={filters.ramos}
+                selectedChannels={filters.channels}
+                ownerName={filters.ownerName}
+                onRamosChange={handleRamosChange}
+                onChannelsChange={handleChannelsChange}
+                onOwnerNameChange={handleOwnerNameChange}
+                onClearAll={handleClearFilters}
+                onApplyFilters={handleApplyFilters}
+                isFetchingOptions={isFetchingFilterOptions}
+                onRefreshFilters={fetchFilterOptions}
+              />
+            </div>
+          </div>
+
+          {/* Contador de empresas */}
+          <div className="flex justify-end mt-3 mb-5">
+            <p className="text-sm text-gray-500">
               {pagination.total} empresa{pagination.total !== 1 ? 's' : ''}
             </p>
           </div>
-        </div>
 
-        {/* Grid de Empresas */}
-        {isLoading ? (
-          <EmpresasGridSkeleton count={12} />
-        ) : empresas.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              {searchTerm ? 'Nenhuma empresa encontrada para sua pesquisa.' : 'Nenhuma empresa cadastrada ainda.'}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {empresas.map((empresa) => (
-                <EmpresaCard
-                  key={empresa.id}
-                  empresa={empresa}
-                  onDelete={handleDeleteEmpresa}
-                  showActions={true}
-                  showOwner={true}
-                  currentUser={currentUser}
-                  isDeleting={deletingEmpresaId === empresa.id}
-                />
-              ))}
+          {/* Lista de Empresas */}
+          {isLoading ? (
+            <EmpresasGridSkeleton count={6} />
+          ) : empresas.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <p className="text-muted-foreground">
+                {searchTerm ? 'Nenhuma empresa encontrada para sua pesquisa.' : 'Nenhuma empresa cadastrada ainda.'}
+              </p>
             </div>
-
-            {/* Botão Carregar Mais */}
-            {pagination.page < pagination.totalPages && (
-              <div className="text-center">
-                <Button
-                  onClick={handleLoadMore}
-                  variant="outline"
-                  disabled={isLoading || isLoadingMore}
-                  className="border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40 text-onda-darkBlue"
-                >
-                  {isLoadingMore ? 'Carregando...' : 'Carregar Mais'}
-                </Button>
+          ) : (
+            <>
+              <div className="flex flex-col gap-4 mb-8">
+                {empresas.map((empresa) => (
+                  <EmpresaCard
+                    key={empresa.id}
+                    empresa={empresa}
+                    onDelete={handleDeleteEmpresa}
+                    showActions={true}
+                    showOwner={true}
+                    currentUser={currentUser}
+                    isDeleting={deletingEmpresaId === empresa.id}
+                  />
+                ))}
               </div>
-            )}
-          </>
-        )}
+
+              {/* Botão Carregar Mais */}
+              {pagination.page < pagination.totalPages && (
+                <div className="text-center">
+                  <Button
+                    onClick={handleLoadMore}
+                    variant="outline"
+                    disabled={isLoading || isLoadingMore}
+                    className="bg-white border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40 text-onda-darkBlue"
+                  >
+                    {isLoadingMore ? 'Carregando...' : 'Carregar Mais'}
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </>
   );
