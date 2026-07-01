@@ -27,6 +27,29 @@ enum DiaSemana {
   DOMINGO
 }
 
+// Enums para o model Chamado
+enum ChamadoStatus {
+  PENDENTE
+  RECEBIDO
+  EM_ANDAMENTO
+  CONCLUIDO
+  CANCELADO
+}
+
+enum ChamadoPrioridade {
+  BAIXA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
+enum TipoCampoMinisterio {
+  TEXTO
+  TEXTAREA
+  SELECT
+  MULTISELECT
+}
+
 // Enums para o model Form
 enum FormStatus {
   DRAFT
@@ -77,6 +100,7 @@ model Campus {
   forms       Form[]
   etiquetas   Etiqueta[]
   ministerios Ministerio[]
+  chamados    Chamado[]
 
   @@unique([cidade, estado])
 }
@@ -180,6 +204,10 @@ model users {
   // Relação com formulários
   formsCreated  Form[]
   formResponses FormResponse[] @relation("FormResponses")
+
+  // Relação com chamados
+  chamadosAbertos    Chamado[]          @relation("ChamadosAbertos")
+  comentariosChamado ChamadoComentario[]
 }
 
 model grupo {
@@ -309,10 +337,12 @@ model Ministerio {
   updatedAt DateTime @updatedAt
 
   // Relações
-  campus   Campus?        @relation(fields: [campusId], references: [id])
-  lider    users          @relation("MinisterioLider", fields: [liderId], references: [id])
-  coLider  users?         @relation("MinisterioCoLider", fields: [coLiderId], references: [id])
+  campus   Campus?           @relation(fields: [campusId], references: [id])
+  lider    users             @relation("MinisterioLider", fields: [liderId], references: [id])
+  coLider  users?            @relation("MinisterioCoLider", fields: [coLiderId], references: [id])
   membros  UserMinisterio[]
+  chamados Chamado[]
+  campos   CampoMinisterio[]
 }
 
 model UserMinisterio {
@@ -326,4 +356,63 @@ model UserMinisterio {
   ministerio Ministerio @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
 
   @@unique([userId, ministerioId])
+}
+
+// ─── Sistema de Chamados ───────────────────────────────────────────────────────
+
+model Chamado {
+  id           String            @id @default(cuid())
+  codigo       String            @unique
+  titulo       String
+  descricao    String?           @db.Text
+  status       ChamadoStatus     @default(PENDENTE)
+  prioridade   ChamadoPrioridade @default(MEDIA)
+  ministerioId String
+  abertoPorId  String
+  campusId     String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  ministerio  Ministerio          @relation(fields: [ministerioId], references: [id])
+  abertoPor   users               @relation("ChamadosAbertos", fields: [abertoPorId], references: [id])
+  campus      Campus?             @relation(fields: [campusId], references: [id])
+  respostas   ChamadoResposta[]
+  comentarios ChamadoComentario[]
+}
+
+model CampoMinisterio {
+  id           String              @id @default(cuid())
+  ministerioId String
+  label        String
+  tipo         TipoCampoMinisterio
+  opcoes       Json?
+  obrigatorio  Boolean             @default(false)
+  ordem        Int                 @default(0)
+  createdAt    DateTime            @default(now())
+
+  ministerio Ministerio        @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+  respostas  ChamadoResposta[]
+}
+
+model ChamadoResposta {
+  id        String   @id @default(cuid())
+  chamadoId String
+  campoId   String
+  valor     String   @db.Text
+
+  chamado Chamado         @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  campo   CampoMinisterio @relation(fields: [campoId], references: [id])
+
+  @@unique([chamadoId, campoId])
+}
+
+model ChamadoComentario {
+  id        String   @id @default(cuid())
+  chamadoId String
+  autorId   String
+  texto     String   @db.Text
+  createdAt DateTime @default(now())
+
+  chamado Chamado @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  autor   users   @relation(fields: [autorId], references: [id])
 }

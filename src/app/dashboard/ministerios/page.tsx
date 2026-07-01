@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { checkAuth } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X, Settings2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -256,6 +256,14 @@ export default function MinisteriosPage() {
                         </td>
                         <td className="p-4">
                           <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              title="Configurar campos do formulário"
+                              onClick={() => router.push(`/dashboard/ministerios/${ministerio.id}/campos`)}
+                            >
+                              <Settings2 className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
