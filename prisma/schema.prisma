@@ -71,11 +71,12 @@ model Campus {
   updatedAt DateTime @updatedAt
 
   // Relações
-  users      users[]
-  visitantes visitantes[]
-  grupos     grupo[]
-  forms      Form[]
-  etiquetas  Etiqueta[]
+  users       users[]
+  visitantes  visitantes[]
+  grupos      grupo[]
+  forms       Form[]
+  etiquetas   Etiqueta[]
+  ministerios Ministerio[]
 
   @@unique([cidade, estado])
 }
@@ -167,6 +168,11 @@ model users {
 
   // Relação com grupos liderados
   gruposLiderados grupo[]
+
+  // Relação com ministérios
+  ministeriosLiderados   Ministerio[] @relation("MinisterioLider")
+  ministeriosCoLiderados Ministerio[] @relation("MinisterioCoLider")
+  ministerios            UserMinisterio[]
 
   // Relação com empresas
   empresas UserEmpresa[]
@@ -290,4 +296,34 @@ model FormAnswer {
   // Relações
   response FormResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
   field    FormField    @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+}
+
+model Ministerio {
+  id        String   @id @default(cuid())
+  nome      String
+  descricao String?  @db.Text
+  campusId  String?
+  liderId   String
+  coLiderId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  campus   Campus?        @relation(fields: [campusId], references: [id])
+  lider    users          @relation("MinisterioLider", fields: [liderId], references: [id])
+  coLider  users?         @relation("MinisterioCoLider", fields: [coLiderId], references: [id])
+  membros  UserMinisterio[]
+}
+
+model UserMinisterio {
+  id          String   @id @default(cuid())
+  userId      String
+  ministerioId String
+  createdAt   DateTime @default(now())
+
+  // Relações
+  user       users      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ministerio Ministerio @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ministerioId])
 }

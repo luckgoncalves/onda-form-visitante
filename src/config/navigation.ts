@@ -9,6 +9,7 @@ import {
   UserCog,
   Users,
   UsersRound,
+  Church,
 } from 'lucide-react';
 
 export type NavigationSection = 'Gestão' | 'Comunidade';
@@ -67,6 +68,13 @@ export const navigationItems: NavigationItem[] = [
     label: 'Membros',
     href: '/users',
     icon: UserCog,
+    adminOnly: true,
+    section: 'Gestão',
+  },
+  {
+    label: 'Ministérios',
+    href: '/dashboard/ministerios',
+    icon: Church,
     adminOnly: true,
     section: 'Gestão',
   },

@@ -14,10 +14,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ButtonForm from '@/components/button-form';
 import UserCompanies from '@/components/users/user-companies';
+import UserMinisterios from '@/components/users/user-ministerios';
 import { checkAuth, checkIsAdmin, logout, updateUser } from '@/app/actions';
 import { editUserPageSchema, userSchema } from '../validate'; // Assuming validate.ts is in the parent users folder src/app/users/validate.ts
 import { formatPhone } from '@/lib/utils';
-import { ArrowLeft, User, Building2 } from 'lucide-react';
+import { ArrowLeft, User, Building2, Church } from 'lucide-react';
 import { MonthYearPicker } from '@/components/ui/month-year-picker';
 import { ImageUpload } from '@/components/ui/image-upload';
 
@@ -227,7 +228,7 @@ export default function EditUserPage() {
           </Button>
         </div>
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Dados do Usuário
@@ -235,6 +236,10 @@ export default function EditUserPage() {
             <TabsTrigger value="companies" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               Empresas
+            </TabsTrigger>
+            <TabsTrigger value="ministerios" className="flex items-center gap-2">
+              <Church className="h-4 w-4" />
+              Ministérios
             </TabsTrigger>
           </TabsList>
           
@@ -385,6 +390,10 @@ export default function EditUserPage() {
           
           <TabsContent value="companies" className="space-y-6">
             <UserCompanies userId={userId} currentUser={currentUser} />
+          </TabsContent>
+
+          <TabsContent value="ministerios" className="space-y-6">
+            <UserMinisterios userId={userId} />
           </TabsContent>
         </Tabs>
       </div>
