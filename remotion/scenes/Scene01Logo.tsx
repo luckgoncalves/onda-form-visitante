@@ -45,12 +45,14 @@ export const Scene01Logo: React.FC = () => {
         <span
           style={{
             transform: `scale(${dotPop})`,
-            color: ONDA.teal,
             display: "inline-block",
+            width: "0.22em",
+            height: "0.22em",
+            marginLeft: "0.06em",
+            borderRadius: "50%",
+            background: ONDA.white,
           }}
-        >
-          .
-        </span>
+        />
       </div>
       <div
         style={{

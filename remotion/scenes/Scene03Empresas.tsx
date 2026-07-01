@@ -18,24 +18,34 @@ export const Scene03Empresas: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
-  const scrollY = interpolate(frame, [60, 230], [0, 80], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  const scrollY = interpolate(
+    frame,
+    [40, 110, 180, 260],
+    [0, 80, 900, 1050],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    },
+  );
 
   const fingerOpacity = interpolate(
     frame,
-    [55, 70, 220, 240],
+    [40, 60, 240, 260],
     [0, 1, 1, 0],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     },
   );
-  const fingerY = interpolate(frame, [60, 230], [-150, -350], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  const fingerY = interpolate(
+    frame,
+    [40, 110, 130, 180, 200, 260],
+    [-150, -300, -150, -300, -150, -300],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    },
+  );
 
   return (
     <AbsoluteFill style={{ alignItems: "center", paddingTop: 120 }}>
@@ -57,15 +67,29 @@ export const Scene03Empresas: React.FC = () => {
             fontWeight: 700,
           }}
         >
-          Em destaque
+          Conheça o
         </div>
-        <div style={{ fontSize: 96, fontWeight: 800, marginTop: 8, lineHeight: 1 }}>
-          Empresas
+        <div style={{ fontSize: 120, fontWeight: 800, marginTop: 8, lineHeight: 1 }}>
+          Hub
+        </div>
+        <div
+          style={{
+            fontSize: 28,
+            opacity: 0.75,
+            marginTop: 12,
+            fontWeight: 500,
+          }}
+        >
+          Empresas e negócios da comunidade
         </div>
       </div>
 
-      <div style={{ marginTop: 60, position: "relative" }}>
-        <PhoneMockup screenshot="screens/empresas.png" scrollY={scrollY} />
+      <div style={{ marginTop: 40, position: "relative" }}>
+        <PhoneMockup
+          screenshots={["screens/empresas.png", "screens/empresas2.png"]}
+          scrollY={scrollY}
+          trimAfterFirst={180}
+        />
 
         <div
           style={{

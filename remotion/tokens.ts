@@ -14,4 +14,4 @@ export const FONT_STACK = `"Gotham Bold", "Inter", -apple-system, "Segoe UI", sa
 export const FPS = 30;
 export const WIDTH = 1080;
 export const HEIGHT = 1920;
-export const TOTAL_DURATION = 840;
+export const TOTAL_DURATION = 780;

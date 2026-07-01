@@ -43,9 +43,21 @@ export const Scene05CTA: React.FC = () => {
           color: ONDA.white,
           letterSpacing: "-0.1em",
           lineHeight: 1,
+          display: "flex",
+          alignItems: "baseline",
         }}
       >
-        onda<span style={{ color: ONDA.teal }}>.</span>
+        onda
+        <span
+          style={{
+            display: "inline-block",
+            width: "0.22em",
+            height: "0.22em",
+            marginLeft: "0.06em",
+            borderRadius: "50%",
+            background: ONDA.white,
+          }}
+        />
       </div>
       <div
         style={{
