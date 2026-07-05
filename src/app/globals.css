@@ -5,10 +5,32 @@
 
   @layer base {
     :root {
-      --primary: #00205b;
+      /* Cores principais */
+      --primary: #11187e;
       --primary-foreground: #ffffff;
       --background: #ffffff;
-      --font-gotham-bold: var(--font-gotham-bold);
+
+      /* Paleta principal Onda */
+      --onda-navy:     #181e5f;
+      --onda-blue:     #11187e;
+      --onda-mid-blue: #2027a7;
+      --onda-electric: #1f2bc8;
+      --onda-bright:   #2537de;
+      --onda-off-white:#eeeee7;
+      --onda-black:    #161616;
+
+      /* Paleta secundária Onda */
+      --onda-dark-navy:#10175d;
+      --onda-vivid:    #0f18d3;
+      --onda-med-blue: #034bbe;
+      --onda-steel:    #365683;
+      --onda-light:    #537ae5;
+      --onda-muted:    #4980aa;
+      --onda-sky:      #5ca3c7;
+      --onda-teal:     #64afd1;
+      --onda-pale:     #9cc7e4;
+      --onda-mint:     #79caab;
+      --onda-cream:    #ffffe6;
     }
     .card-glass {
       @apply  before:content-['']

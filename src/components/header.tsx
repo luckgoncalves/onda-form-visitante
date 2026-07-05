@@ -9,6 +9,7 @@ import { getDesktopPrimaryItems, NavigationItem } from "@/config/navigation";
 import { MoreMenuSheet } from "@/components/navigation/more-menu-sheet";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 type HeaderProps = {
   userName: string;
@@ -67,7 +68,14 @@ export function Header({ userName, userId, campusNome, onLogout }: HeaderProps) 
               onClick={() => router.push(isAdmin ? '/list' : '/register')}
               aria-label="Ir para início"
             >
-              <p className="text-3xl font-bold tracking-[-0.1em] text-white">onda.</p>
+              <Image
+                src="/logos/logo-principal-branco.png"
+                alt="Igreja Onda"
+                width={192}
+                height={40}
+                className="h-8 w-auto"
+                priority
+              />
             </button>
             {campusNome && (
               <span className="hidden truncate rounded bg-white/10 px-2 py-1 text-sm font-medium text-white/70 sm:inline-block">

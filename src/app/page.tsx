@@ -8,6 +8,7 @@ import { UsersRound, Building, LogIn, UserPlus, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PWAInstallButton } from "@/components/pwa-install-button";
+import Image from "next/image";
 
 export default function Home() {
   const router = useRouter();
@@ -77,13 +78,20 @@ export default function Home() {
       {/* Header */}
       <header className="w-full px-4 sm:px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <h1 className="text-white tracking-[-0.1em] text-3xl font-bold">onda.</h1>
+          <Image
+            src="/logos/logo-principal-branco.png"
+            alt="Igreja Onda"
+            width={192}
+            height={40}
+            className="h-8 w-auto"
+            priority
+          />
           <div className="flex items-center gap-2">
             <PWAInstallButton />
             <Link href="/login">
-              <Button 
-                variant="ghost" 
-                className="text-white hover:bg-white/10"
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-white/15 hover:text-white"
               >
                 <LogIn className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Entrar</span>
@@ -104,9 +112,19 @@ export default function Home() {
       {/* Hero Section */}
       <section className="px-4 sm:px-6 py-12 sm:py-16">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-white text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-            Bem-vindo à <span className="text-white tracking-[-0.1em]">onda.</span>
-          </h2>
+          <div className="flex flex-col items-center gap-2 mb-6">
+            <span className="text-white/70 text-lg sm:text-xl font-medium tracking-wide">
+              Bem-vindo à
+            </span>
+            <Image
+              src="/logos/logo-principal-branco.png"
+              alt="Igreja Onda"
+              width={480}
+              height={100}
+              className="h-14 sm:h-16 md:h-20 w-auto"
+              priority
+            />
+          </div>
           <p className="text-white/80 text-lg sm:text-xl max-w-2xl mx-auto">
             Conecte-se com nossa comunidade, encontre grupos pequenos e descubra empresas de membros.
           </p>

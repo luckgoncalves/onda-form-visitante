@@ -243,12 +243,12 @@ export default function SignupPage() {
       <div className="p-2 sm:p-6 max-w-2xl mx-auto w-full">
         {/* Header da página */}
         <div className="flex items-center justify-center mb-6">
-          <Image 
-            src="/logo-login.png" 
-            alt="Onda Logo" 
-            width={150} 
-            height={60} 
-            className="mx-auto"
+          <Image
+            src="/logos/logo-principal-preto.png"
+            alt="Igreja Onda"
+            width={240}
+            height={50}
+            className="h-10 w-auto mx-auto"
             priority
           />
         </div>

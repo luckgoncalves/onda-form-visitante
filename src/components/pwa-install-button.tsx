@@ -10,7 +10,7 @@ export function PWAInstallButton() {
     <Button
       onClick={handleInstall}
       variant="ghost"
-      className="flex items-center hover:bg-white/20 transition-colors text-white"
+      className="flex items-center text-white hover:bg-white/15 hover:text-white transition-colors"
       size="sm"
     >
       {isIOS ? (

@@ -12,6 +12,7 @@ import LoadingOnda from "@/components/loading-onda";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export default function LoginPage() {
   const form = useForm();
@@ -101,7 +102,14 @@ export default function LoginPage() {
         </Link>
       </div>
 
-      <h1 className="text-white tracking-[-0.1em] text-5xl md:text-7xl font-bold">onda.</h1>
+      <Image
+        src="/logos/logo-principal-branco.png"
+        alt="Igreja Onda"
+        width={240}
+        height={50}
+        className="h-12 w-auto"
+        priority
+      />
       
       <Card className="p-4 w-full max-w-md bg-white border-none">
         <CardContent className="p-6 sm:p-10">
