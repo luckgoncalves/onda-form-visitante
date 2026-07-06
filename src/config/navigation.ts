@@ -96,13 +96,6 @@ export const navigationItems: NavigationItem[] = [
     mobilePrimaryUser: true,
   },
   {
-    label: 'Chamados',
-    href: '/dashboard/chamados',
-    icon: Ticket,
-    adminOnly: true,
-    section: 'Gestão',
-  },
-  {
     label: 'Grupos',
     externalHref: 'https://ondaduracuritiba.inpeaceapp.com/groups',
     icon: UsersRound,

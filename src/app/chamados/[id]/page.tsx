@@ -6,16 +6,13 @@ import { checkAuth } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Send } from 'lucide-react';
-import { ChamadoStatusBadge, ChamadoPrioridadeBadge } from '@/components/chamados/chamado-status-badge';
+import { ArrowLeft, Send, Trash2 } from 'lucide-react';
+import { ChamadoStatusBadge, ChamadoPrioridadeBadge, STATUS_CONFIG, PRIORIDADE_CONFIG } from '@/components/chamados/chamado-status-badge';
 import { useToast } from '@/hooks/use-toast';
-
-interface Comentario {
-  id: string;
-  texto: string;
-  createdAt: string;
-  autor: { id: string; name: string; profileImageUrl?: string | null };
-}
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface Chamado {
   id: string;
@@ -26,13 +23,18 @@ interface Chamado {
   prioridade: string;
   createdAt: string;
   ministerio: { nome: string };
-  abertoPor: { name: string };
+  abertoPor: { name: string; email: string };
   respostas: {
     id: string;
     valor: string;
     campo: { id: string; label: string; tipo: string; ordem: number };
   }[];
-  comentarios: Comentario[];
+  comentarios: {
+    id: string;
+    texto: string;
+    createdAt: string;
+    autor: { id: string; name: string; profileImageUrl?: string | null };
+  }[];
 }
 
 function formatValor(valor: string, tipo: string): string {
@@ -48,15 +50,17 @@ export default function ChamadoDetailPage() {
   const { toast } = useToast();
   const [chamado, setChamado] = useState<Chamado | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState('');
   const [comentario, setComentario] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState('');
   const comentariosEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     checkAuth().then(({ user }) => {
       if (!user) { router.push('/'); return; }
       setCurrentUserId(user.id);
+      setIsAdmin(user.role === 'admin');
       loadChamado();
     });
   }, [params.id]);
@@ -73,6 +77,29 @@ export default function ChamadoDetailPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleStatusChange = async (status: string) => {
+    await fetch(`/api/chamados/${params.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    loadChamado();
+  };
+
+  const handlePrioridadeChange = async (prioridade: string) => {
+    await fetch(`/api/chamados/${params.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prioridade }),
+    });
+    loadChamado();
+  };
+
+  const handleDelete = async () => {
+    await fetch(`/api/chamados/${params.id}`, { method: 'DELETE' });
+    router.push('/chamados');
   };
 
   const handleComentario = async () => {
@@ -107,14 +134,39 @@ export default function ChamadoDetailPage() {
 
   if (!chamado) return null;
 
+  const comentarioHabilitado = isAdmin || (chamado.status !== 'CONCLUIDO' && chamado.status !== 'CANCELADO');
+
   return (
     <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto space-y-4">
-      <Button variant="ghost" size="sm" onClick={() => router.push('/chamados')}>
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Meus chamados
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" onClick={() => router.push('/chamados')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Chamados
+        </Button>
+        {isAdmin && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-red-500">
+                <Trash2 className="h-4 w-4 mr-1" />
+                Excluir
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir chamado</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja excluir o chamado {chamado.codigo}? Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">Excluir</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </div>
 
-      {/* Header */}
       <Card>
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
@@ -126,21 +178,55 @@ export default function ChamadoDetailPage() {
           {chamado.descricao && (
             <p className="text-sm text-muted-foreground whitespace-pre-line">{chamado.descricao}</p>
           )}
-          <div className="text-xs text-muted-foreground space-y-0.5 pt-1">
+
+          {isAdmin ? (
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Status</p>
+                <select
+                  value={chamado.status}
+                  onChange={(e) => handleStatusChange(e.target.value)}
+                  className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {Object.entries(STATUS_CONFIG).map(([k, { label }]) => (
+                    <option key={k} value={k}>{label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Prioridade</p>
+                <select
+                  value={chamado.prioridade}
+                  onChange={(e) => handlePrioridadeChange(e.target.value)}
+                  className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {Object.entries(PRIORIDADE_CONFIG).map(([k, { label }]) => (
+                    <option key={k} value={k}>{label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="text-xs text-muted-foreground space-y-0.5 border-t pt-3">
             <p>Ministério: <span className="font-medium text-foreground">{chamado.ministerio.nome}</span></p>
-            <p>Aberto por: <span className="font-medium text-foreground">{chamado.abertoPor.name}</span></p>
+            <p>
+              {isAdmin ? 'Solicitante' : 'Aberto por'}:{' '}
+              <span className="font-medium text-foreground">
+                {chamado.abertoPor.name}{isAdmin && ` (${chamado.abertoPor.email})`}
+              </span>
+            </p>
             <p>Data: {new Date(chamado.createdAt).toLocaleString('pt-BR')}</p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Campos personalizados */}
       {chamado.respostas.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Detalhes</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {chamado.respostas
               .sort((a, b) => a.campo.ordem - b.campo.ordem)
               .map((r) => (
@@ -153,40 +239,26 @@ export default function ChamadoDetailPage() {
         </Card>
       )}
 
-      {/* Comentários */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">
-            Comentários ({chamado.comentarios.length})
-          </CardTitle>
+          <CardTitle className="text-base">Comentários ({chamado.comentarios.length})</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {chamado.comentarios.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Nenhum comentário ainda.
-            </p>
+            <p className="text-sm text-muted-foreground text-center py-4">Nenhum comentário ainda.</p>
           )}
           {chamado.comentarios.map((c) => (
-            <div
-              key={c.id}
-              className={`flex gap-2 ${c.autor.id === currentUserId ? 'flex-row-reverse' : ''}`}
-            >
-              <div
-                className={`rounded-full h-8 w-8 flex items-center justify-center text-xs font-bold shrink-0 ${
-                  c.autor.id === currentUserId ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'
-                }`}
-              >
+            <div key={c.id} className={`flex gap-2 ${c.autor.id === currentUserId ? 'flex-row-reverse' : ''}`}>
+              <div className={`rounded-full h-8 w-8 flex items-center justify-center text-xs font-bold shrink-0 ${
+                c.autor.id === currentUserId ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'
+              }`}>
                 {c.autor.name.charAt(0).toUpperCase()}
               </div>
               <div className={`flex-1 ${c.autor.id === currentUserId ? 'items-end' : 'items-start'} flex flex-col gap-0.5`}>
                 <span className="text-xs text-muted-foreground">{c.autor.name}</span>
-                <div
-                  className={`text-sm rounded-lg px-3 py-2 max-w-[85%] ${
-                    c.autor.id === currentUserId
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-900'
-                  }`}
-                >
+                <div className={`text-sm rounded-lg px-3 py-2 max-w-[85%] ${
+                  c.autor.id === currentUserId ? 'bg-black text-white' : 'bg-gray-100 text-gray-900'
+                }`}>
                   {c.texto}
                 </div>
                 <span className="text-xs text-muted-foreground">
@@ -197,8 +269,7 @@ export default function ChamadoDetailPage() {
           ))}
           <div ref={comentariosEndRef} />
 
-          {/* Input de comentário */}
-          {chamado.status !== 'CONCLUIDO' && chamado.status !== 'CANCELADO' && (
+          {comentarioHabilitado && (
             <div className="flex gap-2 pt-2">
               <input
                 type="text"
