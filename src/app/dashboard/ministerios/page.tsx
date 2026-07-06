@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { checkAuth } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +19,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import ButtonForm from '@/components/button-form';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Membro {
@@ -149,8 +148,20 @@ export default function MinisteriosPage() {
 
   return (
     <div className="p-2 sm:p-6 mt-[72px]">
+      {/* Cabeçalho */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold">Ministérios</h1>
+        <Button
+          onClick={() => router.push('/dashboard/ministerios/new')}
+          className="hidden sm:flex bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white items-center gap-2"
+        >
+          <Plus size={18} />
+          Novo Ministério
+        </Button>
+      </div>
+
       {/* Busca */}
-      <div className="relative mb-6 w-full max-w-md">
+      <div className="relative mb-4 w-full max-w-md">
         <Input
           type="text"
           placeholder="Buscar por nome ou líder..."
@@ -187,18 +198,8 @@ export default function MinisteriosPage() {
         <TableSkeleton />
       ) : (
         <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Ministérios</CardTitle>
-                <CardDescription>Gerencie os ministérios da igreja</CardDescription>
-              </div>
-              <ButtonForm
-                onClick={() => router.push('/dashboard/ministerios/new')}
-                label="Novo Ministério"
-                icon={<Plus size={20} />}
-              />
-            </div>
+          <CardHeader className="pb-2">
+            <CardDescription>Gerencie os ministérios da igreja</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -229,17 +230,17 @@ export default function MinisteriosPage() {
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-4 font-medium">Nome</th>
-                      <th className="text-left p-4 font-medium">Líder</th>
-                      <th className="text-left p-4 font-medium">Co-Líder</th>
-                      <th className="text-left p-4 font-medium">Membros</th>
-                      <th className="text-left p-4 font-medium">Ações</th>
+                      <th className="text-left p-3 font-medium">Nome</th>
+                      <th className="text-left p-3 font-medium">Líder</th>
+                      <th className="text-left p-3 font-medium hidden md:table-cell">Co-Líder</th>
+                      <th className="text-left p-3 font-medium hidden sm:table-cell">Membros</th>
+                      <th className="text-left p-3 font-medium">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     {ministerios.map((ministerio) => (
                       <tr key={ministerio.id} className="border-b hover:bg-gray-50">
-                        <td className="p-4 font-medium">
+                        <td className="p-3 font-medium">
                           <div>{ministerio.nome}</div>
                           {ministerio.descricao && (
                             <div className="text-xs text-gray-500 mt-1 line-clamp-1">
@@ -247,9 +248,9 @@ export default function MinisteriosPage() {
                             </div>
                           )}
                         </td>
-                        <td className="p-4 text-sm">{ministerio.lider.name}</td>
-                        <td className="p-4 text-sm">{ministerio.coLider?.name || '-'}</td>
-                        <td className="p-4">
+                        <td className="p-3 text-sm">{ministerio.lider.name}</td>
+                        <td className="p-3 text-sm hidden md:table-cell">{ministerio.coLider?.name || '-'}</td>
+                        <td className="p-3 hidden sm:table-cell">
                           <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
                             {ministerio.membros.length}
                           </span>
@@ -378,6 +379,15 @@ export default function MinisteriosPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* FAB mobile */}
+      <button
+        onClick={() => router.push('/dashboard/ministerios/new')}
+        className="sm:hidden fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-40 flex items-center gap-2 bg-onda-darkBlue text-white rounded-full px-4 py-3 shadow-lg"
+      >
+        <Plus size={20} />
+        <span className="text-sm font-medium">Novo Ministério</span>
+      </button>
     </div>
   );
 }
