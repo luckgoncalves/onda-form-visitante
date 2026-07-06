@@ -6,7 +6,7 @@ import { checkAuth } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Send, Trash2, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Send, Trash2, Copy, Check, Loader2 } from 'lucide-react';
 import { ChamadoStatusBadge, ChamadoPrioridadeBadge, STATUS_CONFIG, PRIORIDADE_CONFIG } from '@/components/chamados/chamado-status-badge';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -120,9 +120,10 @@ export default function ChamadoDetailPage() {
         body: JSON.stringify({ texto: comentario }),
       });
       if (!res.ok) throw new Error();
+      const novoComentario = await res.json();
       setComentario('');
-      await loadChamado();
-      setTimeout(() => comentariosEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      setChamado((prev) => prev ? { ...prev, comentarios: [...prev.comentarios, novoComentario] } : prev);
+      setTimeout(() => comentariosEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     } catch {
       toast({ title: 'Erro', description: 'Erro ao enviar comentário', variant: 'destructive' });
     } finally {
@@ -294,7 +295,7 @@ export default function ChamadoDetailPage() {
                 className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
               <Button size="sm" onClick={handleComentario} disabled={isSending || !comentario.trim()}>
-                <Send className="h-4 w-4" />
+                {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
           )}
