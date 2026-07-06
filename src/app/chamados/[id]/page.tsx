@@ -6,7 +6,7 @@ import { checkAuth } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Send, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, Trash2, Copy, Check } from 'lucide-react';
 import { ChamadoStatusBadge, ChamadoPrioridadeBadge, STATUS_CONFIG, PRIORIDADE_CONFIG } from '@/components/chamados/chamado-status-badge';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -54,7 +54,15 @@ export default function ChamadoDetailPage() {
   const [currentUserId, setCurrentUserId] = useState('');
   const [comentario, setComentario] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [copiado, setCopiado] = useState(false);
   const comentariosEndRef = useRef<HTMLDivElement>(null);
+
+  const copiarCodigo = () => {
+    if (!chamado) return;
+    navigator.clipboard.writeText(chamado.codigo);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
 
   useEffect(() => {
     checkAuth().then(({ user }) => {
@@ -170,7 +178,17 @@ export default function ChamadoDetailPage() {
       <Card>
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-sm text-muted-foreground">{chamado.codigo}</span>
+            <button
+              onClick={copiarCodigo}
+              className="flex items-center gap-1 font-mono text-sm text-muted-foreground hover:text-foreground transition-colors group"
+              title="Copiar código"
+            >
+              {chamado.codigo}
+              {copiado
+                ? <Check className="h-3.5 w-3.5 text-green-500" />
+                : <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              }
+            </button>
             <ChamadoStatusBadge status={chamado.status} />
             <ChamadoPrioridadeBadge prioridade={chamado.prioridade} />
           </div>
