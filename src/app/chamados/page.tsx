@@ -224,7 +224,7 @@ export default function ChamadosPage() {
       {/* FAB mobile */}
       <button
         onClick={() => router.push('/chamados/novo')}
-        className="sm:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] right-4 z-40 flex items-center gap-2 bg-onda-darkBlue text-white rounded-full px-4 py-3 shadow-lg"
+        className="sm:hidden fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-40 flex items-center gap-2 bg-onda-darkBlue text-white rounded-full px-4 py-3 shadow-lg"
       >
         <Plus size={20} />
         <span className="text-sm font-medium">Novo Chamado</span>
