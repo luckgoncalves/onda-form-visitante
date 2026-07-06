@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { checkAuth } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Ticket, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Plus, Ticket, ChevronRight, ChevronLeft, Search, X } from 'lucide-react';
 import { ChamadoStatusBadge, ChamadoPrioridadeBadge, STATUS_CONFIG } from '@/components/chamados/chamado-status-badge';
 
 interface Chamado {
@@ -60,15 +60,18 @@ export default function ChamadosPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [search, setSearch] = useState('');
   const [total, setTotal] = useState(0);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const load = useCallback(async (status: string, page: number, admin: boolean) => {
+  const load = useCallback(async (status: string, page: number, admin: boolean, q = '') => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({ limit: admin ? '20' : '50', page: String(page) });
       if (!admin) params.set('meus', 'true');
       if (status) params.set('status', status);
+      if (q) params.set('search', q);
       const res = await fetch(`/api/chamados?${params}`);
       if (!res.ok) throw new Error();
       const data = await res.json();
@@ -91,8 +94,12 @@ export default function ChamadosPage() {
 
   useEffect(() => {
     if (isAdmin === null) return;
-    load(statusFilter, 1, isAdmin);
-  }, [isAdmin, statusFilter, load]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      load(statusFilter, 1, isAdmin, search);
+    }, search ? 400 : 0);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [isAdmin, statusFilter, search, load]);
 
   const handleStatusChange = async (chamadoId: string, status: string) => {
     await fetch(`/api/chamados/${chamadoId}`, {
@@ -100,15 +107,15 @@ export default function ChamadosPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
-    load(statusFilter, pagination.page, true);
+    load(statusFilter, pagination.page, true, search);
   };
 
   return (
     <div className="p-2 sm:p-6 mt-[72px]">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-xl font-bold">{isAdmin ? 'Chamados' : 'Meus Chamados'}</h1>
-          <p className="text-sm text-muted-foreground">{total} chamado{total !== 1 ? 's' : ''}</p>
+          <p className="text-xs text-muted-foreground">{total} chamado{total !== 1 ? 's' : ''}</p>
         </div>
         <Button
           onClick={() => router.push('/chamados/novo')}
@@ -119,15 +126,33 @@ export default function ChamadosPage() {
         </Button>
       </div>
 
-      <div className="flex gap-2 flex-wrap mb-6">
+      {/* Busca */}
+      <div className="relative mb-3">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Buscar por título, código ou solicitante…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full h-9 pl-9 pr-9 rounded-lg border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-onda-darkBlue/20 focus:border-onda-darkBlue/40"
+        />
+        {search && (
+          <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Filtro de status — scroll horizontal */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1 mb-5 scrollbar-hide">
         {STATUS_OPTIONS.map((opt) => (
           <button
             key={opt.value}
             onClick={() => setStatusFilter(opt.value)}
-            className={`text-sm px-3 py-1 rounded-full border transition-colors ${
+            className={`shrink-0 text-xs px-3 py-1 rounded-full border transition-colors ${
               statusFilter === opt.value
-                ? 'bg-black text-white border-black'
-                : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
+                ? 'bg-onda-darkBlue text-white border-onda-darkBlue'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
             }`}
           >
             {opt.label}
@@ -201,7 +226,7 @@ export default function ChamadosPage() {
             <div className="flex items-center justify-center gap-3 pt-6">
               <Button
                 variant="outline" size="sm"
-                onClick={() => load(statusFilter, pagination.page - 1, true)}
+                onClick={() => load(statusFilter, pagination.page - 1, true, search)}
                 disabled={pagination.page === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -211,7 +236,7 @@ export default function ChamadosPage() {
               </span>
               <Button
                 variant="outline" size="sm"
-                onClick={() => load(statusFilter, pagination.page + 1, true)}
+                onClick={() => load(statusFilter, pagination.page + 1, true, search)}
                 disabled={pagination.page === pagination.totalPages}
               >
                 <ChevronRight className="h-4 w-4" />

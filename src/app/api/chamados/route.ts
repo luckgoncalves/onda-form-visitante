@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || '';
     const ministerioId = searchParams.get('ministerioId') || '';
     const meus = searchParams.get('meus') === 'true';
+    const search = searchParams.get('search') || '';
     const skip = (page - 1) * limit;
 
     const isAdmin = user.role === 'admin';
@@ -65,6 +66,13 @@ export async function GET(request: NextRequest) {
     if (meus) { (where as Record<string, unknown>).abertoPorId = user.id; delete (where as Record<string, unknown>).OR; }
     if (status) where.status = status;
     if (ministerioId) where.ministerioId = ministerioId;
+    if (search) {
+      where.OR = [
+        { titulo: { contains: search, mode: 'insensitive' } },
+        { codigo: { contains: search, mode: 'insensitive' } },
+        { abertoPor: { name: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
 
     const [chamados, total] = await Promise.all([
       prisma.chamado.findMany({
