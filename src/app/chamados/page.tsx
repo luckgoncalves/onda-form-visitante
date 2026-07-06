@@ -5,11 +5,9 @@ import { useRouter } from 'next/navigation';
 import { checkAuth } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Search, Ticket, ChevronRight } from 'lucide-react';
+import { Plus, Ticket, ChevronRight } from 'lucide-react';
 import { ChamadoStatusBadge, ChamadoPrioridadeBadge } from '@/components/chamados/chamado-status-badge';
-import ButtonForm from '@/components/button-form';
 
 interface Chamado {
   id: string;
@@ -69,11 +67,13 @@ export default function MeusChamadosPage() {
           <h1 className="text-xl font-bold">Meus Chamados</h1>
           <p className="text-sm text-muted-foreground">{total} chamado{total !== 1 ? 's' : ''}</p>
         </div>
-        <ButtonForm
+        <Button
           onClick={() => router.push('/chamados/novo')}
-          label="Novo Chamado"
-          icon={<Plus size={20} />}
-        />
+          className="bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white shrink-0"
+        >
+          <Plus size={20} />
+          <span className="hidden sm:inline ml-2">Novo Chamado</span>
+        </Button>
       </div>
 
       {/* Filtro de status */}
