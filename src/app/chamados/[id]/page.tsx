@@ -243,25 +243,21 @@ export default function ChamadoDetailPage() {
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Comentários ({chamado.comentarios.length})</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="divide-y divide-gray-100">
           {chamado.comentarios.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-4">Nenhum comentário ainda.</p>
           )}
           {chamado.comentarios.map((c) => (
-            <div key={c.id} className={`flex gap-2 ${c.autor.id === currentUserId ? 'flex-row-reverse' : ''}`}>
-              <div className={`rounded-full h-8 w-8 flex items-center justify-center text-xs font-bold shrink-0 ${
-                c.autor.id === currentUserId ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'
-              }`}>
+            <div key={c.id} className="flex gap-3 py-3">
+              <div className="rounded-full h-8 w-8 flex items-center justify-center text-xs font-bold shrink-0 bg-onda-darkBlue text-white">
                 {c.autor.name.charAt(0).toUpperCase()}
               </div>
-              <div className={`flex-1 ${c.autor.id === currentUserId ? 'items-end' : 'items-start'} flex flex-col gap-0.5`}>
-                <span className="text-xs text-muted-foreground">{c.autor.name}</span>
-                <div className={`text-sm rounded-lg px-3 py-2 max-w-[85%] ${
-                  c.autor.id === currentUserId ? 'bg-black text-white' : 'bg-gray-100 text-gray-900'
-                }`}>
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium">{c.autor.name}</span>
+                <div className="mt-1 text-sm bg-gray-100 rounded-lg px-3 py-2 text-gray-900">
                   {c.texto}
                 </div>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground mt-1 block">
                   {new Date(c.createdAt).toLocaleString('pt-BR')}
                 </span>
               </div>
