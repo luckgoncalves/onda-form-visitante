@@ -69,12 +69,21 @@ export default function MeusChamadosPage() {
         </div>
         <Button
           onClick={() => router.push('/chamados/novo')}
-          className="bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white shrink-0"
+          className="hidden sm:flex bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white items-center gap-2"
         >
           <Plus size={20} />
-          <span className="hidden sm:inline ml-2">Novo Chamado</span>
+          Novo Chamado
         </Button>
       </div>
+
+      {/* FAB mobile */}
+      <button
+        onClick={() => router.push('/chamados/novo')}
+        className="sm:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] right-4 z-40 flex items-center gap-2 bg-onda-darkBlue text-white rounded-full px-4 py-3 shadow-lg"
+      >
+        <Plus size={20} />
+        <span className="text-sm font-medium">Novo Chamado</span>
+      </button>
 
       {/* Filtro de status */}
       <div className="flex gap-2 flex-wrap mb-6">
