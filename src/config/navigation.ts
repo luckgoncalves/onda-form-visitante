@@ -80,6 +80,13 @@ export const navigationItems: NavigationItem[] = [
     section: 'Gestão',
   },
   {
+    label: 'Chamados',
+    href: '/chamados',
+    icon: Ticket,
+    adminOnly: true,
+    section: 'Gestão',
+  },
+  {
     label: 'Empresas',
     href: '/empresas',
     icon: Building,
