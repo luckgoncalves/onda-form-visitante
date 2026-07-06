@@ -77,6 +77,11 @@ export async function GET(request: NextRequest) {
           respostas: {
             include: { campo: { select: { id: true, label: true, tipo: true } } },
           },
+          comentarios: {
+            orderBy: { createdAt: 'desc' as const },
+            take: 1,
+            select: { autorId: true },
+          },
           _count: { select: { comentarios: true } },
         },
         orderBy: { createdAt: 'desc' },

@@ -16,7 +16,8 @@ interface Chamado {
   status: string;
   prioridade: string;
   ministerio: { nome: string };
-  abertoPor: { name: string };
+  abertoPor: { id: string; name: string };
+  comentarios: { autorId: string }[];
   createdAt: string;
   _count: { comentarios: number };
 }
@@ -29,6 +30,29 @@ const STATUS_OPTIONS = [
   { value: 'CONCLUIDO', label: 'Concluído' },
   { value: 'CANCELADO', label: 'Cancelado' },
 ];
+
+const STATUS_FECHADO = new Set(['CONCLUIDO', 'CANCELADO']);
+
+function TagResposta({ chamado, isAdmin }: { chamado: Chamado; isAdmin: boolean }) {
+  const ultimoComentario = chamado.comentarios[0];
+  if (!ultimoComentario || STATUS_FECHADO.has(chamado.status)) return null;
+
+  const ultimoFoiOAbertoPor = ultimoComentario.autorId === chamado.abertoPor.id;
+
+  if (ultimoFoiOAbertoPor) {
+    return (
+      <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium whitespace-nowrap">
+        Aguardando equipe
+      </span>
+    );
+  }
+
+  return (
+    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium whitespace-nowrap">
+      {isAdmin ? 'Aguardando solicitante' : 'Aguardando sua resposta'}
+    </span>
+  );
+}
 
 export default function ChamadosPage() {
   const router = useRouter();
@@ -145,6 +169,7 @@ export default function ChamadosPage() {
                         <span className="font-mono text-xs text-muted-foreground">{chamado.codigo}</span>
                         <ChamadoStatusBadge status={chamado.status} />
                         <ChamadoPrioridadeBadge prioridade={chamado.prioridade} />
+                        <TagResposta chamado={chamado} isAdmin={!!isAdmin} />
                       </div>
                       <p className="font-medium truncate">{chamado.titulo}</p>
                       <p className="text-sm text-muted-foreground">
