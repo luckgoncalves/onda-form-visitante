@@ -6,7 +6,7 @@ import { checkAuth } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Ticket, ChevronRight, ChevronLeft, Search, X } from 'lucide-react';
+import { Plus, Ticket, ChevronRight, ChevronLeft, Search, X, Copy, Check } from 'lucide-react';
 import { ChamadoStatusBadge, ChamadoPrioridadeBadge, STATUS_CONFIG } from '@/components/chamados/chamado-status-badge';
 
 interface Chamado {
@@ -51,6 +51,29 @@ function TagResposta({ chamado, isAdmin }: { chamado: Chamado; isAdmin: boolean 
     <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium whitespace-nowrap">
       {isAdmin ? 'Aguardando solicitante' : 'Aguardando sua resposta'}
     </span>
+  );
+}
+
+function CodigoCopy({ codigo }: { codigo: string }) {
+  const [copiado, setCopiado] = useState(false);
+  const copiar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(codigo);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
+  return (
+    <button
+      onClick={copiar}
+      className="flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors group"
+      title="Copiar código"
+    >
+      {codigo}
+      {copiado
+        ? <Check className="h-3 w-3 text-green-500" />
+        : <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+      }
+    </button>
   );
 }
 
@@ -191,7 +214,7 @@ export default function ChamadosPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-mono text-xs text-muted-foreground">{chamado.codigo}</span>
+                        <CodigoCopy codigo={chamado.codigo} />
                         <ChamadoStatusBadge status={chamado.status} />
                         <ChamadoPrioridadeBadge prioridade={chamado.prioridade} />
                         <TagResposta chamado={chamado} isAdmin={!!isAdmin} />
