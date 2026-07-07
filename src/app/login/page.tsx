@@ -40,10 +40,15 @@ export default function LoginPage() {
           } else {
             if (isAdmin) {
               router.push('/list');
-            } else if (user?.role === 'base_pessoal') {
-              router.push('/register');
-            } else if (user?.role === 'user') {
-              router.push('/empresas');
+            } else {
+              const navConfig = user?.ministerioNavConfig;
+              if (navConfig?.paginaInicial) {
+                router.push(navConfig.paginaInicial);
+              } else if (user?.role === 'base_pessoal') {
+                router.push('/register');
+              } else {
+                router.push('/empresas');
+              }
             }
           }
         }
@@ -62,18 +67,30 @@ export default function LoginPage() {
     setError(null);
     try {
       const result = await login(formData.email, formData.password);
-      const { isAdmin } = await checkIsAdmin();
 
       if (result.success) {
         if (result.user?.requirePasswordChange) {
           router.push('/change-password');
         } else {
+          const { isAdmin, user } = await Promise.all([
+            checkIsAdmin(),
+            checkAuth(),
+          ]).then(([adminResult, authResult]) => ({
+            isAdmin: adminResult.isAdmin,
+            user: authResult.user,
+          }));
+
           if (isAdmin) {
             router.push('/list');
-          } else if (result.user?.role === 'base_pessoal') {
-            router.push('/register');
-          } else if (result.user?.role === 'user') {
-            router.push('/empresas');
+          } else {
+            const navConfig = user?.ministerioNavConfig;
+            if (navConfig?.paginaInicial) {
+              router.push(navConfig.paginaInicial);
+            } else if (result.user?.role === 'base_pessoal') {
+              router.push('/register');
+            } else {
+              router.push('/empresas');
+            }
           }
         }
       } else {

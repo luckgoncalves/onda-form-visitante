@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { checkIsAdmin } from "@/app/actions";
 import { PWAInstallButton } from "@/components/pwa-install-button";
-import { getDesktopPrimaryItems, NavigationItem } from "@/config/navigation";
+import { getDesktopPrimaryItems, filterByNavConfig, NavigationItem } from "@/config/navigation";
 import { MoreMenuSheet } from "@/components/navigation/more-menu-sheet";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
@@ -15,10 +15,11 @@ type HeaderProps = {
   userName: string;
   userId: string;
   campusNome?: string | null;
+  navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   onLogout: () => void;
 };
 
-export function Header({ userName, userId, campusNome, onLogout }: HeaderProps) {
+export function Header({ userName, userId, campusNome, navConfig, onLogout }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -39,7 +40,11 @@ export function Header({ userName, userId, campusNome, onLogout }: HeaderProps) 
     };
   }, []);
 
-  const desktopPrimaryItems = getDesktopPrimaryItems(isAdmin);
+  const rawDesktopPrimaryItems = getDesktopPrimaryItems(isAdmin);
+  const desktopPrimaryItems =
+    !isAdmin && navConfig?.paginasHabilitadas?.length
+      ? filterByNavConfig(rawDesktopPrimaryItems, navConfig.paginasHabilitadas)
+      : rawDesktopPrimaryItems;
 
   const isActive = (item: NavigationItem) => {
     if (!item.href) return false;
@@ -131,6 +136,7 @@ export function Header({ userName, userId, campusNome, onLogout }: HeaderProps) 
         userName={userName}
         userId={userId}
         campusNome={campusNome}
+        navConfig={navConfig}
         onLogout={onLogout}
       />
     </>

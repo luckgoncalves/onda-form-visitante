@@ -182,10 +182,10 @@ export async function checkAuth() {
     
     const user = await prismaClient.users.findUnique({
       where: { id: decoded.userId },
-      select: { 
-        id: true, 
-        name: true, 
-        email: true, 
+      select: {
+        id: true,
+        name: true,
+        email: true,
         role: true,
         campusId: true,
         roleRelation: {
@@ -199,7 +199,47 @@ export async function checkAuth() {
             nome: true
           }
         },
-        requirePasswordChange: true
+        requirePasswordChange: true,
+        ministeriosLiderados: {
+          select: {
+            id: true,
+            navConfig: {
+              select: {
+                paginaInicial: true,
+                paginasHabilitadas: true,
+              }
+            }
+          },
+          take: 1,
+        },
+        ministeriosCoLiderados: {
+          select: {
+            id: true,
+            navConfig: {
+              select: {
+                paginaInicial: true,
+                paginasHabilitadas: true,
+              }
+            }
+          },
+          take: 1,
+        },
+        ministerios: {
+          select: {
+            ministerio: {
+              select: {
+                id: true,
+                navConfig: {
+                  select: {
+                    paginaInicial: true,
+                    paginasHabilitadas: true,
+                  }
+                }
+              }
+            }
+          },
+          take: 1,
+        },
       }
     });
 
@@ -233,8 +273,26 @@ export async function checkAuth() {
     // Usar o nome da role da relação, ou fallback para o campo legado
     const roleName = user.roleRelation?.name || user.role;
 
-    return { 
-      isAuthenticated: true, 
+    // Determine ministerioNavConfig by priority: leader > co-leader > member
+    let ministerioNavConfig: { paginaInicial: string; paginasHabilitadas: string[] } | null = null;
+
+    const leaderNavConfig = user.ministeriosLiderados?.[0]?.navConfig;
+    const coLeaderNavConfig = user.ministeriosCoLiderados?.[0]?.navConfig;
+    const memberNavConfig = user.ministerios?.[0]?.ministerio?.navConfig;
+
+    const rawNavConfig = leaderNavConfig || coLeaderNavConfig || memberNavConfig || null;
+
+    if (rawNavConfig) {
+      ministerioNavConfig = {
+        paginaInicial: rawNavConfig.paginaInicial,
+        paginasHabilitadas: Array.isArray(rawNavConfig.paginasHabilitadas)
+          ? (rawNavConfig.paginasHabilitadas as string[])
+          : JSON.parse((rawNavConfig.paginasHabilitadas as unknown as string) || '[]'),
+      };
+    }
+
+    return {
+      isAuthenticated: true,
       user: {
         id: user.id,
         name: user.name,
@@ -242,7 +300,8 @@ export async function checkAuth() {
         role: roleName,
         campusId: user.campusId,
         campusNome: user.campus?.nome,
-        requirePasswordChange: user.requirePasswordChange
+        requirePasswordChange: user.requirePasswordChange,
+        ministerioNavConfig,
       }
     };
   } catch (error) {

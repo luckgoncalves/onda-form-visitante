@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/
 import { Input } from '@/components/ui/input';
 import { checkAuth } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X, Settings2 } from 'lucide-react';
+import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X, Settings2, Globe } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -264,6 +264,14 @@ export default function MinisteriosPage() {
                               onClick={() => router.push(`/dashboard/ministerios/${ministerio.id}/campos`)}
                             >
                               <Settings2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              title="Configurar páginas do ministério"
+                              onClick={() => router.push(`/dashboard/ministerios/${ministerio.id}/paginas`)}
+                            >
+                              <Globe className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="outline"

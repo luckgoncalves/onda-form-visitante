@@ -2,7 +2,7 @@
 
 import { MoreHorizontal } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getMobilePrimaryItems, NavigationItem } from '@/config/navigation';
+import { getMobilePrimaryItems, filterByNavConfig, NavigationItem } from '@/config/navigation';
 import { MoreMenuSheet } from '@/components/navigation/more-menu-sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ type MobileBottomNavProps = {
   userName: string;
   userId: string;
   campusNome?: string | null;
+  navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   onLogout: () => void;
 };
 
@@ -25,11 +26,16 @@ export function MobileBottomNav({
   userName,
   userId,
   campusNome,
+  navConfig,
   onLogout,
 }: MobileBottomNavProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const primaryItems = getMobilePrimaryItems(isAdmin);
+  const rawPrimaryItems = getMobilePrimaryItems(isAdmin);
+  const primaryItems =
+    !isAdmin && navConfig?.paginasHabilitadas?.length
+      ? filterByNavConfig(rawPrimaryItems, navConfig.paginasHabilitadas)
+      : rawPrimaryItems;
 
   const handleNavigate = (item: NavigationItem) => {
     if (item.externalHref) {

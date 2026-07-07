@@ -337,12 +337,23 @@ model Ministerio {
   updatedAt DateTime @updatedAt
 
   // Relações
-  campus   Campus?           @relation(fields: [campusId], references: [id])
-  lider    users             @relation("MinisterioLider", fields: [liderId], references: [id])
-  coLider  users?            @relation("MinisterioCoLider", fields: [coLiderId], references: [id])
-  membros  UserMinisterio[]
-  chamados Chamado[]
-  campos   CampoMinisterio[]
+  campus    Campus?              @relation(fields: [campusId], references: [id])
+  lider     users                @relation("MinisterioLider", fields: [liderId], references: [id])
+  coLider   users?               @relation("MinisterioCoLider", fields: [coLiderId], references: [id])
+  membros   UserMinisterio[]
+  chamados  Chamado[]
+  campos    CampoMinisterio[]
+  navConfig MinisterioNavConfig?
+}
+
+model MinisterioNavConfig {
+  id                 String     @id @default(cuid())
+  ministerioId       String     @unique
+  ministerio         Ministerio @relation(fields: [ministerioId], references: [id], onDelete: Cascade)
+  paginaInicial      String     @default("/register")
+  paginasHabilitadas Json       @default("[]")
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 }
 
 model UserMinisterio {

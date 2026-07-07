@@ -142,3 +142,14 @@ export function getMobileMoreNavigationItems(isAdmin: boolean) {
     isAdmin ? !item.mobilePrimaryAdmin : !item.mobilePrimaryUser
   );
 }
+
+export function filterByNavConfig(
+  items: NavigationItem[],
+  paginasHabilitadas: string[]
+): NavigationItem[] {
+  if (!paginasHabilitadas.length) return items;
+  return items.filter(item => {
+    const key = item.href ?? (item.externalHref?.includes('groups') ? 'grupos' : '');
+    return paginasHabilitadas.includes(key);
+  });
+}

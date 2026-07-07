@@ -9,6 +9,7 @@ type AuthUser = {
   id: string;
   name: string;
   campusNome?: string | null;
+  ministerioNavConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
 };
 
 const routesWithoutAuthenticatedHeader = new Set([
@@ -48,6 +49,7 @@ export function PersistentHeader() {
           id: authResult.user.id,
           name: authResult.user.name,
           campusNome: authResult.user.campusNome || null,
+          ministerioNavConfig: authResult.user.ministerioNavConfig || null,
         });
       } else {
         setUser(null);
@@ -78,6 +80,7 @@ export function PersistentHeader() {
       userId={user.id}
       userName={user.name}
       campusNome={user.campusNome}
+      navConfig={user.ministerioNavConfig}
       onLogout={handleLogout}
     />
   );
