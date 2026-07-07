@@ -2,7 +2,7 @@
 
 import { MoreHorizontal } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getMobilePrimaryItems, filterByNavConfig, NavigationItem } from '@/config/navigation';
+import { getMobilePrimaryItems, getNavItemsForMinisterio, NavigationItem } from '@/config/navigation';
 import { MoreMenuSheet } from '@/components/navigation/more-menu-sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -31,11 +31,14 @@ export function MobileBottomNav({
 }: MobileBottomNavProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const rawPrimaryItems = getMobilePrimaryItems(isAdmin);
-  const primaryItems =
-    !isAdmin && navConfig?.paginasHabilitadas?.length
-      ? filterByNavConfig(rawPrimaryItems, navConfig.paginasHabilitadas)
-      : rawPrimaryItems;
+  const primaryItems = (() => {
+    if (isAdmin) return getMobilePrimaryItems(true);
+    if (navConfig?.paginasHabilitadas?.length) {
+      // Ministry config: show exactly the granted pages (may include admin-only ones)
+      return getNavItemsForMinisterio(navConfig.paginasHabilitadas);
+    }
+    return getMobilePrimaryItems(false);
+  })();
 
   const handleNavigate = (item: NavigationItem) => {
     if (item.externalHref) {
@@ -76,6 +79,7 @@ export function MobileBottomNav({
           userName={userName}
           userId={userId}
           campusNome={campusNome}
+          navConfig={navConfig}
           onLogout={onLogout}
           variant="mobile"
         >

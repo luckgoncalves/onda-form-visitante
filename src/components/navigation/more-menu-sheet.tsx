@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   feedbackItem,
   getMobileMoreNavigationItems,
+  getNavItemsForMinisterio,
   getSecondaryNavigationItems,
   NavigationItem,
 } from '@/config/navigation';
@@ -26,6 +27,7 @@ type MoreMenuSheetProps = {
   userName: string;
   userId: string;
   campusNome?: string | null;
+  navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   onLogout: () => void;
   variant?: 'desktop' | 'mobile';
   children: React.ReactNode;
@@ -41,6 +43,7 @@ export function MoreMenuSheet({
   userName,
   userId,
   campusNome,
+  navConfig,
   onLogout,
   variant = 'desktop',
   children,
@@ -49,8 +52,14 @@ export function MoreMenuSheet({
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
 
-  const navigationItems =
-    variant === 'mobile' ? getMobileMoreNavigationItems(isAdmin) : getSecondaryNavigationItems(isAdmin);
+  const navigationItems = (() => {
+    if (!isAdmin && navConfig?.paginasHabilitadas?.length) {
+      return getNavItemsForMinisterio(navConfig.paginasHabilitadas);
+    }
+    return variant === 'mobile'
+      ? getMobileMoreNavigationItems(isAdmin)
+      : getSecondaryNavigationItems(isAdmin);
+  })();
   const FeedbackIcon = feedbackItem.icon;
   const sections = navigationItems.reduce<Record<string, NavigationItem[]>>((acc, item) => {
     const section = item.section || 'Outros';

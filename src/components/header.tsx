@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { checkIsAdmin } from "@/app/actions";
 import { PWAInstallButton } from "@/components/pwa-install-button";
-import { getDesktopPrimaryItems, filterByNavConfig, NavigationItem } from "@/config/navigation";
+import { getDesktopPrimaryItems, getNavItemsForMinisterio, NavigationItem } from "@/config/navigation";
 import { MoreMenuSheet } from "@/components/navigation/more-menu-sheet";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
@@ -40,11 +40,14 @@ export function Header({ userName, userId, campusNome, navConfig, onLogout }: He
     };
   }, []);
 
-  const rawDesktopPrimaryItems = getDesktopPrimaryItems(isAdmin);
-  const desktopPrimaryItems =
-    !isAdmin && navConfig?.paginasHabilitadas?.length
-      ? filterByNavConfig(rawDesktopPrimaryItems, navConfig.paginasHabilitadas)
-      : rawDesktopPrimaryItems;
+  const desktopPrimaryItems = (() => {
+    if (isAdmin) return getDesktopPrimaryItems(true);
+    if (navConfig?.paginasHabilitadas?.length) {
+      // Ministry config: show exactly the granted pages (may include admin-only ones)
+      return getNavItemsForMinisterio(navConfig.paginasHabilitadas);
+    }
+    return getDesktopPrimaryItems(false);
+  })();
 
   const isActive = (item: NavigationItem) => {
     if (!item.href) return false;
@@ -118,6 +121,7 @@ export function Header({ userName, userId, campusNome, navConfig, onLogout }: He
               userName={userName}
               userId={userId}
               campusNome={campusNome}
+              navConfig={navConfig}
               onLogout={onLogout}
             >
               <Button

@@ -153,3 +153,20 @@ export function filterByNavConfig(
     return paginasHabilitadas.includes(key);
   });
 }
+
+/**
+ * Returns nav items for ministry members based on the ministry nav config.
+ * Unlike getVisibleNavigationItems, this bypasses the adminOnly check —
+ * items are granted explicitly by the ministry configuration.
+ */
+export function getNavItemsForMinisterio(paginasHabilitadas: string[]): NavigationItem[] {
+  if (!paginasHabilitadas.length) return [];
+  const seen = new Set<string>();
+  return navigationItems.filter(item => {
+    const key = item.href ?? (item.externalHref?.includes('groups') ? 'grupos' : '');
+    if (!paginasHabilitadas.includes(key)) return false;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}

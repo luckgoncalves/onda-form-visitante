@@ -15,10 +15,16 @@ interface Ministerio {
 }
 
 const CONFIGURABLE_PAGES = [
-  { key: '/register', label: 'Cadastro de Visitante' },
-  { key: '/empresas', label: 'Empresas' },
-  { key: '/chamados', label: 'Chamados' },
-  { key: 'grupos', label: 'Grupos' },
+  { key: '/register', label: 'Cadastro de Visitante', section: 'Geral' },
+  { key: '/empresas', label: 'Empresas', section: 'Geral' },
+  { key: '/chamados', label: 'Chamados', section: 'Geral' },
+  { key: 'grupos', label: 'Grupos', section: 'Comunidade' },
+  { key: '/list', label: 'Visitantes', section: 'Gestão' },
+  { key: '/dashboard', label: 'Dashboard', section: 'Gestão' },
+  { key: '/dashboard/forms', label: 'Formulários', section: 'Gestão' },
+  { key: '/dashboard/etiquetas', label: 'Etiquetas', section: 'Gestão' },
+  { key: '/users', label: 'Membros', section: 'Gestão' },
+  { key: '/dashboard/ministerios', label: 'Ministérios', section: 'Gestão' },
 ];
 
 export default function PaginasMinisterioPage() {
@@ -130,25 +136,33 @@ export default function PaginasMinisterioPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Page checklist */}
-          <div className="space-y-3">
+          {/* Page checklist grouped by section */}
+          <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-700">Páginas habilitadas</h3>
-            {CONFIGURABLE_PAGES.map((page) => {
-              const checked = paginasHabilitadas.includes(page.key);
+            {(['Geral', 'Comunidade', 'Gestão'] as const).map((section) => {
+              const pages = CONFIGURABLE_PAGES.filter((p) => p.section === section);
               return (
-                <label
-                  key={page.key}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-onda-darkBlue accent-[#0f172a]"
-                    checked={checked}
-                    onChange={() => togglePage(page.key)}
-                  />
-                  <span className="text-sm font-medium text-gray-800">{page.label}</span>
-                  <span className="ml-auto text-xs text-gray-400 font-mono">{page.key}</span>
-                </label>
+                <div key={section} className="space-y-2">
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{section}</p>
+                  {pages.map((page) => {
+                    const checked = paginasHabilitadas.includes(page.key);
+                    return (
+                      <label
+                        key={page.key}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-gray-300 text-onda-darkBlue accent-[#0f172a]"
+                          checked={checked}
+                          onChange={() => togglePage(page.key)}
+                        />
+                        <span className="text-sm font-medium text-gray-800">{page.label}</span>
+                        <span className="ml-auto text-xs text-gray-400 font-mono">{page.key}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               );
             })}
           </div>
