@@ -210,7 +210,6 @@ export async function checkAuth() {
               }
             }
           },
-          take: 1,
         },
         ministeriosCoLiderados: {
           select: {
@@ -222,7 +221,6 @@ export async function checkAuth() {
               }
             }
           },
-          take: 1,
         },
         ministerios: {
           select: {
@@ -238,7 +236,6 @@ export async function checkAuth() {
               }
             }
           },
-          take: 1,
         },
       }
     });
@@ -273,21 +270,28 @@ export async function checkAuth() {
     // Usar o nome da role da relação, ou fallback para o campo legado
     const roleName = user.roleRelation?.name || user.role;
 
-    // Determine ministerioNavConfig by priority: leader > co-leader > member
+    // Merge paginasHabilitadas from all ministries the user belongs to (union)
+    // paginaInicial: use the first config found (priority: leader > co-leader > member)
     let ministerioNavConfig: { paginaInicial: string; paginasHabilitadas: string[] } | null = null;
 
-    const leaderNavConfig = user.ministeriosLiderados?.[0]?.navConfig;
-    const coLeaderNavConfig = user.ministeriosCoLiderados?.[0]?.navConfig;
-    const memberNavConfig = user.ministerios?.[0]?.ministerio?.navConfig;
+    const parsePages = (raw: unknown): string[] => {
+      if (Array.isArray(raw)) return raw as string[];
+      try { return JSON.parse((raw as string) || '[]'); } catch { return []; }
+    };
 
-    const rawNavConfig = leaderNavConfig || coLeaderNavConfig || memberNavConfig || null;
+    const allConfigs = [
+      ...user.ministeriosLiderados.map((m) => m.navConfig),
+      ...user.ministeriosCoLiderados.map((m) => m.navConfig),
+      ...user.ministerios.map((m) => m.ministerio.navConfig),
+    ].filter(Boolean) as { paginaInicial: string; paginasHabilitadas: unknown }[];
 
-    if (rawNavConfig) {
+    if (allConfigs.length > 0) {
+      const merged = Array.from(
+        new Set(allConfigs.flatMap((c) => parsePages(c.paginasHabilitadas)))
+      );
       ministerioNavConfig = {
-        paginaInicial: rawNavConfig.paginaInicial,
-        paginasHabilitadas: Array.isArray(rawNavConfig.paginasHabilitadas)
-          ? (rawNavConfig.paginasHabilitadas as string[])
-          : JSON.parse((rawNavConfig.paginasHabilitadas as unknown as string) || '[]'),
+        paginaInicial: allConfigs[0].paginaInicial,
+        paginasHabilitadas: merged,
       };
     }
 
