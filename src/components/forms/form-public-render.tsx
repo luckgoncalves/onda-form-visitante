@@ -273,9 +273,6 @@ export function FormPublicRender({
               disabled={isSubmitting}
               className="h-12 text-base"
             />
-            <p className="text-sm text-gray-500">
-              Opcional. Informe para receber uma cópia da sua resposta.
-            </p>
           </div>
         </Card>
 
