@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { formSchema } from '@/lib/validations/form';
 import { checkAuth, checkIsAdmin } from '@/app/actions';
-import { nanoid } from 'nanoid';
+import { randomBytes } from 'crypto';
 import { FormStatus } from '@/types/form';
 
 // GET /api/forms - List all forms (admin only)
@@ -97,8 +97,8 @@ export async function POST(request: NextRequest) {
     const { fields, ...formData } = validationResult.data;
 
     // Generate tokens
-    const publicToken = nanoid(12);
-    const privateToken = nanoid(16);
+    const publicToken = randomBytes(9).toString('base64url');   // 12 chars
+    const privateToken = randomBytes(12).toString('base64url'); // 16 chars
 
     // Prepare form data, ensuring null values are handled correctly
     const createData: any = {
