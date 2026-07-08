@@ -292,8 +292,8 @@ model FormField {
   label       String
   type        FieldType
   required    Boolean   @default(false)
-  placeholder String?
-  helpText    String?
+  placeholder String?   @db.Text
+  helpText    String?   @db.Text
   options     Json?
   order       Int
 
