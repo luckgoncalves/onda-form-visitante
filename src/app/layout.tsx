@@ -115,8 +115,8 @@ const sfProDisplay = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Onda Dura",
-  description: "App Onda Dura",
+  title: "Igreja Onda",
+  description: "App Igreja Onda",
   icons: {
     icon: [
       { url: '/favicon.ico' },
