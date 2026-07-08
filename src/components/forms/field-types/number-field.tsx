@@ -33,6 +33,9 @@ export function NumberField({
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
+      {helpText && (
+        <p className="text-sm text-gray-500">{helpText}</p>
+      )}
       <Input
         id={id}
         type="number"
@@ -42,9 +45,6 @@ export function NumberField({
         disabled={disabled}
         className={`h-12 text-base ${error ? 'border-red-500 focus:ring-red-500' : ''}`}
       />
-      {helpText && !error && (
-        <p className="text-sm text-gray-500">{helpText}</p>
-      )}
       {error && (
         <p className="text-sm text-red-500">{error}</p>
       )}

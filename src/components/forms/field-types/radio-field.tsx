@@ -32,37 +32,59 @@ export function RadioField({
   error,
   disabled = false,
 }: RadioFieldProps) {
+  // Use inline grid layout when all option labels are short (e.g. 1–10 scale)
+  const isCompact = options.length > 0 && options.every((opt) => opt.label.length <= 4);
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <Label className="text-base font-medium">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
+      {helpText && (
+        <p className="text-sm text-gray-500">{helpText}</p>
+      )}
       <RadioGroup
         value={value}
         onValueChange={onChange}
         disabled={disabled}
-        className="space-y-2"
+        className={isCompact ? "flex flex-wrap gap-2 pt-1" : "space-y-2 pt-1"}
       >
-        {options.map((option) => (
-          <div key={option.id} className="flex items-center space-x-3">
-            <RadioGroupItem
-              value={option.value}
-              id={`${id}-${option.id}`}
-              className="h-5 w-5"
-            />
-            <Label
+        {options.map((option) =>
+          isCompact ? (
+            <label
+              key={option.id}
               htmlFor={`${id}-${option.id}`}
-              className="text-base font-normal cursor-pointer"
+              className={`flex items-center justify-center gap-1.5 cursor-pointer rounded-lg border px-3 py-2 text-sm font-medium transition-colors
+                ${value === option.value
+                  ? 'border-onda-darkBlue bg-onda-darkBlue/10 text-onda-darkBlue'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'}
+                ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
+              <RadioGroupItem
+                value={option.value}
+                id={`${id}-${option.id}`}
+                className="sr-only"
+              />
               {option.label}
-            </Label>
-          </div>
-        ))}
+            </label>
+          ) : (
+            <div key={option.id} className="flex items-center space-x-3">
+              <RadioGroupItem
+                value={option.value}
+                id={`${id}-${option.id}`}
+                className="h-5 w-5"
+              />
+              <Label
+                htmlFor={`${id}-${option.id}`}
+                className="text-base font-normal cursor-pointer"
+              >
+                {option.label}
+              </Label>
+            </div>
+          )
+        )}
       </RadioGroup>
-      {helpText && !error && (
-        <p className="text-sm text-gray-500">{helpText}</p>
-      )}
       {error && (
         <p className="text-sm text-red-500">{error}</p>
       )}

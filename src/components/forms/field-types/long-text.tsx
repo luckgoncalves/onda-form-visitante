@@ -34,6 +34,9 @@ export function LongTextField({
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
+      {helpText && (
+        <p className="text-sm text-gray-500">{helpText}</p>
+      )}
       <Textarea
         id={id}
         value={value}
@@ -43,9 +46,6 @@ export function LongTextField({
         rows={4}
         className={`text-base resize-none ${error ? 'border-red-500 focus:ring-red-500' : ''}`}
       />
-      {helpText && !error && (
-        <p className="text-sm text-gray-500">{helpText}</p>
-      )}
       {error && (
         <p className="text-sm text-red-500">{error}</p>
       )}

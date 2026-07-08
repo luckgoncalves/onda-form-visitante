@@ -52,34 +52,58 @@ export function CheckboxField({
     onChange(JSON.stringify(newValues));
   };
 
+  // Use inline grid layout when all option labels are short (e.g. 1–10 scale)
+  const isCompact = options.length > 0 && options.every((opt) => opt.label.length <= 4);
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <Label className="text-base font-medium">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      <div className="space-y-2">
-        {options.map((option) => (
-          <div key={option.id} className="flex items-center space-x-3">
-            <Checkbox
-              id={`${id}-${option.id}`}
-              checked={selectedValues.includes(option.value)}
-              onCheckedChange={(checked) => handleChange(option.value, checked === true)}
-              disabled={disabled}
-              className="h-5 w-5"
-            />
-            <Label
-              htmlFor={`${id}-${option.id}`}
-              className="text-base font-normal cursor-pointer"
-            >
-              {option.label}
-            </Label>
-          </div>
-        ))}
-      </div>
-      {helpText && !error && (
+      {helpText && (
         <p className="text-sm text-gray-500">{helpText}</p>
       )}
+      <div className={isCompact ? "flex flex-wrap gap-2 pt-1" : "space-y-2 pt-1"}>
+        {options.map((option) =>
+          isCompact ? (
+            <label
+              key={option.id}
+              htmlFor={`${id}-${option.id}`}
+              className={`flex items-center justify-center gap-1.5 cursor-pointer rounded-lg border px-3 py-2 text-sm font-medium transition-colors
+                ${selectedValues.includes(option.value)
+                  ? 'border-onda-darkBlue bg-onda-darkBlue/10 text-onda-darkBlue'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'}
+                ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <Checkbox
+                id={`${id}-${option.id}`}
+                checked={selectedValues.includes(option.value)}
+                onCheckedChange={(checked) => handleChange(option.value, checked === true)}
+                disabled={disabled}
+                className="sr-only"
+              />
+              {option.label}
+            </label>
+          ) : (
+            <div key={option.id} className="flex items-center space-x-3">
+              <Checkbox
+                id={`${id}-${option.id}`}
+                checked={selectedValues.includes(option.value)}
+                onCheckedChange={(checked) => handleChange(option.value, checked === true)}
+                disabled={disabled}
+                className="h-5 w-5"
+              />
+              <Label
+                htmlFor={`${id}-${option.id}`}
+                className="text-base font-normal cursor-pointer"
+              >
+                {option.label}
+              </Label>
+            </div>
+          )
+        )}
+      </div>
       {error && (
         <p className="text-sm text-red-500">{error}</p>
       )}
