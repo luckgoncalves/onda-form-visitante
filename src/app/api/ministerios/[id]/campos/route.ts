@@ -4,8 +4,8 @@ import { z } from 'zod';
 
 const createCampoSchema = z.object({
   label: z.string().min(1, 'Label é obrigatório'),
-  tipo: z.enum(['TEXTO', 'TEXTAREA', 'SELECT', 'MULTISELECT']),
-  opcoes: z.array(z.string()).optional(),
+  tipo: z.enum(['TEXTO', 'TEXTAREA', 'SELECT', 'MULTISELECT', 'ANEXO']),
+  opcoes: z.array(z.string()).nullable().optional(),
   obrigatorio: z.boolean().default(false),
   ordem: z.number().int().default(0),
 });
