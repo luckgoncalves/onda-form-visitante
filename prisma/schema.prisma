@@ -48,6 +48,7 @@ enum TipoCampoMinisterio {
   TEXTAREA
   SELECT
   MULTISELECT
+  ANEXO
 }
 
 // Enums para o model Form

@@ -44,6 +44,25 @@ function formatValor(valor: string, tipo: string): string {
   return valor;
 }
 
+function AnexoViewer({ valor }: { valor: string }) {
+  let urls: string[] = [];
+  try { urls = JSON.parse(valor) as string[]; } catch { urls = []; }
+  if (urls.length === 0) return <p className="text-sm text-muted-foreground">Sem anexos</p>;
+  return (
+    <div className="flex flex-wrap gap-2 mt-1">
+      {urls.map((url) => (
+        <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+          <img
+            src={url}
+            alt="Anexo"
+            className="h-24 w-24 object-cover rounded-md border hover:opacity-80 transition-opacity cursor-pointer"
+          />
+        </a>
+      ))}
+    </div>
+  );
+}
+
 export default function ChamadoDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -249,9 +268,12 @@ export default function ChamadoDetailPage() {
             {chamado.respostas
               .sort((a, b) => a.campo.ordem - b.campo.ordem)
               .map((r) => (
-                <div key={r.id}>
+                <div key={r.id} className={r.campo.tipo === 'ANEXO' ? 'sm:col-span-2' : ''}>
                   <p className="text-xs text-muted-foreground">{r.campo.label}</p>
-                  <p className="text-sm font-medium">{formatValor(r.valor, r.campo.tipo)}</p>
+                  {r.campo.tipo === 'ANEXO'
+                    ? <AnexoViewer valor={r.valor} />
+                    : <p className="text-sm font-medium">{formatValor(r.valor, r.campo.tipo)}</p>
+                  }
                 </div>
               ))}
           </CardContent>

@@ -11,8 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2, Plus, X } from 'lucide-react';
 
-type TipoCampo = 'TEXTO' | 'TEXTAREA' | 'SELECT' | 'MULTISELECT';
+type TipoCampo = 'TEXTO' | 'TEXTAREA' | 'SELECT' | 'MULTISELECT' | 'ANEXO';
 
 interface Campo {
   id: string;
@@ -46,6 +47,7 @@ export default function ChamadoForm({ onSuccess, onCancel }: ChamadoFormProps) {
   const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
   const [campos, setCampos] = useState<Campo[]>([]);
   const [respostas, setRespostas] = useState<Record<string, string>>({});
+  const [uploadingCampos, setUploadingCampos] = useState<Record<string, boolean>>({});
   const [isLoadingMinisterios, setIsLoadingMinisterios] = useState(true);
   const [isLoadingCampos, setIsLoadingCampos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,6 +109,44 @@ export default function ChamadoForm({ onSuccess, onCancel }: ChamadoFormProps) {
 
   const getMultiValue = (campoId: string): string[] => {
     try { return respostas[campoId] ? JSON.parse(respostas[campoId]) : []; } catch { return []; }
+  };
+
+  const getAnexoUrls = (campoId: string): string[] => {
+    try { return respostas[campoId] ? JSON.parse(respostas[campoId]) : []; } catch { return []; }
+  };
+
+  const handleAnexoUpload = async (campoId: string, file: File) => {
+    setUploadingCampos((prev) => ({ ...prev, [campoId]: true }));
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'chamados/anexos');
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Erro ao fazer upload');
+      }
+      const { url } = await res.json();
+      setRespostas((prev) => {
+        const current = prev[campoId] ? JSON.parse(prev[campoId]) as string[] : [];
+        return { ...prev, [campoId]: JSON.stringify([...current, url]) };
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro ao enviar arquivo',
+        description: error instanceof Error ? error.message : 'Tente novamente',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingCampos((prev) => ({ ...prev, [campoId]: false }));
+    }
+  };
+
+  const handleAnexoRemove = (campoId: string, url: string) => {
+    setRespostas((prev) => {
+      const current = prev[campoId] ? JSON.parse(prev[campoId]) as string[] : [];
+      return { ...prev, [campoId]: JSON.stringify(current.filter((u) => u !== url)) };
+    });
   };
 
   const validateCampos = (): boolean => {
@@ -317,6 +357,55 @@ export default function ChamadoForm({ onSuccess, onCancel }: ChamadoFormProps) {
                         </label>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {campo.tipo === 'ANEXO' && (
+                  <div className="space-y-2">
+                    {getAnexoUrls(campo.id).length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {getAnexoUrls(campo.id).map((url) => (
+                          <div key={url} className="relative">
+                            <img
+                              src={url}
+                              alt="Anexo"
+                              className="h-20 w-20 object-cover rounded-md border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleAnexoRemove(campo.id, url)}
+                              className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {uploadingCampos[campo.id] && (
+                          <div className="h-20 w-20 rounded-md border flex items-center justify-center bg-gray-50">
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        disabled={uploadingCampos[campo.id]}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleAnexoUpload(campo.id, file);
+                          e.target.value = '';
+                        }}
+                      />
+                      <span className="inline-flex items-center gap-1.5 text-sm border rounded-md px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
+                        {uploadingCampos[campo.id]
+                          ? <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
+                          : <><Plus className="h-4 w-4" /> Adicionar foto</>
+                        }
+                      </span>
+                    </label>
                   </div>
                 )}
               </div>

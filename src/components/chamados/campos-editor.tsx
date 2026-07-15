@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, GripVertical, X } from 'lucide-react';
 
-type TipoCampo = 'TEXTO' | 'TEXTAREA' | 'SELECT' | 'MULTISELECT';
+type TipoCampo = 'TEXTO' | 'TEXTAREA' | 'SELECT' | 'MULTISELECT' | 'ANEXO';
 
 interface Campo {
   id: string;
@@ -29,6 +29,7 @@ const TIPOS: { value: TipoCampo; label: string }[] = [
   { value: 'TEXTAREA', label: 'Texto longo' },
   { value: 'SELECT', label: 'Seleção única' },
   { value: 'MULTISELECT', label: 'Múltipla escolha' },
+  { value: 'ANEXO', label: 'Anexo / Foto' },
 ];
 
 export default function CamposEditor({ ministerioId, ministerioNome }: CamposEditorProps) {
