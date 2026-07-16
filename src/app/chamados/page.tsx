@@ -33,6 +33,12 @@ const STATUS_OPTIONS = [
 
 const STATUS_FECHADO = new Set(['CONCLUIDO', 'CANCELADO']);
 
+function fmtCount(n: number | undefined): string {
+  if (n === undefined || n === 0) return '';
+  if (n >= 1000) return `${Math.floor(n / 1000)}k`;
+  return String(n);
+}
+
 function TagResposta({ chamado, isAdmin }: { chamado: Chamado; isAdmin: boolean }) {
   const ultimoComentario = chamado.comentarios[0];
   if (!ultimoComentario || STATUS_FECHADO.has(chamado.status)) return null;
@@ -87,6 +93,7 @@ export default function ChamadosPage() {
   const [search, setSearch] = useState('');
   const [total, setTotal] = useState(0);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+  const [counts, setCounts] = useState<Record<string, number>>({});
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async (status: string, page: number, admin: boolean, q = '', meus = false) => {
@@ -116,14 +123,24 @@ export default function ChamadosPage() {
     });
   }, [router]);
 
+  const loadCounts = useCallback(async (meus: boolean) => {
+    try {
+      const params = new URLSearchParams();
+      if (meus) params.set('meus', 'true');
+      const res = await fetch(`/api/chamados/counts?${params}`);
+      if (res.ok) setCounts(await res.json());
+    } catch { /* silencioso */ }
+  }, []);
+
   useEffect(() => {
     if (isAdmin === null) return;
+    loadCounts(meusFilter);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       load(statusFilter, 1, isAdmin, search, meusFilter);
     }, search ? 400 : 0);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [isAdmin, statusFilter, meusFilter, search, load]);
+  }, [isAdmin, statusFilter, meusFilter, search, load, loadCounts]);
 
   const handleStatusChange = async (chamadoId: string, status: string) => {
     await fetch(`/api/chamados/${chamadoId}`, {
@@ -180,19 +197,22 @@ export default function ChamadosPage() {
           Meus chamados
         </button>
         <div className="w-px bg-gray-200 shrink-0 my-0.5" />
-        {STATUS_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setStatusFilter(opt.value)}
-            className={`shrink-0 text-xs px-3 py-1 rounded-full border transition-colors ${
-              statusFilter === opt.value
-                ? 'bg-onda-darkBlue text-white border-onda-darkBlue'
-                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
+        {STATUS_OPTIONS.map((opt) => {
+          const count = fmtCount(counts[opt.value]);
+          return (
+            <button
+              key={opt.value}
+              onClick={() => setStatusFilter(opt.value)}
+              className={`shrink-0 text-xs px-3 py-1 rounded-full border transition-colors ${
+                statusFilter === opt.value
+                  ? 'bg-onda-darkBlue text-white border-onda-darkBlue'
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              {opt.label}{count ? ` (${count})` : ''}
+            </button>
+          );
+        })}
       </div>
 
       {isLoading ? (
