@@ -127,6 +127,7 @@ export default function ChamadoDetailPage() {
   const [membros, setMembros] = useState<Membro[]>([]);
   const [membroSearch, setMembroSearch] = useState('');
   const [showMembroDropdown, setShowMembroDropdown] = useState(false);
+  const [showHistorico, setShowHistorico] = useState(false);
   const membroDropdownRef = useRef<HTMLDivElement>(null);
   const comentariosEndRef = useRef<HTMLDivElement>(null);
 
@@ -486,28 +487,36 @@ export default function ChamadoDetailPage() {
 
       {chamado.historico.length > 0 && (
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowHistorico((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left"
+          >
+            <span className="text-sm font-semibold flex items-center gap-2">
               <Clock className="h-4 w-4" />
               Histórico
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <ol className="relative border-l border-gray-200 space-y-4 ml-2">
-              {chamado.historico.map((entry) => (
-                <li key={entry.id} className="ml-4">
-                  <div className="absolute -left-1.5 mt-1 h-3 w-3 rounded-full border border-white bg-gray-300" />
-                  <p className="text-sm">
-                    <span className="font-medium">{entry.autor.name}</span>{' '}
-                    <span className="text-muted-foreground">{formatHistoricoTexto(entry)}</span>
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {new Date(entry.createdAt).toLocaleString('pt-BR')}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </CardContent>
+              <span className="text-xs font-normal text-muted-foreground">({chamado.historico.length})</span>
+            </span>
+            <span className="text-muted-foreground text-xs">{showHistorico ? '▲' : '▼'}</span>
+          </button>
+          {showHistorico && (
+            <CardContent className="px-4 pb-4 pt-0">
+              <ol className="relative border-l border-gray-200 space-y-4 ml-2">
+                {chamado.historico.map((entry) => (
+                  <li key={entry.id} className="ml-4">
+                    <div className="absolute -left-1.5 mt-1 h-3 w-3 rounded-full border border-white bg-gray-300" />
+                    <p className="text-sm">
+                      <span className="font-medium">{entry.autor.name}</span>{' '}
+                      <span className="text-muted-foreground">{formatHistoricoTexto(entry)}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {new Date(entry.createdAt).toLocaleString('pt-BR')}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          )}
         </Card>
       )}
 
