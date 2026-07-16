@@ -233,8 +233,8 @@ export default function ChamadosPage() {
                       </div>
                       <p className="font-medium truncate">{chamado.titulo}</p>
                       <p className="text-sm text-muted-foreground">
-                        {chamado.ministerio.nome} · {new Date(chamado.createdAt).toLocaleDateString('pt-BR')}
-                        {isAdmin && ` · ${chamado.abertoPor.name}`}
+                        {chamado.ministerio.nome} · {new Date(chamado.createdAt).toLocaleDateString('pt-BR')} · {chamado.abertoPor.name}
+                        {isAdmin && ` (${chamado.abertoPor.email})`}
                       </p>
                       {isAdmin && (
                         <div className="mt-2" onClick={(e) => e.stopPropagation()}>
