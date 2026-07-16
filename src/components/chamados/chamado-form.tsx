@@ -115,11 +115,40 @@ export default function ChamadoForm({ onSuccess, onCancel }: ChamadoFormProps) {
     try { return respostas[campoId] ? JSON.parse(respostas[campoId]) : []; } catch { return []; }
   };
 
+  const compressImage = (file: File, maxWidth = 1920, quality = 0.8): Promise<File> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => resolve(blob
+            ? new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })
+            : file
+          ),
+          'image/jpeg',
+          quality,
+        );
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+
   const handleAnexoUpload = async (campoId: string, file: File) => {
     setUploadingCampos((prev) => ({ ...prev, [campoId]: true }));
     try {
+      const compressed = await compressImage(file);
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressed);
       formData.append('folder', 'chamados/anexos');
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       if (!res.ok) {
