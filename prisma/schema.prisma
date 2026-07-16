@@ -207,8 +207,9 @@ model users {
   formResponses FormResponse[] @relation("FormResponses")
 
   // Relação com chamados
-  chamadosAbertos    Chamado[]          @relation("ChamadosAbertos")
-  comentariosChamado ChamadoComentario[]
+  chamadosAbertos     Chamado[]          @relation("ChamadosAbertos")
+  chamadosResponsavel Chamado[]          @relation("ChamadosResponsavel")
+  comentariosChamado  ChamadoComentario[]
 }
 
 model grupo {
@@ -373,20 +374,23 @@ model UserMinisterio {
 // ─── Sistema de Chamados ───────────────────────────────────────────────────────
 
 model Chamado {
-  id           String            @id @default(cuid())
-  codigo       String            @unique
-  titulo       String
-  descricao    String?           @db.Text
-  status       ChamadoStatus     @default(PENDENTE)
-  prioridade   ChamadoPrioridade @default(MEDIA)
-  ministerioId String
-  abertoPorId  String
-  campusId     String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id                String            @id @default(cuid())
+  codigo            String            @unique
+  titulo            String
+  descricao         String?           @db.Text
+  status            ChamadoStatus     @default(PENDENTE)
+  prioridade        ChamadoPrioridade @default(MEDIA)
+  ministerioId      String
+  abertoPorId       String
+  responsavelId     String?
+  previsaoConclusao DateTime?
+  campusId          String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   ministerio  Ministerio          @relation(fields: [ministerioId], references: [id])
   abertoPor   users               @relation("ChamadosAbertos", fields: [abertoPorId], references: [id])
+  responsavel users?              @relation("ChamadosResponsavel", fields: [responsavelId], references: [id])
   campus      Campus?             @relation(fields: [campusId], references: [id])
   respostas   ChamadoResposta[]
   comentarios ChamadoComentario[]

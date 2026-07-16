@@ -6,6 +6,8 @@ import { z } from 'zod';
 const updateSchema = z.object({
   status: z.enum(['PENDENTE', 'RECEBIDO', 'EM_ANDAMENTO', 'CONCLUIDO', 'CANCELADO']).optional(),
   prioridade: z.enum(['BAIXA', 'MEDIA', 'ALTA', 'URGENTE']).optional(),
+  responsavelId: z.string().nullable().optional(),
+  previsaoConclusao: z.coerce.date().nullable().optional(),
 });
 
 async function getMinisterioMembership(ministerioId: string, userId: string) {
@@ -36,6 +38,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       include: {
         ministerio: { select: { id: true, nome: true } },
         abertoPor: { select: { id: true, name: true, email: true } },
+        responsavel: { select: { id: true, name: true } },
         respostas: {
           include: { campo: { select: { id: true, label: true, tipo: true, ordem: true } } },
           orderBy: { campo: { ordem: 'asc' } },
@@ -91,10 +94,16 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     const updated = await prisma.chamado.update({
       where: { id: params.id },
-      data: validated,
+      data: {
+        status: validated.status,
+        prioridade: validated.prioridade,
+        responsavelId: validated.responsavelId,
+        previsaoConclusao: validated.previsaoConclusao,
+      },
       include: {
         ministerio: { select: { id: true, nome: true } },
         abertoPor: { select: { id: true, name: true } },
+        responsavel: { select: { id: true, name: true } },
       },
     });
 

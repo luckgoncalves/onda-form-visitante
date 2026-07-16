@@ -14,6 +14,11 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
+interface Membro {
+  id: string;
+  name: string;
+}
+
 interface Chamado {
   id: string;
   codigo: string;
@@ -22,9 +27,11 @@ interface Chamado {
   status: string;
   prioridade: string;
   createdAt: string;
+  previsaoConclusao?: string | null;
   canManage: boolean;
-  ministerio: { nome: string };
+  ministerio: { id: string; nome: string };
   abertoPor: { name: string; email: string };
+  responsavel?: { id: string; name: string } | null;
   respostas: {
     id: string;
     valor: string;
@@ -75,6 +82,10 @@ export default function ChamadoDetailPage() {
   const [comentario, setComentario] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [copiado, setCopiado] = useState(false);
+  const [membros, setMembros] = useState<Membro[]>([]);
+  const [membroSearch, setMembroSearch] = useState('');
+  const [showMembroDropdown, setShowMembroDropdown] = useState(false);
+  const membroDropdownRef = useRef<HTMLDivElement>(null);
   const comentariosEndRef = useRef<HTMLDivElement>(null);
 
   const copiarCodigo = () => {
@@ -107,6 +118,32 @@ export default function ChamadoDetailPage() {
     }
   };
 
+  useEffect(() => {
+    if (!chamado?.canManage) return;
+    fetch(`/api/ministerios/${chamado.ministerio.id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const todos = [
+          data.lider,
+          data.coLider,
+          ...(data.membros ?? []).map((m: { user: Membro }) => m.user),
+        ].filter(Boolean) as Membro[];
+        const unique = Array.from(new Map(todos.map((m) => [m.id, m])).values());
+        setMembros(unique);
+      });
+  }, [chamado?.canManage, chamado?.ministerio.id]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (membroDropdownRef.current && !membroDropdownRef.current.contains(e.target as Node)) {
+        setShowMembroDropdown(false);
+        setMembroSearch('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleStatusChange = async (status: string) => {
     await fetch(`/api/chamados/${params.id}`, {
       method: 'PATCH',
@@ -121,6 +158,26 @@ export default function ChamadoDetailPage() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prioridade }),
+    });
+    loadChamado();
+  };
+
+  const handleResponsavelChange = async (userId: string | null) => {
+    await fetch(`/api/chamados/${params.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ responsavelId: userId }),
+    });
+    setShowMembroDropdown(false);
+    setMembroSearch('');
+    loadChamado();
+  };
+
+  const handlePrevisaoChange = async (value: string) => {
+    await fetch(`/api/chamados/${params.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ previsaoConclusao: value || null }),
     });
     loadChamado();
   };
@@ -245,6 +302,86 @@ export default function ChamadoDetailPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Responsável */}
+              <div className="relative" ref={membroDropdownRef}>
+                <p className="text-xs text-muted-foreground mb-1">Responsável</p>
+                <button
+                  type="button"
+                  onClick={() => setShowMembroDropdown((v) => !v)}
+                  className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-ring flex items-center justify-between"
+                >
+                  <span className={chamado.responsavel ? '' : 'text-muted-foreground'}>
+                    {chamado.responsavel?.name ?? 'Não designado'}
+                  </span>
+                  <span className="text-muted-foreground text-xs">▾</span>
+                </button>
+                {showMembroDropdown && (
+                  <div className="absolute z-20 top-full left-0 w-full mt-1 bg-white border rounded-md shadow-lg max-h-56 overflow-hidden flex flex-col">
+                    <div className="p-2 border-b">
+                      <input
+                        type="text"
+                        autoFocus
+                        placeholder="Buscar membro..."
+                        value={membroSearch}
+                        onChange={(e) => setMembroSearch(e.target.value)}
+                        className="w-full h-8 px-2 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                      />
+                    </div>
+                    <div className="overflow-y-auto flex-1">
+                      {chamado.responsavel && (
+                        <button
+                          type="button"
+                          onClick={() => handleResponsavelChange(null)}
+                          className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50"
+                        >
+                          Remover responsável
+                        </button>
+                      )}
+                      {membros
+                        .filter((m) => m.name.toLowerCase().includes(membroSearch.toLowerCase()))
+                        .map((m) => (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => handleResponsavelChange(m.id)}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${chamado.responsavel?.id === m.id ? 'font-medium text-onda-darkBlue' : ''}`}
+                          >
+                            {m.name}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Previsão de conclusão */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Previsão de conclusão</p>
+                <input
+                  type="date"
+                  value={chamado.previsaoConclusao ? new Date(chamado.previsaoConclusao).toISOString().split('T')[0] : ''}
+                  onChange={(e) => handlePrevisaoChange(e.target.value)}
+                  className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+            </div>
+          )}
+
+          {!canManage && (chamado.responsavel || chamado.previsaoConclusao) && (
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+              {chamado.responsavel && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Responsável</p>
+                  <p className="text-sm font-medium">{chamado.responsavel.name}</p>
+                </div>
+              )}
+              {chamado.previsaoConclusao && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Previsão de conclusão</p>
+                  <p className="text-sm font-medium">{new Date(chamado.previsaoConclusao).toLocaleDateString('pt-BR')}</p>
+                </div>
+              )}
             </div>
           )}
 
