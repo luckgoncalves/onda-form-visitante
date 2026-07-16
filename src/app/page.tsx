@@ -35,7 +35,8 @@ export default function Home() {
             } else if (user?.role === 'base_pessoal') {
               router.push('/register');
             } else if (user?.role === 'user') {
-              router.push('/grupos');
+              const paginaInicial = user?.ministerioNavConfig?.paginaInicial;
+              router.push(paginaInicial ?? '/empresas');
             }
           }
           return;
