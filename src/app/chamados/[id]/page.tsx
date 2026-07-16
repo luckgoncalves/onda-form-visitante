@@ -6,7 +6,7 @@ import { checkAuth } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Send, Trash2, Copy, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Trash2, Copy, Check, Loader2, Save } from 'lucide-react';
 import { ChamadoStatusBadge, ChamadoPrioridadeBadge, STATUS_CONFIG, PRIORIDADE_CONFIG } from '@/components/chamados/chamado-status-badge';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -45,6 +45,14 @@ interface Chamado {
   }[];
 }
 
+interface FormState {
+  status: string;
+  prioridade: string;
+  responsavelId: string | null;
+  responsavelNome: string | null;
+  previsaoConclusao: string;
+}
+
 function formatValor(valor: string, tipo: string): string {
   if (tipo === 'MULTISELECT') {
     try { return (JSON.parse(valor) as string[]).join(', '); } catch { return valor; }
@@ -76,9 +84,10 @@ export default function ChamadoDetailPage() {
   const params = useParams();
   const { toast } = useToast();
   const [chamado, setChamado] = useState<Chamado | null>(null);
+  const [formState, setFormState] = useState<FormState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState('');
   const [comentario, setComentario] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [copiado, setCopiado] = useState(false);
@@ -95,28 +104,37 @@ export default function ChamadoDetailPage() {
     setTimeout(() => setCopiado(false), 2000);
   };
 
-  useEffect(() => {
-    checkAuth().then(({ user }) => {
-      if (!user) { router.push('/'); return; }
-      setCurrentUserId(user.id);
-      setIsAdmin(user.role === 'admin');
-      loadChamado();
-    });
-  }, [params.id]);
-
   const loadChamado = async () => {
     setIsLoading(true);
     try {
       const res = await fetch(`/api/chamados/${params.id}`);
       if (res.status === 404 || res.status === 403) { router.push('/chamados'); return; }
       if (!res.ok) throw new Error();
-      setChamado(await res.json());
+      const data: Chamado = await res.json();
+      setChamado(data);
+      setFormState({
+        status: data.status,
+        prioridade: data.prioridade,
+        responsavelId: data.responsavel?.id ?? null,
+        responsavelNome: data.responsavel?.name ?? null,
+        previsaoConclusao: data.previsaoConclusao
+          ? new Date(data.previsaoConclusao).toISOString().split('T')[0]
+          : '',
+      });
     } catch {
       toast({ title: 'Erro', description: 'Erro ao carregar chamado', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    checkAuth().then(({ user }) => {
+      if (!user) { router.push('/'); return; }
+      setIsAdmin(user.role === 'admin');
+      loadChamado();
+    });
+  }, [params.id]);
 
   useEffect(() => {
     if (!chamado?.canManage) return;
@@ -144,42 +162,28 @@ export default function ChamadoDetailPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleStatusChange = async (status: string) => {
-    await fetch(`/api/chamados/${params.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    loadChamado();
-  };
-
-  const handlePrioridadeChange = async (prioridade: string) => {
-    await fetch(`/api/chamados/${params.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prioridade }),
-    });
-    loadChamado();
-  };
-
-  const handleResponsavelChange = async (userId: string | null) => {
-    await fetch(`/api/chamados/${params.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ responsavelId: userId }),
-    });
-    setShowMembroDropdown(false);
-    setMembroSearch('');
-    loadChamado();
-  };
-
-  const handlePrevisaoChange = async (value: string) => {
-    await fetch(`/api/chamados/${params.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ previsaoConclusao: value || null }),
-    });
-    loadChamado();
+  const handleSave = async () => {
+    if (!formState) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/chamados/${params.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: formState.status,
+          prioridade: formState.prioridade,
+          responsavelId: formState.responsavelId,
+          previsaoConclusao: formState.previsaoConclusao || null,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      toast({ title: 'Salvo!', description: 'Chamado atualizado com sucesso' });
+      loadChamado();
+    } catch {
+      toast({ title: 'Erro', description: 'Erro ao salvar alterações', variant: 'destructive' });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -218,7 +222,7 @@ export default function ChamadoDetailPage() {
     );
   }
 
-  if (!chamado) return null;
+  if (!chamado || !formState) return null;
 
   const canManage = chamado.canManage;
   const comentarioHabilitado = canManage || (chamado.status !== 'CONCLUIDO' && chamado.status !== 'CANCELADO');
@@ -268,8 +272,8 @@ export default function ChamadoDetailPage() {
                 : <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
               }
             </button>
-            <ChamadoStatusBadge status={chamado.status} />
-            <ChamadoPrioridadeBadge prioridade={chamado.prioridade} />
+            <ChamadoStatusBadge status={formState.status} />
+            <ChamadoPrioridadeBadge prioridade={formState.prioridade} />
           </div>
           <h1 className="text-xl font-bold">{chamado.titulo}</h1>
           {chamado.descricao && (
@@ -277,95 +281,115 @@ export default function ChamadoDetailPage() {
           )}
 
           {canManage && (
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Status</p>
-                <select
-                  value={chamado.status}
-                  onChange={(e) => handleStatusChange(e.target.value)}
-                  className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  {Object.entries(STATUS_CONFIG).map(([k, { label }]) => (
-                    <option key={k} value={k}>{label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Prioridade</p>
-                <select
-                  value={chamado.prioridade}
-                  onChange={(e) => handlePrioridadeChange(e.target.value)}
-                  className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  {Object.entries(PRIORIDADE_CONFIG).map(([k, { label }]) => (
-                    <option key={k} value={k}>{label}</option>
-                  ))}
-                </select>
-              </div>
+            <>
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                {/* Status */}
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  <select
+                    value={formState.status}
+                    onChange={(e) => setFormState((s) => s && { ...s, status: e.target.value })}
+                    className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {Object.entries(STATUS_CONFIG).map(([k, { label }]) => (
+                      <option key={k} value={k}>{label}</option>
+                    ))}
+                  </select>
+                </div>
 
-              {/* Responsável */}
-              <div className="relative" ref={membroDropdownRef}>
-                <p className="text-xs text-muted-foreground mb-1">Responsável</p>
-                <button
-                  type="button"
-                  onClick={() => setShowMembroDropdown((v) => !v)}
-                  className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-ring flex items-center justify-between"
-                >
-                  <span className={chamado.responsavel ? '' : 'text-muted-foreground'}>
-                    {chamado.responsavel?.name ?? 'Não designado'}
-                  </span>
-                  <span className="text-muted-foreground text-xs">▾</span>
-                </button>
-                {showMembroDropdown && (
-                  <div className="absolute z-20 top-full left-0 w-full mt-1 bg-white border rounded-md shadow-lg max-h-56 overflow-hidden flex flex-col">
-                    <div className="p-2 border-b">
-                      <input
-                        type="text"
-                        autoFocus
-                        placeholder="Buscar membro..."
-                        value={membroSearch}
-                        onChange={(e) => setMembroSearch(e.target.value)}
-                        className="w-full h-8 px-2 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                      />
-                    </div>
-                    <div className="overflow-y-auto flex-1">
-                      {chamado.responsavel && (
-                        <button
-                          type="button"
-                          onClick={() => handleResponsavelChange(null)}
-                          className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50"
-                        >
-                          Remover responsável
-                        </button>
-                      )}
-                      {membros
-                        .filter((m) => m.name.toLowerCase().includes(membroSearch.toLowerCase()))
-                        .map((m) => (
+                {/* Prioridade */}
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Prioridade</p>
+                  <select
+                    value={formState.prioridade}
+                    onChange={(e) => setFormState((s) => s && { ...s, prioridade: e.target.value })}
+                    className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {Object.entries(PRIORIDADE_CONFIG).map(([k, { label }]) => (
+                      <option key={k} value={k}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Responsável */}
+                <div className="relative" ref={membroDropdownRef}>
+                  <p className="text-xs text-muted-foreground mb-1">Responsável</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowMembroDropdown((v) => !v)}
+                    className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-ring flex items-center justify-between"
+                  >
+                    <span className={formState.responsavelNome ? '' : 'text-muted-foreground'}>
+                      {formState.responsavelNome ?? 'Não designado'}
+                    </span>
+                    <span className="text-muted-foreground text-xs">▾</span>
+                  </button>
+                  {showMembroDropdown && (
+                    <div className="absolute z-20 top-full left-0 w-full mt-1 bg-white border rounded-md shadow-lg max-h-56 overflow-hidden flex flex-col">
+                      <div className="p-2 border-b">
+                        <input
+                          type="text"
+                          autoFocus
+                          placeholder="Buscar membro..."
+                          value={membroSearch}
+                          onChange={(e) => setMembroSearch(e.target.value)}
+                          className="w-full h-8 px-2 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                        />
+                      </div>
+                      <div className="overflow-y-auto flex-1">
+                        {formState.responsavelId && (
                           <button
-                            key={m.id}
                             type="button"
-                            onClick={() => handleResponsavelChange(m.id)}
-                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${chamado.responsavel?.id === m.id ? 'font-medium text-onda-darkBlue' : ''}`}
+                            onClick={() => {
+                              setFormState((s) => s && { ...s, responsavelId: null, responsavelNome: null });
+                              setShowMembroDropdown(false);
+                              setMembroSearch('');
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50"
                           >
-                            {m.name}
+                            Remover responsável
                           </button>
-                        ))}
+                        )}
+                        {membros
+                          .filter((m) => m.name.toLowerCase().includes(membroSearch.toLowerCase()))
+                          .map((m) => (
+                            <button
+                              key={m.id}
+                              type="button"
+                              onClick={() => {
+                                setFormState((s) => s && { ...s, responsavelId: m.id, responsavelNome: m.name });
+                                setShowMembroDropdown(false);
+                                setMembroSearch('');
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${formState.responsavelId === m.id ? 'font-medium text-onda-darkBlue' : ''}`}
+                            >
+                              {m.name}
+                            </button>
+                          ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+
+                {/* Previsão de conclusão */}
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Previsão de conclusão</p>
+                  <input
+                    type="date"
+                    value={formState.previsaoConclusao}
+                    onChange={(e) => setFormState((s) => s && { ...s, previsaoConclusao: e.target.value })}
+                    className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
               </div>
 
-              {/* Previsão de conclusão */}
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Previsão de conclusão</p>
-                <input
-                  type="date"
-                  value={chamado.previsaoConclusao ? new Date(chamado.previsaoConclusao).toISOString().split('T')[0] : ''}
-                  onChange={(e) => handlePrevisaoChange(e.target.value)}
-                  className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
-            </div>
+              <Button onClick={handleSave} disabled={isSaving} className="w-full mt-1">
+                {isSaving
+                  ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</>
+                  : <><Save className="h-4 w-4 mr-2" /> Salvar alterações</>
+                }
+              </Button>
+            </>
           )}
 
           {!canManage && (chamado.responsavel || chamado.previsaoConclusao) && (
