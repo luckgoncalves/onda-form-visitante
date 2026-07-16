@@ -91,8 +91,7 @@ export default function ChamadosPage() {
   const load = useCallback(async (status: string, page: number, admin: boolean, q = '') => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ limit: admin ? '20' : '50', page: String(page) });
-      if (!admin) params.set('meus', 'true');
+      const params = new URLSearchParams({ limit: '50', page: String(page) });
       if (status) params.set('status', status);
       if (q) params.set('search', q);
       const res = await fetch(`/api/chamados?${params}`);
