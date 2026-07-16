@@ -22,6 +22,7 @@ interface Chamado {
   status: string;
   prioridade: string;
   createdAt: string;
+  canManage: boolean;
   ministerio: { nome: string };
   abertoPor: { name: string; email: string };
   respostas: {
@@ -162,7 +163,8 @@ export default function ChamadoDetailPage() {
 
   if (!chamado) return null;
 
-  const comentarioHabilitado = isAdmin || (chamado.status !== 'CONCLUIDO' && chamado.status !== 'CANCELADO');
+  const canManage = chamado.canManage;
+  const comentarioHabilitado = canManage || (chamado.status !== 'CONCLUIDO' && chamado.status !== 'CANCELADO');
 
   return (
     <div className="p-2 sm:p-6 mt-[72px] max-w-2xl mx-auto space-y-4">
@@ -217,7 +219,7 @@ export default function ChamadoDetailPage() {
             <p className="text-sm text-muted-foreground whitespace-pre-line">{chamado.descricao}</p>
           )}
 
-          {isAdmin ? (
+          {canManage && (
             <div className="grid grid-cols-2 gap-3 pt-2">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Status</p>
@@ -244,7 +246,7 @@ export default function ChamadoDetailPage() {
                 </select>
               </div>
             </div>
-          ) : null}
+          )}
 
           <div className="text-xs text-muted-foreground space-y-0.5 border-t pt-3">
             <p>Ministério: <span className="font-medium text-foreground">{chamado.ministerio.nome}</span></p>

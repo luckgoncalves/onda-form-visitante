@@ -8,6 +8,23 @@ const updateSchema = z.object({
   prioridade: z.enum(['BAIXA', 'MEDIA', 'ALTA', 'URGENTE']).optional(),
 });
 
+async function getMinisterioMembership(ministerioId: string, userId: string) {
+  const ministerio = await prisma.ministerio.findUnique({
+    where: { id: ministerioId },
+    select: {
+      liderId: true,
+      coLiderId: true,
+      membros: { select: { userId: true } },
+    },
+  });
+  return (
+    ministerio?.liderId === userId ||
+    ministerio?.coLiderId === userId ||
+    ministerio?.membros.some((m) => m.userId === userId) ||
+    false
+  );
+}
+
 // GET /api/chamados/[id]
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -32,27 +49,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     if (!chamado) return NextResponse.json({ error: 'Chamado não encontrado' }, { status: 404 });
 
-    // Verifica acesso: admin, quem abriu, ou membro/líder/co-líder do ministério
-    if (user.role !== 'admin') {
-      const ministerio = await prisma.ministerio.findUnique({
-        where: { id: chamado.ministerioId },
-        select: {
-          liderId: true,
-          coLiderId: true,
-          membros: { select: { userId: true } },
-        },
-      });
-      const pertenceAoMinisterio =
-        ministerio?.liderId === user.id ||
-        ministerio?.coLiderId === user.id ||
-        ministerio?.membros.some((m) => m.userId === user.id);
+    const isAdmin = user.role === 'admin';
+    const pertenceAoMinisterio = isAdmin
+      ? false
+      : await getMinisterioMembership(chamado.ministerioId, user.id);
 
-      if (chamado.abertoPorId !== user.id && !pertenceAoMinisterio) {
-        return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
-      }
+    if (!isAdmin && chamado.abertoPorId !== user.id && !pertenceAoMinisterio) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
     }
 
-    return NextResponse.json(chamado);
+    return NextResponse.json({
+      ...chamado,
+      canManage: isAdmin || pertenceAoMinisterio,
+    });
   } catch (error) {
     console.error('Erro ao buscar chamado:', error);
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
@@ -63,14 +72,24 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { user } = await checkAuth();
-    if (!user || user.role !== 'admin') {
+    if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+
+    const chamado = await prisma.chamado.findUnique({ where: { id: params.id }, select: { ministerioId: true } });
+    if (!chamado) return NextResponse.json({ error: 'Chamado não encontrado' }, { status: 404 });
+
+    const isAdmin = user.role === 'admin';
+    const pertenceAoMinisterio = isAdmin
+      ? false
+      : await getMinisterioMembership(chamado.ministerioId, user.id);
+
+    if (!isAdmin && !pertenceAoMinisterio) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
     }
 
     const body = await request.json();
     const validated = updateSchema.parse(body);
 
-    const chamado = await prisma.chamado.update({
+    const updated = await prisma.chamado.update({
       where: { id: params.id },
       data: validated,
       include: {
@@ -79,7 +98,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       },
     });
 
-    return NextResponse.json(chamado);
+    return NextResponse.json(updated);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Dados inválidos', details: error.errors }, { status: 400 });
