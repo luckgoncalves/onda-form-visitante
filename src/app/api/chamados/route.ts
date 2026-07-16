@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { checkAuth } from '@/app/actions';
 import { z } from 'zod';
 
@@ -78,7 +79,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const where = andConditions.length === 1 ? andConditions[0] : { AND: andConditions };
+    const where: Prisma.ChamadoWhereInput = andConditions.length === 1
+      ? andConditions[0] as Prisma.ChamadoWhereInput
+      : { AND: andConditions as Prisma.ChamadoWhereInput[] };
 
     const [chamados, total] = await Promise.all([
       prisma.chamado.findMany({
