@@ -42,37 +42,43 @@ export async function GET(request: NextRequest) {
 
     const isAdmin = user.role === 'admin';
 
-    // Filtro de visibilidade:
-    // - Admin: todos (filtrado por campus se tiver)
-    // - Outros: chamados que abriu OU ministérios que pertence (membro, líder, co-líder)
-    const visibilityWhere = isAdmin
-      ? user.campusId ? { campusId: user.campusId } : {}
-      : {
-          OR: [
-            { abertoPorId: user.id },
-            {
-              ministerio: {
-                OR: [
-                  { liderId: user.id },
-                  { coLiderId: user.id },
-                  { membros: { some: { userId: user.id } } },
-                ],
-              },
-            },
-          ],
-        };
+    // Compõe filtros com AND para não sobrescrever condições de visibilidade
+    const andConditions: unknown[] = [];
 
-    const where: Record<string, unknown> = { ...visibilityWhere };
-    if (meus) { (where as Record<string, unknown>).abertoPorId = user.id; delete (where as Record<string, unknown>).OR; }
-    if (status) where.status = status;
-    if (ministerioId) where.ministerioId = ministerioId;
-    if (search) {
-      where.OR = [
-        { titulo: { contains: search, mode: 'insensitive' } },
-        { codigo: { contains: search, mode: 'insensitive' } },
-        { abertoPor: { name: { contains: search, mode: 'insensitive' } } },
-      ];
+    if (isAdmin) {
+      if (user.campusId) andConditions.push({ campusId: user.campusId });
+    } else if (meus) {
+      andConditions.push({ abertoPorId: user.id });
+    } else {
+      andConditions.push({
+        OR: [
+          { abertoPorId: user.id },
+          {
+            ministerio: {
+              OR: [
+                { liderId: user.id },
+                { coLiderId: user.id },
+                { membros: { some: { userId: user.id } } },
+              ],
+            },
+          },
+        ],
+      });
     }
+
+    if (status) andConditions.push({ status });
+    if (ministerioId) andConditions.push({ ministerioId });
+    if (search) {
+      andConditions.push({
+        OR: [
+          { titulo: { contains: search } },
+          { codigo: { contains: search } },
+          { abertoPor: { name: { contains: search } } },
+        ],
+      });
+    }
+
+    const where = andConditions.length === 1 ? andConditions[0] : { AND: andConditions };
 
     const [chamados, total] = await Promise.all([
       prisma.chamado.findMany({

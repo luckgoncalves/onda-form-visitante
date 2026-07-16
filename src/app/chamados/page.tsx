@@ -83,15 +83,17 @@ export default function ChamadosPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [meusFilter, setMeusFilter] = useState(false);
   const [search, setSearch] = useState('');
   const [total, setTotal] = useState(0);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const load = useCallback(async (status: string, page: number, admin: boolean, q = '') => {
+  const load = useCallback(async (status: string, page: number, admin: boolean, q = '', meus = false) => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({ limit: '50', page: String(page) });
+      if (meus) params.set('meus', 'true');
       if (status) params.set('status', status);
       if (q) params.set('search', q);
       const res = await fetch(`/api/chamados?${params}`);
@@ -118,10 +120,10 @@ export default function ChamadosPage() {
     if (isAdmin === null) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      load(statusFilter, 1, isAdmin, search);
+      load(statusFilter, 1, isAdmin, search, meusFilter);
     }, search ? 400 : 0);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [isAdmin, statusFilter, search, load]);
+  }, [isAdmin, statusFilter, meusFilter, search, load]);
 
   const handleStatusChange = async (chamadoId: string, status: string) => {
     await fetch(`/api/chamados/${chamadoId}`, {
@@ -165,8 +167,19 @@ export default function ChamadosPage() {
         )}
       </div>
 
-      {/* Filtro de status — scroll horizontal */}
+      {/* Filtros — scroll horizontal */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 mb-5 scrollbar-hide">
+        <button
+          onClick={() => setMeusFilter((v) => !v)}
+          className={`shrink-0 text-xs px-3 py-1 rounded-full border transition-colors ${
+            meusFilter
+              ? 'bg-onda-darkBlue text-white border-onda-darkBlue'
+              : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+          }`}
+        >
+          Meus chamados
+        </button>
+        <div className="w-px bg-gray-200 shrink-0 my-0.5" />
         {STATUS_OPTIONS.map((opt) => (
           <button
             key={opt.value}
