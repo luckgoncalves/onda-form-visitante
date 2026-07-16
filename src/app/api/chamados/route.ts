@@ -150,6 +150,10 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      await tx.chamadoHistorico.create({
+        data: { chamadoId: created.id, autorId: user.id, tipo: 'CRIADO' },
+      });
+
       return tx.chamado.findUnique({
         where: { id: created.id },
         include: {

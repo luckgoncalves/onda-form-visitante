@@ -6,7 +6,7 @@ import { checkAuth } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Send, Trash2, Copy, Check, Loader2, Save } from 'lucide-react';
+import { ArrowLeft, Send, Trash2, Copy, Check, Loader2, Save, Clock } from 'lucide-react';
 import { ChamadoStatusBadge, ChamadoPrioridadeBadge, STATUS_CONFIG, PRIORIDADE_CONFIG } from '@/components/chamados/chamado-status-badge';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -43,6 +43,39 @@ interface Chamado {
     createdAt: string;
     autor: { id: string; name: string; profileImageUrl?: string | null };
   }[];
+  historico: HistoricoEntry[];
+}
+
+interface HistoricoEntry {
+  id: string;
+  tipo: string;
+  detalhe: Record<string, string> | null;
+  createdAt: string;
+  autor: { id: string; name: string };
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  PENDENTE: 'Pendente', RECEBIDO: 'Recebido', EM_ANDAMENTO: 'Em andamento',
+  CONCLUIDO: 'Concluído', CANCELADO: 'Cancelado',
+};
+const PRIORIDADE_LABEL: Record<string, string> = {
+  BAIXA: 'Baixa', MEDIA: 'Média', ALTA: 'Alta', URGENTE: 'Urgente',
+};
+
+function formatHistoricoTexto(entry: HistoricoEntry): string {
+  const d = entry.detalhe;
+  switch (entry.tipo) {
+    case 'CRIADO': return 'abriu o chamado';
+    case 'STATUS_ALTERADO':
+      return `alterou o status de "${STATUS_LABEL[d?.de ?? ''] ?? d?.de}" para "${STATUS_LABEL[d?.para ?? ''] ?? d?.para}"`;
+    case 'PRIORIDADE_ALTERADA':
+      return `alterou a prioridade de "${PRIORIDADE_LABEL[d?.de ?? ''] ?? d?.de}" para "${PRIORIDADE_LABEL[d?.para ?? ''] ?? d?.para}"`;
+    case 'RESPONSAVEL_ATRIBUIDO':
+      return `atribuiu o chamado para ${d?.responsavel ?? ''}`;
+    case 'RESPONSAVEL_REMOVIDO':
+      return `removeu o responsável${d?.responsavelAnterior ? ` (${d.responsavelAnterior})` : ''}`;
+    default: return entry.tipo;
+  }
 }
 
 interface FormState {
@@ -418,6 +451,14 @@ export default function ChamadoDetailPage() {
               </span>
             </p>
             <p>Data: {new Date(chamado.createdAt).toLocaleString('pt-BR')}</p>
+            {(() => {
+              const conclusao = [...chamado.historico].reverse().find(
+                (h) => h.tipo === 'STATUS_ALTERADO' && h.detalhe?.para === 'CONCLUIDO'
+              );
+              return conclusao ? (
+                <p>Concluído por: <span className="font-medium text-foreground">{conclusao.autor.name}</span> em {new Date(conclusao.createdAt).toLocaleString('pt-BR')}</p>
+              ) : null;
+            })()}
           </div>
         </CardContent>
       </Card>
@@ -439,6 +480,33 @@ export default function ChamadoDetailPage() {
                   }
                 </div>
               ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {chamado.historico.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Histórico
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <ol className="relative border-l border-gray-200 space-y-4 ml-2">
+              {chamado.historico.map((entry) => (
+                <li key={entry.id} className="ml-4">
+                  <div className="absolute -left-1.5 mt-1 h-3 w-3 rounded-full border border-white bg-gray-300" />
+                  <p className="text-sm">
+                    <span className="font-medium">{entry.autor.name}</span>{' '}
+                    <span className="text-muted-foreground">{formatHistoricoTexto(entry)}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(entry.createdAt).toLocaleString('pt-BR')}
+                  </p>
+                </li>
+              ))}
+            </ol>
           </CardContent>
         </Card>
       )}

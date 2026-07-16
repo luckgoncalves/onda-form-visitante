@@ -27,6 +27,14 @@ enum DiaSemana {
   DOMINGO
 }
 
+enum TipoHistorico {
+  CRIADO
+  STATUS_ALTERADO
+  PRIORIDADE_ALTERADA
+  RESPONSAVEL_ATRIBUIDO
+  RESPONSAVEL_REMOVIDO
+}
+
 // Enums para o model Chamado
 enum ChamadoStatus {
   PENDENTE
@@ -207,9 +215,10 @@ model users {
   formResponses FormResponse[] @relation("FormResponses")
 
   // Relação com chamados
-  chamadosAbertos     Chamado[]          @relation("ChamadosAbertos")
-  chamadosResponsavel Chamado[]          @relation("ChamadosResponsavel")
+  chamadosAbertos     Chamado[]            @relation("ChamadosAbertos")
+  chamadosResponsavel Chamado[]            @relation("ChamadosResponsavel")
   comentariosChamado  ChamadoComentario[]
+  historicoChamados   ChamadoHistorico[]   @relation("HistoricoChamados")
 }
 
 model grupo {
@@ -394,6 +403,19 @@ model Chamado {
   campus      Campus?             @relation(fields: [campusId], references: [id])
   respostas   ChamadoResposta[]
   comentarios ChamadoComentario[]
+  historico   ChamadoHistorico[]
+}
+
+model ChamadoHistorico {
+  id        String        @id @default(cuid())
+  chamadoId String
+  autorId   String
+  tipo      TipoHistorico
+  detalhe   Json?
+  createdAt DateTime      @default(now())
+
+  chamado Chamado @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
+  autor   users   @relation("HistoricoChamados", fields: [autorId], references: [id])
 }
 
 model CampoMinisterio {

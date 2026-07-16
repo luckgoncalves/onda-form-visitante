@@ -47,6 +47,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           include: { autor: { select: { id: true, name: true, profileImageUrl: true } } },
           orderBy: { createdAt: 'asc' },
         },
+        historico: {
+          include: { autor: { select: { id: true, name: true } } },
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
 
@@ -77,13 +81,22 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const { user } = await checkAuth();
     if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
 
-    const chamado = await prisma.chamado.findUnique({ where: { id: params.id }, select: { ministerioId: true } });
-    if (!chamado) return NextResponse.json({ error: 'Chamado não encontrado' }, { status: 404 });
+    const current = await prisma.chamado.findUnique({
+      where: { id: params.id },
+      select: {
+        ministerioId: true,
+        status: true,
+        prioridade: true,
+        responsavelId: true,
+        responsavel: { select: { name: true } },
+      },
+    });
+    if (!current) return NextResponse.json({ error: 'Chamado não encontrado' }, { status: 404 });
 
     const isAdmin = user.role === 'admin';
     const pertenceAoMinisterio = isAdmin
       ? false
-      : await getMinisterioMembership(chamado.ministerioId, user.id);
+      : await getMinisterioMembership(current.ministerioId, user.id);
 
     if (!isAdmin && !pertenceAoMinisterio) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
@@ -92,20 +105,72 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const body = await request.json();
     const validated = updateSchema.parse(body);
 
-    const updated = await prisma.chamado.update({
-      where: { id: params.id },
-      data: {
-        status: validated.status,
-        prioridade: validated.prioridade,
-        responsavelId: validated.responsavelId,
-        previsaoConclusao: validated.previsaoConclusao,
-      },
-      include: {
-        ministerio: { select: { id: true, nome: true } },
-        abertoPor: { select: { id: true, name: true } },
-        responsavel: { select: { id: true, name: true } },
-      },
-    });
+    // Determina entradas de histórico pelas mudanças
+    type HistoricoEntry = {
+      chamadoId: string;
+      autorId: string;
+      tipo: 'STATUS_ALTERADO' | 'PRIORIDADE_ALTERADA' | 'RESPONSAVEL_ATRIBUIDO' | 'RESPONSAVEL_REMOVIDO';
+      detalhe: Record<string, string>;
+    };
+    const historicos: HistoricoEntry[] = [];
+
+    if (validated.status !== undefined && validated.status !== current.status) {
+      historicos.push({
+        chamadoId: params.id,
+        autorId: user.id,
+        tipo: 'STATUS_ALTERADO',
+        detalhe: { de: current.status, para: validated.status },
+      });
+    }
+
+    if (validated.prioridade !== undefined && validated.prioridade !== current.prioridade) {
+      historicos.push({
+        chamadoId: params.id,
+        autorId: user.id,
+        tipo: 'PRIORIDADE_ALTERADA',
+        detalhe: { de: current.prioridade, para: validated.prioridade },
+      });
+    }
+
+    if (validated.responsavelId !== undefined && validated.responsavelId !== current.responsavelId) {
+      if (validated.responsavelId === null) {
+        historicos.push({
+          chamadoId: params.id,
+          autorId: user.id,
+          tipo: 'RESPONSAVEL_REMOVIDO',
+          detalhe: { responsavelAnterior: current.responsavel?.name ?? '' },
+        });
+      } else {
+        const novoResp = await prisma.users.findUnique({
+          where: { id: validated.responsavelId },
+          select: { name: true },
+        });
+        historicos.push({
+          chamadoId: params.id,
+          autorId: user.id,
+          tipo: 'RESPONSAVEL_ATRIBUIDO',
+          detalhe: { responsavel: novoResp?.name ?? '' },
+        });
+      }
+    }
+
+    const [updated] = await prisma.$transaction([
+      prisma.chamado.update({
+        where: { id: params.id },
+        data: {
+          status: validated.status,
+          prioridade: validated.prioridade,
+          responsavelId: validated.responsavelId,
+          previsaoConclusao: validated.previsaoConclusao,
+        },
+        include: {
+          ministerio: { select: { id: true, nome: true } },
+          abertoPor: { select: { id: true, name: true } },
+          responsavel: { select: { id: true, name: true } },
+        },
+      }),
+      ...historicos.map((h) => prisma.chamadoHistorico.create({ data: h })),
+    ]);
 
     return NextResponse.json(updated);
   } catch (error) {
