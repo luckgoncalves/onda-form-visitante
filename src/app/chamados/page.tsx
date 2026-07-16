@@ -82,7 +82,7 @@ export default function ChamadosPage() {
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('PENDENTE');
   const [meusFilter, setMeusFilter] = useState(false);
   const [search, setSearch] = useState('');
   const [total, setTotal] = useState(0);
