@@ -156,7 +156,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="theme-color" content="#11187e" />
+        <meta name="theme-color" content="#2027a7" />
       </head>
       <body className={`${spaceGrotesk.variable} ${gothamBold.variable} ${rightGrotesk.variable} ${sfProDisplay.variable} font-sans h-[100%] min-h-screen bg-white`}>
         <PWARegister />
