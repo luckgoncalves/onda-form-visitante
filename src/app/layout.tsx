@@ -5,6 +5,7 @@ import type { Viewport } from 'next'
 import { PWARegister } from "@/components/pwa-register";
 import { PersistentHeader } from "@/components/persistent-header";
 import { Toaster } from "@/components/ui/toaster";
+import { SplashScreen } from "@/components/splash-screen";
 
 const gothamBold = localFont({
   src: [
@@ -190,6 +191,7 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/splash-2048x2732.png" />
       </head>
       <body className={`${spaceGrotesk.variable} ${gothamBold.variable} ${rightGrotesk.variable} ${sfProDisplay.variable} font-sans h-[100%] min-h-screen bg-white`}>
+        <SplashScreen />
         <PWARegister />
         <PersistentHeader />
         {children}
