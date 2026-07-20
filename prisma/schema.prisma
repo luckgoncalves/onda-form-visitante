@@ -143,6 +143,7 @@ model visitantes {
   observacao            String?
   qual_igreja           String?
   telefone              String
+  email                 String?
   responsavel_nome      String?
   responsavel_telefone  String?
   mensagem_enviada      Boolean  @default(false)

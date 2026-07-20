@@ -50,6 +50,7 @@ export default function Home() {
       bairro: '',
       estado_civil: '',
       telefone: '',
+      email: '',
       responsavel_nome: '',
       responsavel_telefone: '',
       como_nos_conheceu: '',

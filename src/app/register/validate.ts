@@ -14,6 +14,7 @@ export const step2Schema = z.object({
     bairro: z.string().optional(),
     estado_civil: z.string({required_error: 'Selecione um estado civil'}).min(1, { message: 'Selecione um estado civil' }),
     telefone: z.string({required_error: 'O telefone é obrigatório'}).refine(value => /^\(\d{2}\) \d{4,5}-\d{4}$/.test(value), { message: 'O telefone deve estar no formato (99) 99999-9999 ou (99) 9999-9999' }),
+    email: z.string().optional().refine(value => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), { message: 'Informe um e-mail válido' }),
     responsavel_nome: z.string().optional().nullable(),
     responsavel_telefone: z.string().optional().nullable(),
     culto: z.string().optional(),

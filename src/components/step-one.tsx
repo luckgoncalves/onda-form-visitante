@@ -161,6 +161,22 @@ export default function StepOne({ form }: any) {
         )}
       />
 
+      <FormField
+        control={form.control}
+        name="email"
+        render={({ field, fieldState }) => (
+          <FormItem>
+            <Label htmlFor="email">E-mail <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+            <FormControl>
+              <Input id="email" type="email" inputMode="email" {...field} />
+            </FormControl>
+            {fieldState.error && (
+              <p className="text-red-500 text-base mt-1">{fieldState.error.message}</p>
+            )}
+          </FormItem>
+        )}
+      />
+
       {isCultoNew && (
         <>
           <FormField
