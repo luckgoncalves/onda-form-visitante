@@ -36,6 +36,7 @@ interface VisitorDetails {
   registeredBy?: { // Optional user relation
     name: string;
   } | null;
+  email?: string | null;
   responsavel_nome?: string | null;
   responsavel_telefone?: string | null;
   etiquetas?: Etiqueta[];
@@ -295,6 +296,12 @@ function DetailView({ item, onBack, onDelete, onEtiquetasChange }: {
             <h4 className="text-base font-semibold">Telefone</h4>
             <p className="text-gray-600 mb-3"> {item?.telefone || '-'}</p>
           </div>
+          {item.email && (
+            <div>
+              <h4 className="text-base font-semibold">E-mail</h4>
+              <p className="text-gray-600 mb-3">{item.email}</p>
+            </div>
+          )}
           {item.culto === 'new' && (item.responsavel_nome || item.responsavel_telefone) && (
             <div className="grid gap-3 sm:grid-cols-2">
               <div>

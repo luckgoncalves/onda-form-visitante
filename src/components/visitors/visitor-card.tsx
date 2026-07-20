@@ -6,7 +6,7 @@ import { updateMensagemEnviada } from '@/app/actions';
 import { formatDate } from "@/lib/utils";
 import { useMotionValue, useTransform } from 'framer-motion';
 import React from 'react';
-import { CheckCircle2, GripVertical, MapPin, MessageCircleMore } from "lucide-react";
+import { CheckCircle2, GripVertical, Mail, MapPin, MessageCircleMore } from "lucide-react";
 import { formatCulto } from "@/lib/utils";
 import { AlertDialog, AlertDialogCancel, AlertDialogDescription, AlertDialogTitle, AlertDialogHeader, AlertDialogContent, AlertDialogTrigger, AlertDialogFooter, AlertDialogAction } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
@@ -28,6 +28,7 @@ interface Visitor {
   genero: string;
   estado_civil: string;
   interesse_em_conhecer: string[];
+  email?: string | null;
   responsavel_nome?: string | null;
   responsavel_telefone?: string | null;
   etiquetas?: {
@@ -125,6 +126,12 @@ function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusC
                   </div>
                 )}
               </div>
+              {visitante.email && (
+                <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+                  <Mail className="w-3 h-3 shrink-0" />
+                  <span>{visitante.email}</span>
+                </div>
+              )}
               <div className="my-[10px] flex gap-2 items-center text-sm text-gray-600 flex-wrap">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
