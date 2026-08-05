@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { PWAInstallButton } from "@/components/pwa-install-button";
+import { PushNotificationButton } from "@/components/push-notification-button";
 import { getDesktopPrimaryItems, getNavItemsForMinisterio, NavigationItem } from "@/config/navigation";
 import { MoreMenuSheet } from "@/components/navigation/more-menu-sheet";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
@@ -107,6 +108,7 @@ export function Header({ userName, userId, isAdmin, campusNome, navConfig, onLog
 
           <div className="flex items-center gap-2">
             <PWAInstallButton />
+            <PushNotificationButton />
             <MoreMenuSheet
               isAdmin={isAdmin}
               userName={userName}

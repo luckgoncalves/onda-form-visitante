@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import { checkAuth } from '@/app/actions';
 import { z } from 'zod';
+import { sendPushToUsers } from '@/lib/push';
 
 const CODIGO_CHARS = 'ABCDEFGHJKLMNPQRTUVWXY0123456789';
 
@@ -163,6 +164,25 @@ export async function POST(request: NextRequest) {
         },
       });
     });
+
+    // Notificar líderes e co-líderes do ministério
+    if (chamado?.ministerio) {
+      const ministerio = await prisma.ministerio.findUnique({
+        where: { id: validated.ministerioId },
+        select: { liderId: true, coLiderId: true, nome: true },
+      });
+      if (ministerio) {
+        const recipientIds = [ministerio.liderId, ministerio.coLiderId]
+          .filter((id): id is string => !!id && id !== user.id);
+        if (recipientIds.length > 0) {
+          sendPushToUsers(recipientIds, {
+            title: `Novo chamado — ${ministerio.nome}`,
+            body: validated.titulo,
+            url: '/chamados',
+          }).catch(() => {}); // fire-and-forget
+        }
+      }
+    }
 
     return NextResponse.json(chamado, { status: 201 });
   } catch (error) {
