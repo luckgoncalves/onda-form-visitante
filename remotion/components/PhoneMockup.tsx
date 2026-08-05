@@ -16,10 +16,15 @@ interface PhoneMockupProps {
    * which matches the iPhone 14 webview captures used in this project.
    */
   imgAspectRatio?: number;
+  /**
+   * Scale of the image relative to the phone interior width.
+   * Default 1.05 slightly overflows to hide edge gaps in webview captures.
+   * Use values < 1.0 (e.g. 0.97) to add breathing room and avoid clipping.
+   */
+  imgScale?: number;
 }
 
 const PHONE_INTERIOR_WIDTH = 504;
-const IMG_OVERFLOW_SCALE = 1.05;
 
 export const PhoneMockup: React.FC<PhoneMockupProps> = ({
   children,
@@ -28,6 +33,7 @@ export const PhoneMockup: React.FC<PhoneMockupProps> = ({
   scrollY = 0,
   trimAfterFirst = 0,
   imgAspectRatio = 589 / 1280,
+  imgScale = 1.05,
 }) => {
   const imageList =
     screenshots && screenshots.length > 0
@@ -36,7 +42,7 @@ export const PhoneMockup: React.FC<PhoneMockupProps> = ({
         ? [screenshot]
         : [];
 
-  const renderedImgWidth = PHONE_INTERIOR_WIDTH * IMG_OVERFLOW_SCALE;
+  const renderedImgWidth = PHONE_INTERIOR_WIDTH * imgScale;
   const renderedImgHeight = renderedImgWidth / imgAspectRatio;
 
   return (
@@ -99,8 +105,8 @@ export const PhoneMockup: React.FC<PhoneMockupProps> = ({
                   <div
                     key={`${src}-${i}`}
                     style={{
-                      width: "105%",
-                      marginLeft: "-2.5%",
+                      width: `${imgScale * 100}%`,
+                      marginLeft: `${-(imgScale - 1) / 2 * 100}%`,
                       height: wrapperHeight,
                       overflow: "hidden",
                       position: "relative",

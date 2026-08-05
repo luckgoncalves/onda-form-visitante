@@ -69,7 +69,8 @@
     "studio": "remotion studio remotion/index.ts",
     "render": "remotion render remotion/index.ts OndaOnboarding out/onda-onboarding.mp4",
     "render:square": "remotion render remotion/index.ts OndaOnboardingSquare out/onda-onboarding-square.mp4",
-    "render:gif": "remotion render remotion/index.ts OndaOnboarding out/onda-onboarding.gif"
+    "render:gif": "remotion render remotion/index.ts OndaOnboarding out/onda-onboarding.gif",
+    "render:chamados": "remotion render remotion/index.ts ChamadosFeature out/chamados-feature.mp4"
   },
   "version": "0.1.0"
 }
