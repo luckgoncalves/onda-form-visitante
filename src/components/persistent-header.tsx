@@ -8,6 +8,7 @@ import { Header } from '@/components/header';
 type AuthUser = {
   id: string;
   name: string;
+  isAdmin: boolean;
   campusNome?: string | null;
   ministerioNavConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
 };
@@ -48,6 +49,7 @@ export function PersistentHeader() {
         setUser({
           id: authResult.user.id,
           name: authResult.user.name,
+          isAdmin: authResult.user.role === 'admin',
           campusNome: authResult.user.campusNome || null,
           ministerioNavConfig: authResult.user.ministerioNavConfig || null,
         });
@@ -79,6 +81,7 @@ export function PersistentHeader() {
     <Header
       userId={user.id}
       userName={user.name}
+      isAdmin={user.isAdmin}
       campusNome={user.campusNome}
       navConfig={user.ministerioNavConfig}
       onLogout={handleLogout}

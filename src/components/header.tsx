@@ -1,9 +1,8 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
-import { checkIsAdmin } from "@/app/actions";
 import { PWAInstallButton } from "@/components/pwa-install-button";
 import { getDesktopPrimaryItems, getNavItemsForMinisterio, NavigationItem } from "@/config/navigation";
 import { MoreMenuSheet } from "@/components/navigation/more-menu-sheet";
@@ -14,23 +13,15 @@ import Image from "next/image";
 type HeaderProps = {
   userName: string;
   userId: string;
+  isAdmin: boolean;
   campusNome?: string | null;
   navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   onLogout: () => void;
 };
 
-export function Header({ userName, userId, campusNome, navConfig, onLogout }: HeaderProps) {
+export function Header({ userName, userId, isAdmin, campusNome, navConfig, onLogout }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    async function checkAdmin() {
-      const { isAdmin } = await checkIsAdmin();
-      setIsAdmin(isAdmin);
-    }
-    checkAdmin();
-  }, []);
 
   useEffect(() => {
     document.body.classList.add('has-mobile-bottom-nav');
