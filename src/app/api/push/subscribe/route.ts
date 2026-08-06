@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAuth } from '@/app/actions';
 import prisma from '@/lib/prisma';
+import { sendPushToUser } from '@/lib/push';
 
 // POST /api/push/subscribe — salva ou atualiza a subscription do usuário
 export async function POST(req: NextRequest) {
@@ -35,6 +36,13 @@ export async function POST(req: NextRequest) {
       auth: keys.auth,
     },
   });
+
+  // Envia notificação de boas-vindas para confirmar que o pipeline funciona
+  sendPushToUser(user.id, {
+    title: 'Notificações ativadas ✓',
+    body: 'Você receberá alertas de chamados e atualizações.',
+    url: '/',
+  }).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }

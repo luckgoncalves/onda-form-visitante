@@ -39,15 +39,15 @@ export function usePushNotifications() {
     });
   }, [isSupported]);
 
-  const subscribe = useCallback(async () => {
-    if (!isSupported) return;
+  const subscribe = useCallback(async (): Promise<PushStatus> => {
+    if (!isSupported) return 'unsupported';
     setStatus('loading');
 
     try {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
         setStatus('denied');
-        return;
+        return 'denied';
       }
 
       const registration = await navigator.serviceWorker.ready;
@@ -67,13 +67,15 @@ export function usePushNotifications() {
       });
 
       setStatus('subscribed');
+      return 'subscribed';
     } catch {
       setStatus('idle');
+      return 'idle';
     }
   }, [isSupported]);
 
-  const unsubscribe = useCallback(async () => {
-    if (!isSupported) return;
+  const unsubscribe = useCallback(async (): Promise<PushStatus> => {
+    if (!isSupported) return 'unsupported';
     setStatus('loading');
 
     try {
@@ -88,8 +90,10 @@ export function usePushNotifications() {
         await subscription.unsubscribe();
       }
       setStatus('idle');
+      return 'idle';
     } catch {
       setStatus('subscribed');
+      return 'subscribed';
     }
   }, [isSupported]);
 
