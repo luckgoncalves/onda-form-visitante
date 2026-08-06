@@ -1,13 +1,25 @@
 'use client';
 
+import { useState } from 'react';
 import { Bell, BellOff, BellRing, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useToast } from '@/hooks/use-toast';
 
 export function PushNotificationButton() {
   const { status, subscribe, unsubscribe, isSupported } = usePushNotifications();
   const { toast } = useToast();
+  const [showConfirm, setShowConfirm] = useState(false);
 
   if (!isSupported || status === 'unsupported') return null;
 
@@ -17,10 +29,7 @@ export function PushNotificationButton() {
 
   const handleClick = async () => {
     if (isSubscribed) {
-      const result = await unsubscribe();
-      if (result === 'idle') {
-        toast({ title: 'Notificações desativadas' });
-      }
+      setShowConfirm(true);
       return;
     }
 
@@ -42,6 +51,14 @@ export function PushNotificationButton() {
     }
   };
 
+  const handleConfirmUnsubscribe = async () => {
+    setShowConfirm(false);
+    const result = await unsubscribe();
+    if (result === 'idle') {
+      toast({ title: 'Notificações desativadas' });
+    }
+  };
+
   const label = isDenied
     ? 'Notificações bloqueadas'
     : isSubscribed
@@ -49,22 +66,41 @@ export function PushNotificationButton() {
     : 'Ativar notificações';
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="text-white hover:bg-white/20 hover:text-white"
-      onClick={handleClick}
-      disabled={isLoading || isDenied}
-      aria-label={label}
-      title={label}
-    >
-      {isLoading ? (
-        <Loader2 className="h-5 w-5 animate-spin" />
-      ) : isSubscribed ? (
-        <BellRing className="h-5 w-5" />
-      ) : (
-        <BellOff className="h-5 w-5" />
-      )}
-    </Button>
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="text-white hover:bg-white/20 hover:text-white"
+        onClick={handleClick}
+        disabled={isLoading || isDenied}
+        aria-label={label}
+        title={label}
+      >
+        {isLoading ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : isSubscribed ? (
+          <BellRing className="h-5 w-5" />
+        ) : (
+          <BellOff className="h-5 w-5" />
+        )}
+      </Button>
+
+      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Desativar notificações?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você não receberá mais alertas de chamados e atualizações.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmUnsubscribe}>
+              Desativar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

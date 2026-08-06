@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { checkAuth, logout } from '@/app/actions';
 import { Header } from '@/components/header';
+import { usePushListener } from '@/hooks/usePushListener';
 
 type AuthUser = {
   id: string;
@@ -25,6 +26,7 @@ function shouldHideAuthenticatedHeader(pathname: string) {
 }
 
 export function PersistentHeader() {
+  usePushListener();
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<AuthUser | null>(null);
