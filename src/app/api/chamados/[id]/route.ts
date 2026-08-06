@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { checkAuth } from '@/app/actions';
 import { z } from 'zod';
+import { sendPushToUser } from '@/lib/push';
+
+const STATUS_LABEL: Record<string, string> = {
+  PENDENTE: 'Pendente',
+  RECEBIDO: 'Recebido',
+  EM_ANDAMENTO: 'Em andamento',
+  CONCLUIDO: 'Concluído',
+  CANCELADO: 'Cancelado',
+};
 
 const updateSchema = z.object({
   status: z.enum(['PENDENTE', 'RECEBIDO', 'EM_ANDAMENTO', 'CONCLUIDO', 'CANCELADO']).optional(),
@@ -171,6 +180,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       }),
       ...historicos.map((h) => prisma.chamadoHistorico.create({ data: h })),
     ]);
+
+    // Notifica solicitante se o status mudou e não foi ele quem alterou
+    if (validated.status && validated.status !== current.status && updated.abertoPor.id !== user.id) {
+      sendPushToUser(updated.abertoPor.id, {
+        title: 'Status do seu chamado foi atualizado',
+        body: `${updated.ministerio.nome} → ${STATUS_LABEL[validated.status] ?? validated.status}`,
+        url: `/chamados/${params.id}`,
+      }).catch(() => {});
+    }
 
     return NextResponse.json(updated);
   } catch (error) {

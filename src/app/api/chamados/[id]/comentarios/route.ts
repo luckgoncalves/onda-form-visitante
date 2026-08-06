@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { checkAuth } from '@/app/actions';
 import { z } from 'zod';
+import { sendPushToUser } from '@/lib/push';
 
 const createSchema = z.object({
   texto: z.string().min(1, 'Comentário não pode ser vazio'),
@@ -43,6 +44,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       data: { chamadoId: params.id, autorId: user.id, texto },
       include: { autor: { select: { id: true, name: true, profileImageUrl: true } } },
     });
+
+    // Notifica o solicitante se não foi ele quem comentou
+    if (chamado.abertoPorId !== user.id) {
+      sendPushToUser(chamado.abertoPorId, {
+        title: 'Novo comentário no seu chamado',
+        body: `${comentario.autor.name}: ${texto.slice(0, 100)}`,
+        url: `/chamados/${params.id}`,
+      }).catch(() => {});
+    }
 
     return NextResponse.json(comentario, { status: 201 });
   } catch (error) {
