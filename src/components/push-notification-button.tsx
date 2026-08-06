@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, BellOff, Loader2 } from 'lucide-react';
+import { Bell, BellOff, BellRing, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useToast } from '@/hooks/use-toast';
@@ -17,19 +17,28 @@ export function PushNotificationButton() {
 
   const handleClick = async () => {
     if (isSubscribed) {
-      await unsubscribe();
-      toast({ title: 'Notificações desativadas' });
-    } else {
-      const result = await subscribe();
-      if (result === 'subscribed') {
-        toast({ title: 'Notificações ativadas', description: 'Você receberá uma confirmação em instantes.' });
-      } else if (result === 'denied') {
-        toast({
-          title: 'Permissão negada',
-          description: 'Habilite as notificações nas configurações do navegador.',
-          variant: 'destructive',
-        });
+      const result = await unsubscribe();
+      if (result === 'idle') {
+        toast({ title: 'Notificações desativadas' });
       }
+      return;
+    }
+
+    const result = await subscribe();
+    if (result === 'subscribed') {
+      toast({ title: 'Notificações ativadas', description: 'Você receberá uma confirmação em instantes.' });
+    } else if (result === 'denied') {
+      toast({
+        title: 'Permissão negada',
+        description: 'Habilite as notificações nas configurações do navegador.',
+        variant: 'destructive',
+      });
+    } else if (result === 'error') {
+      toast({
+        title: 'Erro ao ativar notificações',
+        description: 'Tente novamente ou verifique o console para mais detalhes.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -52,7 +61,7 @@ export function PushNotificationButton() {
       {isLoading ? (
         <Loader2 className="h-5 w-5 animate-spin" />
       ) : isSubscribed ? (
-        <Bell className="h-5 w-5 fill-white" />
+        <BellRing className="h-5 w-5" />
       ) : (
         <BellOff className="h-5 w-5" />
       )}

@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
-
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -11,7 +9,7 @@ function urlBase64ToUint8Array(base64String: string) {
   return Uint8Array.from(Array.from(rawData).map((char) => char.charCodeAt(0)));
 }
 
-export type PushStatus = 'idle' | 'loading' | 'subscribed' | 'denied' | 'unsupported';
+export type PushStatus = 'idle' | 'loading' | 'subscribed' | 'denied' | 'unsupported' | 'error';
 
 export function usePushNotifications() {
   const [status, setStatus] = useState<PushStatus>('idle');
@@ -41,6 +39,14 @@ export function usePushNotifications() {
 
   const subscribe = useCallback(async (): Promise<PushStatus> => {
     if (!isSupported) return 'unsupported';
+
+    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!vapidKey) {
+      console.error('[Push] NEXT_PUBLIC_VAPID_PUBLIC_KEY não está definida.');
+      setStatus('error');
+      return 'error';
+    }
+
     setStatus('loading');
 
     try {
@@ -53,11 +59,11 @@ export function usePushNotifications() {
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
       });
 
       const json = subscription.toJSON();
-      await fetch('/api/push/subscribe', {
+      const res = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -66,11 +72,14 @@ export function usePushNotifications() {
         }),
       });
 
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+
       setStatus('subscribed');
       return 'subscribed';
-    } catch {
-      setStatus('idle');
-      return 'idle';
+    } catch (err) {
+      console.error('[Push] Erro ao ativar notificações:', err);
+      setStatus('error');
+      return 'error';
     }
   }, [isSupported]);
 
@@ -91,7 +100,8 @@ export function usePushNotifications() {
       }
       setStatus('idle');
       return 'idle';
-    } catch {
+    } catch (err) {
+      console.error('[Push] Erro ao desativar notificações:', err);
       setStatus('subscribed');
       return 'subscribed';
     }
