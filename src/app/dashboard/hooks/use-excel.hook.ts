@@ -10,9 +10,9 @@ interface DetailedVisit {
   created_at: string | Date;
   nome: string;
   telefone: string;
-  idade: number;
+  idade: number | null;
   genero: string;
-  estado_civil: string;
+  estado_civil: string | null;
   bairro: string | null;
   culto: string;
   responsavel_nome?: string | null;
@@ -110,7 +110,7 @@ export function useExcel() {
             'Telefone Responsável': row.responsavel_telefone || '',
             'Idade': row.idade?.toString() ?? '',
             'Gênero': row.genero,
-            'Estado Civil': row.estado_civil,
+            'Estado Civil': row.estado_civil || '',
             'Bairro': row.bairro || '',
             'Culto': row.culto,
             'Como Conheceu': row.como_nos_conheceu || '',
@@ -201,9 +201,10 @@ export function useExcel() {
           // Initialize age ranges with service-specific counts
           const ageStats: { [key: string]: { sabado: number[], 'domingo-manha': number[], 'domingo-noite': number[], evento: number[], new: number[] } } = {};
 
-          // Process each visit
+          // Process each visit (skip visitors without a registered idade)
           detailedStats.forEach(visit => {
-            const age = Number(visit.idade);
+            if (visit.idade == null) return;
+            const age = visit.idade;
             const rangeStart = Math.floor(age / 5) * 5;
             const rangeKey = `${rangeStart}-${rangeStart + 4}`;
 
@@ -254,8 +255,9 @@ export function useExcel() {
           const totalDomingoNoite = excelData.reduce((acc, curr) => acc + curr['Domingo Noite'], 0);
           const totalEvento = excelData.reduce((acc, curr) => acc + curr['Evento'], 0);
           const totalNew = excelData.reduce((acc, curr) => acc + curr['New'], 0);
-          const mediaGeralIdade = detailedStats.length > 0
-            ? Math.round((detailedStats.reduce((acc, curr) => acc + Number(curr.idade), 0) / detailedStats.length) * 10) / 10
+          const idadesInformadas = detailedStats.filter((visit): visit is typeof visit & { idade: number } => visit.idade != null);
+          const mediaGeralIdade = idadesInformadas.length > 0
+            ? Math.round((idadesInformadas.reduce((acc, curr) => acc + curr.idade, 0) / idadesInformadas.length) * 10) / 10
             : 0;
 
           (excelData as AgeReportRow[]).push({

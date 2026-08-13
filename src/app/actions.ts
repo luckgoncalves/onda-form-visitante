@@ -16,7 +16,9 @@ export const save = async (data: any) => {
     cidade: data.cidade,
     bairro: data.bairro, // Se for Curitiba, será o ID do bairro, caso contrário será o nome digitado
     observacao: data.observacao || '',
-    idade: Number(data.idade),
+    idade: data.idade ? Number(data.idade) : null,
+    estado_civil: data.estado_civil || null,
+    interesse_em_conhecer: data.interesse_em_conhecer && data.interesse_em_conhecer.length > 0 ? data.interesse_em_conhecer : null,
   };
 
   if (createData.culto === 'new') {
@@ -504,6 +506,8 @@ export async function getAgeStats({ startDate, endDate }: { startDate: string; e
     const ageRanges: { [key: string]: { [key: string]: number } } = {};
     
     visits.forEach((visit) => {
+      if (visit.idade == null) return;
+
       // Calculate age range start (round down to nearest 5)
       const rangeStart = Math.floor(visit.idade / 5) * 5;
       const rangeKey = `${rangeStart}-${rangeStart + 4}`;

@@ -8,40 +8,16 @@ export const step1Schema = z.object({
 export const step2Schema = z.object({
     nome: z.string({required_error: 'O nome é obrigatório'}).min(3, { message: 'O nome é muito curto' }),
     genero: z.string({required_error: 'Selecione um genêro'}).min(1, { message: 'Selecione um genêro' }),
-    idade: z.string({required_error: 'O valor informado nao é um número'}).min(1, { message: 'A idade é obrigatório' }),
-    estado: z.string({required_error: 'O estado é obrigatório'}).min(1, { message: 'O estado é obrigatório' }),
-    cidade: z.string({required_error: 'A cidade é obrigatório'}).min(1, { message: 'A cidade é obrigatório' }),
+    idade: z.string().optional(),
+    estado: z.string().optional(),
+    cidade: z.string().optional(),
     bairro: z.string().optional(),
-    estado_civil: z.string({required_error: 'Selecione um estado civil'}).min(1, { message: 'Selecione um estado civil' }),
+    estado_civil: z.string().optional(),
     telefone: z.string({required_error: 'O telefone é obrigatório'}).refine(value => /^\(\d{2}\) \d{4,5}-\d{4}$/.test(value), { message: 'O telefone deve estar no formato (99) 99999-9999 ou (99) 9999-9999' }),
     email: z.string().optional().refine(value => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), { message: 'Informe um e-mail válido' }),
     responsavel_nome: z.string().optional().nullable(),
-    responsavel_telefone: z.string().optional().nullable(),
+    responsavel_telefone: z.string().optional().nullable().refine(value => !value || /^\(\d{2}\) \d{4,5}-\d{4}$/.test(value), { message: 'O telefone deve estar no formato (99) 99999-9999 ou (99) 9999-9999' }),
     culto: z.string().optional(),
-}).superRefine((data, ctx) => {
-    if ((data.culto ?? '') === 'new') {
-        if (!data.responsavel_nome || data.responsavel_nome.trim().length === 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                path: ['responsavel_nome'],
-                message: 'Informe o nome do responsável',
-            });
-        }
-
-        if (!data.responsavel_telefone || data.responsavel_telefone.trim().length === 0) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                path: ['responsavel_telefone'],
-                message: 'Informe o telefone do responsável',
-            });
-        } else if (!/^\(\d{2}\) \d{4,5}-\d{4}$/.test(data.responsavel_telefone)) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                path: ['responsavel_telefone'],
-                message: 'O telefone deve estar no formato (99) 99999-9999 ou (99) 9999-9999',
-            });
-        }
-    }
 });
 
 export const step3Schema = z.object({
@@ -49,7 +25,6 @@ export const step3Schema = z.object({
     como_chegou_ate_nos: z.string().optional().nullable(),
     frequenta_igreja: z.string().optional(),
     qual_igreja: z.string().optional(),
-    interesse_em_conhecer: z.array(z.string({required_error: 'Selecione pelo menos uma opção'}))
-    .min(1, { message: 'Selecione pelo menos uma opção' }),
+    interesse_em_conhecer: z.array(z.string()).optional(),
     observacao: z.string().optional(),
 });

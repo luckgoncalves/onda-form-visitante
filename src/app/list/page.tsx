@@ -20,15 +20,15 @@ interface Visitante {
   estado?: string | null;
   cidade?: string | null;
   bairro?: string | null;
-  idade: number;
+  idade: number | null;
   genero: string;
-  estado_civil: string;
+  estado_civil: string | null;
   culto: string;
   como_nos_conheceu?: string | null;
   como_chegou_ate_nos?: string | null;
   frequenta_igreja?: string | null | undefined;
   qual_igreja?: string | null;
-  interesse_em_conhecer: string[];
+  interesse_em_conhecer: string[] | null;
   observacao?: string | null;
   mensagem_enviada: boolean;
   created_at: string | Date;

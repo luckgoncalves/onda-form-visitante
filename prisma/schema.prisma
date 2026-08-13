@@ -134,11 +134,11 @@ model visitantes {
   como_chegou_ate_nos   String?
   como_nos_conheceu     String?
   culto                 String
-  estado_civil          String
+  estado_civil          String?
   frequenta_igreja      String?
   genero                String
-  idade                 Int
-  interesse_em_conhecer Json
+  idade                 Int?
+  interesse_em_conhecer Json?
   nome                  String
   observacao            String?
   qual_igreja           String?

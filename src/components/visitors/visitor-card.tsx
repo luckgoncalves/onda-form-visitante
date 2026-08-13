@@ -24,10 +24,10 @@ interface Visitor {
     name: string;
   } | null;
   // Add missing properties from Visitante
-  idade: number;
+  idade: number | null;
   genero: string;
-  estado_civil: string;
-  interesse_em_conhecer: string[];
+  estado_civil: string | null;
+  interesse_em_conhecer: string[] | null;
   email?: string | null;
   responsavel_nome?: string | null;
   responsavel_telefone?: string | null;

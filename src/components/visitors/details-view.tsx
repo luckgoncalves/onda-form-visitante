@@ -22,13 +22,13 @@ interface VisitorDetails {
   id: string;
   nome: string;
   telefone: string;
-  estado_civil: string;
+  estado_civil?: string | null;
   bairro?: string | null;
   como_nos_conheceu?: string | null;
   frequenta_igreja?: string | null | undefined;
   genero?: string | null;
   idade?: number | null;
-  interesse_em_conhecer: string[];
+  interesse_em_conhecer?: string[] | null;
   observacao?: string | null;
   qual_igreja?: string | null;
   culto: string;
@@ -260,7 +260,7 @@ function DetailView({ item, onBack, onDelete, onEtiquetasChange }: {
           </div>
           <div>
           <h4 className="text-base font-semibold">Estado cívil</h4>
-          <p className="text-gray-600 mb-3"> {item.estado_civil}</p>
+          <p className="text-gray-600 mb-3"> {item.estado_civil || '-'}</p>
           </div>
           <div>
             <h4 className="text-base font-semibold">Bairro</h4>
@@ -285,7 +285,7 @@ function DetailView({ item, onBack, onDelete, onEtiquetasChange }: {
           <div>
             <h4 className="text-base font-semibold">Interesse em conhecer</h4>
             <p className="text-gray-600 mb-3">
-              {item.interesse_em_conhecer.map((interesse: string) => formatInteresse(interesse)).join(', ')}
+              {(item.interesse_em_conhecer ?? []).map((interesse: string) => formatInteresse(interesse)).join(', ') || '-'}
             </p>
           </div>
           <div>
