@@ -24,6 +24,7 @@ import {
   Send,
   Archive,
   FileText,
+  Loader2,
 } from 'lucide-react';
 
 interface FormCardProps {
@@ -35,6 +36,7 @@ interface FormCardProps {
   onPublish: () => void;
   onClose: () => void;
   onCopyLink: () => void;
+  isDuplicating?: boolean;
 }
 
 export function FormCard({
@@ -46,6 +48,7 @@ export function FormCard({
   onPublish,
   onClose,
   onCopyLink,
+  isDuplicating = false,
 }: FormCardProps) {
   const getStatusBadge = () => {
     switch (form.status) {
@@ -111,8 +114,17 @@ export function FormCard({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreVertical className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              disabled={isDuplicating}
+            >
+              {isDuplicating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <MoreVertical className="h-4 w-4" />
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-white w-48">
@@ -156,9 +168,13 @@ export function FormCard({
               </DropdownMenuItem>
             )}
             
-            <DropdownMenuItem onClick={onDuplicate}>
-              <Copy className="h-4 w-4 mr-2" />
-              Duplicar
+            <DropdownMenuItem onClick={onDuplicate} disabled={isDuplicating}>
+              {isDuplicating ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Copy className="h-4 w-4 mr-2" />
+              )}
+              {isDuplicating ? 'Duplicando...' : 'Duplicar'}
             </DropdownMenuItem>
             
             <DropdownMenuSeparator />

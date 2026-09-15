@@ -41,6 +41,7 @@ export default function FormsListPage() {
   const [statusFilter, setStatusFilter] = useState<FormStatus | 'ALL'>('ALL');
   const [deleteFormId, setDeleteFormId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [duplicatingFormId, setDuplicatingFormId] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkAuthentication() {
@@ -150,24 +151,28 @@ export default function FormsListPage() {
 
   const handleDuplicateForm = async (formId: string) => {
     try {
+      setDuplicatingFormId(formId);
       const response = await fetch(`/api/forms/${formId}/duplicate`, {
         method: 'POST',
       });
 
       if (!response.ok) throw new Error('Erro ao duplicar formulário');
 
+      const duplicatedForm = await response.json();
+
       toast({
         title: 'Sucesso',
         description: 'Formulário duplicado com sucesso',
       });
 
-      fetchForms();
+      router.push(`/dashboard/forms/${duplicatedForm.id}/edit`);
     } catch (error) {
       toast({
         title: 'Erro',
         description: 'Não foi possível duplicar o formulário',
         variant: 'destructive',
       });
+      setDuplicatingFormId(null);
     }
   };
 
@@ -327,6 +332,7 @@ export default function FormsListPage() {
                 onPublish={() => handlePublishForm(form.id)}
                 onClose={() => handleCloseForm(form.id)}
                 onCopyLink={() => handleCopyLink(form)}
+                isDuplicating={duplicatingFormId === form.id}
               />
             ))}
           </div>
