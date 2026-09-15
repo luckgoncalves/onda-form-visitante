@@ -149,11 +149,26 @@ export default function FormsListPage() {
   };
 
   const handleDuplicateForm = async (formId: string) => {
-    // TODO: Implement form duplication
-    toast({
-      title: 'Em breve',
-      description: 'Funcionalidade de duplicar será implementada em breve',
-    });
+    try {
+      const response = await fetch(`/api/forms/${formId}/duplicate`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) throw new Error('Erro ao duplicar formulário');
+
+      toast({
+        title: 'Sucesso',
+        description: 'Formulário duplicado com sucesso',
+      });
+
+      fetchForms();
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível duplicar o formulário',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handlePublishForm = async (formId: string) => {
