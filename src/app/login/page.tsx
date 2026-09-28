@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormField, FormLabel } from "@/components/ui/form";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { login, checkAuth, checkIsAdmin } from "../actions";
+import { login, loginWithInpeace, checkAuth, checkIsAdmin } from "../actions";
 import ButtonForm from "@/components/button-form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [isCheckingAuthentication, setIsCheckingAuthentication] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingInpeace, setIsLoadingInpeace] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -62,6 +63,34 @@ export default function LoginPage() {
     checkAuthentication();
   }, [router]);
 
+  const redirecionarAposLogin = async (loginUser: { role: string; requirePasswordChange: boolean }) => {
+    if (loginUser.requirePasswordChange) {
+      router.push('/change-password');
+      return;
+    }
+
+    const { isAdmin, user } = await Promise.all([
+      checkIsAdmin(),
+      checkAuth(),
+    ]).then(([adminResult, authResult]) => ({
+      isAdmin: adminResult.isAdmin,
+      user: authResult.user,
+    }));
+
+    if (isAdmin) {
+      router.push('/list');
+    } else {
+      const navConfig = user?.ministerioNavConfig;
+      if (navConfig?.paginaInicial) {
+        router.push(navConfig.paginaInicial);
+      } else if (loginUser.role === 'base_pessoal') {
+        router.push('/register');
+      } else {
+        router.push('/empresas');
+      }
+    }
+  };
+
   const submitAction = form.handleSubmit(async (formData) => {
     setIsLoading(true);
     setError(null);
@@ -69,30 +98,7 @@ export default function LoginPage() {
       const result = await login(formData.email, formData.password);
 
       if (result.success) {
-        if (result.user?.requirePasswordChange) {
-          router.push('/change-password');
-        } else {
-          const { isAdmin, user } = await Promise.all([
-            checkIsAdmin(),
-            checkAuth(),
-          ]).then(([adminResult, authResult]) => ({
-            isAdmin: adminResult.isAdmin,
-            user: authResult.user,
-          }));
-
-          if (isAdmin) {
-            router.push('/list');
-          } else {
-            const navConfig = user?.ministerioNavConfig;
-            if (navConfig?.paginaInicial) {
-              router.push(navConfig.paginaInicial);
-            } else if (result.user?.role === 'base_pessoal') {
-              router.push('/register');
-            } else {
-              router.push('/empresas');
-            }
-          }
-        }
+        await redirecionarAposLogin(result.user);
       } else {
         setError(result.message || 'Ocorreu um erro');
       }
@@ -100,6 +106,24 @@ export default function LoginPage() {
       setError('Ocorreu um erro ao fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);
+    }
+  });
+
+  const submitInpeace = form.handleSubmit(async (formData) => {
+    setIsLoadingInpeace(true);
+    setError(null);
+    try {
+      const result = await loginWithInpeace(formData.email, formData.password);
+
+      if (result.success) {
+        await redirecionarAposLogin(result.user);
+      } else {
+        setError(result.message);
+      }
+    } catch (error) {
+      setError('Ocorreu um erro ao entrar com o InPeace. Tente novamente.');
+    } finally {
+      setIsLoadingInpeace(false);
     }
   });
 
@@ -185,8 +209,27 @@ export default function LoginPage() {
                 className="w-full mx-auto" 
                 type="submit" 
                 label={isLoading ? 'Carregando...' : 'Entrar'} 
-                disabled={isLoading} 
+                disabled={isLoading || isLoadingInpeace} 
               />
+
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-gray-200" />
+                ou
+                <span className="h-px flex-1 bg-gray-200" />
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={submitInpeace}
+                disabled={isLoading || isLoadingInpeace}
+              >
+                {isLoadingInpeace ? 'Conectando ao InPeace...' : 'Entrar com InPeace'}
+              </Button>
+              <p className="-mt-2 text-center text-xs text-muted-foreground">
+                Use o e-mail e a senha da sua conta InPeace.
+              </p>
               
               <div className="text-center mt-4">
                 <p className="text-sm text-muted-foreground">

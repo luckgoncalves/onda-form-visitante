@@ -126,7 +126,7 @@ export const save = async (data: any) => {
   });
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
-    return { success: false, message: 'Credenciais inválidas' };
+    return { success: false as const, message: 'Credenciais inválidas' };
   }
 
   // Verificar se o usuário está aprovado
@@ -138,14 +138,30 @@ export const save = async (data: any) => {
   const isApproved = userApproved === undefined || userApproved === null || userApproved === 1 || userApproved === true;
   
   if (!isApproved) {
-    return { success: false, message: 'Sua conta ainda não foi aprovada por um administrador. Aguarde a aprovação.' };
+    return { success: false as const, message: 'Sua conta ainda não foi aprovada por um administrador. Aguarde a aprovação.' };
   }
 
+  return iniciarSessao(user);
+}
+
+type UsuarioSessao = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  campusId: string | null;
+  requirePasswordChange: boolean;
+  roleRelation: { name: string } | null;
+  campus: { nome: string } | null;
+};
+
+// Cria o cookie de sessão. Em logins pelo InPeace a troca de senha local não é exigida.
+function iniciarSessao(user: UsuarioSessao, provider?: 'inpeace') {
   // Usar o nome da role da relação, ou fallback para o campo legado
   const roleName = user.roleRelation?.name || user.role;
 
   const token = sign(
-    { userId: user.id, email: user.email, role: roleName, campusId: user.campusId },
+    { userId: user.id, email: user.email, role: roleName, campusId: user.campusId, ...(provider && { provider }) },
     process.env.JWT_SECRET!,
     { expiresIn: '1d' }
   );
@@ -158,18 +174,72 @@ export const save = async (data: any) => {
     path: '/',
   });
 
-  return { 
-    success: true, 
-    user: { 
-      id: user.id, 
-      name: user.name, 
-      email: user.email, 
+  return {
+    success: true as const,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
       role: roleName,
       campusId: user.campusId,
       campusNome: user.campus?.nome,
-      requirePasswordChange: user.requirePasswordChange 
-    } 
+      requirePasswordChange: provider === 'inpeace' ? false : user.requirePasswordChange,
+    },
   };
+}
+
+const INPEACE_LOGIN_URL =
+  process.env.INPEACE_LOGIN_URL || 'https://admin.inpeaceapp.com/api/v1/security/login_check';
+
+// Login com e-mail e senha do InPeace: valida as credenciais no InPeace (sem armazená-las)
+// e entra na conta do app que tem o mesmo e-mail.
+export async function loginWithInpeace(email: string, password: string) {
+  const emailNormalizado = email?.trim().toLowerCase();
+  if (!emailNormalizado || !password) {
+    return { success: false as const, message: 'Informe o e-mail e a senha do InPeace' };
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(INPEACE_LOGIN_URL, {
+      method: 'POST',
+      headers: { accept: 'application/json', 'content-type': 'application/json' },
+      body: JSON.stringify({ username: emailNormalizado, password }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (error) {
+    console.error('Erro ao conectar ao InPeace:', error);
+    return { success: false as const, message: 'Não foi possível conectar ao InPeace. Tente novamente.' };
+  }
+
+  if (res.status === 401) {
+    return { success: false as const, message: 'E-mail ou senha do InPeace inválidos' };
+  }
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.token) {
+    console.error('Resposta inesperada do InPeace:', res.status);
+    return { success: false as const, message: 'Não foi possível entrar com o InPeace. Tente novamente.' };
+  }
+
+  const user = await prismaClient.users.findUnique({
+    where: { email: emailNormalizado },
+    include: { roleRelation: true, campus: true },
+  });
+
+  if (!user) {
+    return {
+      success: false as const,
+      message: 'Login do InPeace válido, mas não existe conta no app com este e-mail. Crie sua conta ou fale com um administrador.',
+    };
+  }
+
+  if (!user.approved) {
+    return { success: false as const, message: 'Sua conta ainda não foi aprovada por um administrador. Aguarde a aprovação.' };
+  }
+
+  return iniciarSessao(user, 'inpeace');
 }
 
 export async function checkAuth() {
@@ -180,7 +250,7 @@ export async function checkAuth() {
   }
 
   try {
-    const decoded = verify(authToken, process.env.JWT_SECRET!) as { userId: string, email: string, role: string, campusId?: string };
+    const decoded = verify(authToken, process.env.JWT_SECRET!) as { userId: string, email: string, role: string, campusId?: string, provider?: 'inpeace' };
     
     const user = await prismaClient.users.findUnique({
       where: { id: decoded.userId },
@@ -308,7 +378,8 @@ export async function checkAuth() {
         campusNome: user.campus?.nome,
         campusCidade: user.campus?.cidade,
         profileImageUrl: user.profileImageUrl,
-        requirePasswordChange: user.requirePasswordChange,
+        // Quem entrou pelo InPeace não precisa trocar a senha local
+        requirePasswordChange: decoded.provider === 'inpeace' ? false : user.requirePasswordChange,
         ministerioNavConfig,
         ministeriosNav,
       }
