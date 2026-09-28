@@ -1,6 +1,7 @@
 'use server'
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcrypt'
+import { randomBytes } from 'crypto'
 import { sign, verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
@@ -188,6 +189,47 @@ function iniciarSessao(user: UsuarioSessao, provider?: 'inpeace') {
   };
 }
 
+// Lê o nome do usuário do payload do JWT do InPeace, se houver (usado só para exibição)
+function nomeDoTokenInpeace(token: string): string | null {
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'));
+    const nome = payload?.name ?? payload?.nome ?? payload?.fullName ?? payload?.full_name;
+    return typeof nome === 'string' && nome.trim() ? nome.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+// Primeiro acesso pelo InPeace: cria a conta no app aguardando aprovação de um administrador.
+// A senha local é aleatória: a pessoa entra pelo InPeace (ou redefine a senha depois).
+async function criarContaPendenteInpeace(email: string, token: string) {
+  const mensagem =
+    'Conta criada a partir do InPeace! Aguarde a aprovação de um administrador para acessar o app.';
+
+  try {
+    const userRole = await prismaClient.role.findUnique({ where: { name: 'user' } });
+    await prismaClient.users.create({
+      data: {
+        name: nomeDoTokenInpeace(token) || email.split('@')[0],
+        email,
+        password: await bcrypt.hash(randomBytes(32).toString('hex'), 10),
+        role: 'user',
+        roleId: userRole?.id || null,
+        requirePasswordChange: false,
+        approved: false,
+      },
+    });
+  } catch (error) {
+    // Outra requisição criou a conta ao mesmo tempo: mesma situação, aguardando aprovação
+    if (!(error && typeof error === 'object' && 'code' in error && error.code === 'P2002')) {
+      console.error('Erro ao criar conta a partir do InPeace:', error);
+      return { success: false as const, message: 'Não foi possível criar sua conta. Tente novamente.' };
+    }
+  }
+
+  return { success: false as const, pendente: true as const, message: mensagem };
+}
+
 const INPEACE_LOGIN_URL =
   process.env.INPEACE_LOGIN_URL || 'https://admin.inpeaceapp.com/api/v1/security/login_check';
 
@@ -229,10 +271,7 @@ export async function loginWithInpeace(email: string, password: string) {
   });
 
   if (!user) {
-    return {
-      success: false as const,
-      message: 'Login do InPeace válido, mas não existe conta no app com este e-mail. Crie sua conta ou fale com um administrador.',
-    };
+    return criarContaPendenteInpeace(emailNormalizado, data.token);
   }
 
   if (!user.approved) {

@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingInpeace, setIsLoadingInpeace] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
@@ -94,6 +95,7 @@ export default function LoginPage() {
   const submitAction = form.handleSubmit(async (formData) => {
     setIsLoading(true);
     setError(null);
+    setAviso(null);
     try {
       const result = await login(formData.email, formData.password);
 
@@ -112,11 +114,14 @@ export default function LoginPage() {
   const submitInpeace = form.handleSubmit(async (formData) => {
     setIsLoadingInpeace(true);
     setError(null);
+    setAviso(null);
     try {
       const result = await loginWithInpeace(formData.email, formData.password);
 
       if (result.success) {
         await redirecionarAposLogin(result.user);
+      } else if ('pendente' in result) {
+        setAviso(result.message);
       } else {
         setError(result.message);
       }
@@ -202,6 +207,12 @@ export default function LoginPage() {
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {aviso && (
+                <Alert className="border-blue-200 bg-blue-50 text-blue-900">
+                  <AlertDescription>{aviso}</AlertDescription>
                 </Alert>
               )}
               
