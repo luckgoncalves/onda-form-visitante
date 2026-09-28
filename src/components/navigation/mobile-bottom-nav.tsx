@@ -12,6 +12,8 @@ type MobileBottomNavProps = {
   userName: string;
   userId: string;
   campusNome?: string | null;
+  campusCidade?: string | null;
+  profileImageUrl?: string | null;
   navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   ministerios?: MinisterioNav[];
   onLogout: () => void;
@@ -27,6 +29,8 @@ export function MobileBottomNav({
   userName,
   userId,
   campusNome,
+  campusCidade,
+  profileImageUrl,
   navConfig,
   ministerios,
   onLogout,
@@ -81,10 +85,11 @@ export function MobileBottomNav({
           userName={userName}
           userId={userId}
           campusNome={campusNome}
+          campusCidade={campusCidade}
+          profileImageUrl={profileImageUrl}
           navConfig={navConfig}
           ministerios={ministerios}
           onLogout={onLogout}
-          variant="mobile"
         >
           <Button
             variant="ghost"

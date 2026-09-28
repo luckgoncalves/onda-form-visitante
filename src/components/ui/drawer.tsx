@@ -46,24 +46,29 @@ const drawerVariants = cva(
 
 interface DrawerContentProps
   extends React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>,
-    VariantProps<typeof drawerVariants> {}
+    VariantProps<typeof drawerVariants> {
+  overlayClassName?: string
+  hideCloseButton?: boolean
+}
 
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   DrawerContentProps
->(({ side = "bottom", className, children, ...props }, ref) => (
+>(({ side = "bottom", className, overlayClassName, hideCloseButton, children, ...props }, ref) => (
   <DrawerPortal>
-    <DrawerOverlay />
+    <DrawerOverlay className={overlayClassName} />
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(drawerVariants({ side }), className)}
       {...props}
     >
       {children}
+      {!hideCloseButton && (
       <DrawerPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:pointer-events-none dark:ring-offset-slate-950 dark:focus:ring-slate-300">
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DrawerPrimitive.Close>
+      )}
     </DrawerPrimitive.Content>
   </DrawerPortal>
 ))

@@ -190,6 +190,7 @@ export async function checkAuth() {
         email: true,
         role: true,
         campusId: true,
+        profileImageUrl: true,
         roleRelation: {
           select: {
             name: true
@@ -198,7 +199,8 @@ export async function checkAuth() {
         campus: {
           select: {
             id: true,
-            nome: true
+            nome: true,
+            cidade: true
           }
         },
         requirePasswordChange: true,
@@ -320,6 +322,8 @@ export async function checkAuth() {
         role: roleName,
         campusId: user.campusId,
         campusNome: user.campus?.nome,
+        campusCidade: user.campus?.cidade,
+        profileImageUrl: user.profileImageUrl,
         requirePasswordChange: user.requirePasswordChange,
         ministerioNavConfig,
         ministeriosNav,

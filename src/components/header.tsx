@@ -16,12 +16,14 @@ type HeaderProps = {
   userId: string;
   isAdmin: boolean;
   campusNome?: string | null;
+  campusCidade?: string | null;
+  profileImageUrl?: string | null;
   navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   ministerios?: MinisterioNav[];
   onLogout: () => void;
 };
 
-export function Header({ userName, userId, isAdmin, campusNome, navConfig, ministerios, onLogout }: HeaderProps) {
+export function Header({ userName, userId, isAdmin, campusNome, campusCidade, profileImageUrl, navConfig, ministerios, onLogout }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -115,6 +117,8 @@ export function Header({ userName, userId, isAdmin, campusNome, navConfig, minis
               userName={userName}
               userId={userId}
               campusNome={campusNome}
+              campusCidade={campusCidade}
+              profileImageUrl={profileImageUrl}
               navConfig={navConfig}
               ministerios={ministerios}
               onLogout={onLogout}
@@ -135,6 +139,8 @@ export function Header({ userName, userId, isAdmin, campusNome, navConfig, minis
         userName={userName}
         userId={userId}
         campusNome={campusNome}
+        campusCidade={campusCidade}
+        profileImageUrl={profileImageUrl}
         navConfig={navConfig}
         ministerios={ministerios}
         onLogout={onLogout}

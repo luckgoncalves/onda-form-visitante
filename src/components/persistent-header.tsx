@@ -12,6 +12,8 @@ type AuthUser = {
   name: string;
   isAdmin: boolean;
   campusNome?: string | null;
+  campusCidade?: string | null;
+  profileImageUrl?: string | null;
   ministerioNavConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   ministeriosNav?: MinisterioNav[];
 };
@@ -55,6 +57,8 @@ export function PersistentHeader() {
           name: authResult.user.name,
           isAdmin: authResult.user.role === 'admin',
           campusNome: authResult.user.campusNome || null,
+          campusCidade: authResult.user.campusCidade || null,
+          profileImageUrl: authResult.user.profileImageUrl || null,
           ministerioNavConfig: authResult.user.ministerioNavConfig || null,
           ministeriosNav: authResult.user.ministeriosNav || [],
         });
@@ -88,6 +92,8 @@ export function PersistentHeader() {
       userName={user.name}
       isAdmin={user.isAdmin}
       campusNome={user.campusNome}
+      campusCidade={user.campusCidade}
+      profileImageUrl={user.profileImageUrl}
       navConfig={user.ministerioNavConfig}
       ministerios={user.ministeriosNav}
       onLogout={handleLogout}

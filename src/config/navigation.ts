@@ -139,62 +139,89 @@ export function getMobilePrimaryItems(isAdmin: boolean) {
   );
 }
 
-export function getSecondaryNavigationItems(isAdmin: boolean) {
-  return getVisibleNavigationItems(isAdmin).filter(
-    (item) => !item.desktopPrimary || item.section
-  );
-}
-
-export function getMobileMoreNavigationItems(isAdmin: boolean) {
-  return getVisibleNavigationItems(isAdmin).filter((item) =>
-    isAdmin ? !item.mobilePrimaryAdmin : !item.mobilePrimaryUser
-  );
-}
-
 export type MinisterioNav = {
   id: string;
   nome: string;
   paginasHabilitadas: string[];
 };
 
-export type NavigationMenuSection = {
-  title: string;
-  items: NavigationItem[];
+export type NavDepartment = {
+  id: string;
+  name: string;
+  icon: LucideIcon;
+  color?: { bg: string; fg: string };
+  pages: NavigationItem[];
 };
+
+export type NavMenu = {
+  general: NavigationItem[];
+  departments: NavDepartment[];
+};
+
+export const DEPARTMENT_FALLBACK_COLOR = { bg: '#EEF0F5', fg: '#3A4150' };
 
 function getNavKey(item: NavigationItem): string {
   return item.href ?? (item.externalHref?.includes('groups') ? 'grupos' : '');
 }
 
 /**
- * Agrupa os itens do menu em seções. Páginas restritas (adminOnly) liberadas
- * por um ministério do usuário aparecem na seção desse ministério; as demais
- * mantêm a seção padrão, com Comunidade dentro de Geral.
+ * Monta o menu lateral: páginas gerais (liberadas a todos) e os departamentos
+ * do usuário. Páginas restritas (adminOnly) liberadas por um ministério ficam
+ * no departamento desse ministério; as demais restritas ficam em "Gestão"
+ * (somente admin). Departamentos sem páginas não aparecem.
  */
-export function groupNavigationBySection(
-  items: NavigationItem[],
+export function buildNavMenu(
+  isAdmin: boolean,
+  paginasHabilitadas: string[] = [],
   ministerios: MinisterioNav[] = []
-): NavigationMenuSection[] {
-  const sections = new Map<string, NavigationItem[]>();
+): NavMenu {
+  const accessible = isAdmin
+    ? getVisibleNavigationItems(true)
+    : paginasHabilitadas.length
+      ? getNavItemsForMinisterio(paginasHabilitadas)
+      : getVisibleNavigationItems(false);
+
+  const general: NavigationItem[] = [];
+  const gestao: NavigationItem[] = [];
+  const porMinisterio = new Map<string, NavigationItem[]>();
   const seen = new Set<string>();
 
-  for (const item of items) {
+  for (const item of accessible) {
     const key = getNavKey(item);
     if (seen.has(key)) continue;
     seen.add(key);
 
-    const ministerio = item.adminOnly
-      ? ministerios.find((m) => m.paginasHabilitadas.includes(key))
-      : undefined;
-    const section = item.section === 'Comunidade' ? undefined : item.section;
-    const title = ministerio?.nome || section || 'Geral';
-    sections.set(title, [...(sections.get(title) || []), item]);
+    if (!item.adminOnly) {
+      general.push(item);
+      continue;
+    }
+
+    const donos = ministerios.filter((m) => m.paginasHabilitadas.includes(key));
+    if (donos.length === 0) {
+      if (isAdmin) gestao.push(item);
+      continue;
+    }
+    for (const m of donos) {
+      porMinisterio.set(m.id, [...(porMinisterio.get(m.id) || []), item]);
+    }
   }
 
-  // Geral (inclui Comunidade) sempre primeiro
-  return Array.from(sections, ([title, sectionItems]) => ({ title, items: sectionItems })).sort(
-    (a, b) => Number(b.title === 'Geral') - Number(a.title === 'Geral')
-  );
+  const departments: NavDepartment[] = [];
+  if (gestao.length) {
+    departments.push({
+      id: 'gestao',
+      name: 'Gestão',
+      icon: LayoutDashboard,
+      color: { bg: '#E8E9F4', fg: '#141B7A' },
+      pages: gestao,
+    });
+  }
+  for (const m of ministerios) {
+    const pages = porMinisterio.get(m.id);
+    if (pages?.length) departments.push({ id: m.id, name: m.nome, icon: Church, pages });
+  }
+
+  return { general, departments };
 }
 
 export function filterByNavConfig(
