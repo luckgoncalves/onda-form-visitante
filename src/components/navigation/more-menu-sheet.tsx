@@ -13,7 +13,6 @@ import {
   NavigationItem,
 } from '@/config/navigation';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import {
   Drawer,
   DrawerContent,
@@ -88,7 +87,7 @@ export function MoreMenuSheet({
   return (
     <Drawer open={open} onOpenChange={setOpen} direction="right">
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent side="right" className="w-full max-w-sm overflow-y-auto pb-8">
+      <DrawerContent side="right" className="flex w-full max-w-sm flex-col pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
         <DrawerHeader className="text-left">
           <DrawerTitle>Menu</DrawerTitle>
           <DrawerDescription>
@@ -96,7 +95,7 @@ export function MoreMenuSheet({
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 min-h-0 flex-1 space-y-6 overflow-y-auto">
           {sections.map(({ title: section, items }) => (
             <div key={section}>
               <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -125,42 +124,40 @@ export function MoreMenuSheet({
               </div>
             </div>
           ))}
+        </div>
 
-          <Separator />
-
-          <div>
-            <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Conta
-            </h3>
-            <div className="space-y-1">
-              <Button
-                variant="ghost"
-                className={cn(
-                  'h-11 w-full justify-start rounded-xl px-3 text-base',
-                  isActive(pathname, `/users/${userId}`) && 'bg-onda-darkBlue/10 text-onda-darkBlue'
-                )}
-                onClick={() => handleNavigate({ href: `/users/${userId}` })}
-              >
-                <User className="mr-3 h-5 w-5" />
-                Meu perfil
-              </Button>
-              <Button
-                variant="ghost"
-                className="h-11 w-full justify-start rounded-xl px-3 text-base"
-                onClick={() => handleNavigate(feedbackItem)}
-              >
-                <FeedbackIcon className="mr-3 h-5 w-5" />
-                {feedbackItem.label}
-              </Button>
-              <Button
-                variant="ghost"
-                className="h-11 w-full justify-start rounded-xl px-3 text-base text-red-600 hover:text-red-700"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-3 h-5 w-5" />
-                Sair
-              </Button>
-            </div>
+        <div className="border-t pt-4">
+          <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Conta
+          </h3>
+          <div className="space-y-1">
+            <Button
+              variant="ghost"
+              className={cn(
+                'h-11 w-full justify-start rounded-xl px-3 text-base',
+                isActive(pathname, `/users/${userId}`) && 'bg-onda-darkBlue/10 text-onda-darkBlue'
+              )}
+              onClick={() => handleNavigate({ href: `/users/${userId}` })}
+            >
+              <User className="mr-3 h-5 w-5" />
+              Meu perfil
+            </Button>
+            <Button
+              variant="ghost"
+              className="h-11 w-full justify-start rounded-xl px-3 text-base"
+              onClick={() => handleNavigate(feedbackItem)}
+            >
+              <FeedbackIcon className="mr-3 h-5 w-5" />
+              {feedbackItem.label}
+            </Button>
+            <Button
+              variant="ghost"
+              className="h-11 w-full justify-start rounded-xl px-3 text-base text-red-600 hover:text-red-700"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-3 h-5 w-5" />
+              Sair
+            </Button>
           </div>
         </div>
       </DrawerContent>
