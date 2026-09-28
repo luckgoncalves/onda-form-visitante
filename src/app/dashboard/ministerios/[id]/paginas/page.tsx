@@ -18,6 +18,7 @@ const CONFIGURABLE_PAGES = [
   { key: '/register', label: 'Cadastro de Visitante', section: 'Geral' },
   { key: '/empresas', label: 'Empresas', section: 'Geral' },
   { key: '/chamados', label: 'Chamados', section: 'Geral' },
+  { key: '/checklist', label: 'Checklist de Inspeção', section: 'Geral' },
   { key: 'grupos', label: 'Grupos', section: 'Comunidade' },
   { key: '/list', label: 'Visitantes', section: 'Gestão' },
   { key: '/dashboard', label: 'Dashboard', section: 'Gestão' },

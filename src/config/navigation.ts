@@ -1,5 +1,6 @@
 import {
   Building,
+  ClipboardCheck,
   FileText,
   LayoutDashboard,
   LucideIcon,
@@ -83,6 +84,13 @@ export const navigationItems: NavigationItem[] = [
     label: 'Chamados',
     href: '/chamados',
     icon: Ticket,
+    adminOnly: true,
+    section: 'Gestão',
+  },
+  {
+    label: 'Checklist',
+    href: '/checklist',
+    icon: ClipboardCheck,
     adminOnly: true,
     section: 'Gestão',
   },

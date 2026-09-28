@@ -110,6 +110,7 @@ model Campus {
   etiquetas   Etiqueta[]
   ministerios Ministerio[]
   chamados    Chamado[]
+  checklists  ChecklistInspecao[]
 
   @@unique([cidade, estado])
 }
@@ -223,6 +224,9 @@ model users {
 
   // Relação com push subscriptions
   pushSubscriptions PushSubscription[]
+
+  // Relação com checklists de inspeção
+  checklists ChecklistInspecao[]
 }
 
 model PushSubscription {
@@ -471,4 +475,21 @@ model ChamadoComentario {
 
   chamado Chamado @relation(fields: [chamadoId], references: [id], onDelete: Cascade)
   autor   users   @relation(fields: [autorId], references: [id])
+}
+
+// ─── Checklist de Verificação e Inspeção (Manutenção) ─────────────────────────
+
+model ChecklistInspecao {
+  id               String   @id @default(cuid())
+  responsavelId    String
+  campusId         String?
+  // Snapshot das seções/itens no momento do preenchimento:
+  // [{ id, titulo, observacoes, itens: [{ id, texto, verificado }] }]
+  secoes           Json
+  totalItens       Int
+  itensVerificados Int
+  createdAt        DateTime @default(now())
+
+  responsavel users   @relation(fields: [responsavelId], references: [id])
+  campus      Campus? @relation(fields: [campusId], references: [id])
 }
