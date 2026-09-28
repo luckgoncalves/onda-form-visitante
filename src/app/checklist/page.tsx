@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Check, ChevronLeft, ChevronRight, ClipboardCheck, Save } from 'lucide-react';
+import { Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Save } from 'lucide-react';
 import { CHECKLIST_INSPECAO, canAccessChecklist, formatDataHora } from '@/config/checklist-inspecao';
 
 interface ChecklistResumo {
@@ -29,6 +29,7 @@ export default function ChecklistPage() {
   const [aba, setAba] = useState<'preencher' | 'historico'>('preencher');
   const [agora, setAgora] = useState(() => new Date());
   const [verificados, setVerificados] = useState<Set<string>>(new Set());
+  const [secoesAbertas, setSecoesAbertas] = useState<Set<string>>(() => new Set([CHECKLIST_INSPECAO[0].id]));
   const [observacoes, setObservacoes] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
 
@@ -68,12 +69,33 @@ export default function ChecklistPage() {
     if (aba === 'historico' && userName) loadHistorico(1);
   }, [aba, userName, loadHistorico]);
 
-  const toggleItem = (id: string) => {
-    setVerificados((prev) => {
+  const toggleSecao = (id: string) => {
+    setSecoesAbertas((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
+    });
+  };
+
+  const toggleItem = (secaoId: string, itemId: string) => {
+    const next = new Set(verificados);
+    if (next.has(itemId)) next.delete(itemId);
+    else next.add(itemId);
+    setVerificados(next);
+
+    // Ao completar uma seção, fecha ela e abre a próxima ainda incompleta
+    const secao = CHECKLIST_INSPECAO.find((s) => s.id === secaoId);
+    const completou = !verificados.has(itemId) && secao?.itens.every((i) => next.has(i.id));
+    if (!completou) return;
+
+    const indice = CHECKLIST_INSPECAO.findIndex((s) => s.id === secaoId);
+    const proxima = CHECKLIST_INSPECAO.slice(indice + 1).find((s) => s.itens.some((i) => !next.has(i.id)));
+    setSecoesAbertas((prev) => {
+      const abertas = new Set(prev);
+      abertas.delete(secaoId);
+      if (proxima) abertas.add(proxima.id);
+      return abertas;
     });
   };
 
@@ -93,6 +115,7 @@ export default function ChecklistPage() {
       toast({ title: 'Checklist salvo', description: 'A verificação foi registrada com sucesso.' });
       setVerificados(new Set());
       setObservacoes({});
+      setSecoesAbertas(new Set([CHECKLIST_INSPECAO[0].id]));
       setAba('historico');
       window.scrollTo({ top: 0 });
     } catch {
@@ -161,51 +184,69 @@ export default function ChecklistPage() {
 
           {CHECKLIST_INSPECAO.map((secao) => {
             const feitos = secao.itens.filter((i) => verificados.has(i.id)).length;
+            const aberta = secoesAbertas.has(secao.id);
             return (
               <Card key={secao.id}>
-                <CardHeader className="p-4 pb-2">
-                  <CardTitle className="text-base flex items-center justify-between gap-2">
-                    <span>{secao.id}. {secao.titulo}</span>
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        feitos === secao.itens.length ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                      }`}
-                    >
-                      {feitos}/{secao.itens.length}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0 space-y-2">
-                  {secao.itens.map((item) => {
-                    const checked = verificados.has(item.id);
-                    return (
-                      <label
-                        key={item.id}
-                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                          checked ? 'border-green-200 bg-green-50' : 'border-gray-200 hover:bg-gray-50'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 accent-[#0f172a]"
-                          checked={checked}
-                          onChange={() => toggleItem(item.id)}
-                        />
-                        <span className="text-sm">
-                          <span className="font-mono text-xs text-muted-foreground mr-1.5">{item.id}</span>
-                          {item.texto}
+                <button
+                  type="button"
+                  onClick={() => toggleSecao(secao.id)}
+                  aria-expanded={aberta}
+                  className="w-full text-left"
+                >
+                  <CardHeader className="p-4">
+                    <CardTitle className="text-base flex items-center justify-between gap-2">
+                      <span>{secao.id}. {secao.titulo}</span>
+                      <span className="flex items-center gap-2 shrink-0">
+                        {observacoes[secao.id]?.trim() && !aberta && (
+                          <span className="text-xs font-normal text-muted-foreground">com obs.</span>
+                        )}
+                        <span
+                          className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                            feitos === secao.itens.length ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          {feitos}/{secao.itens.length}
                         </span>
-                      </label>
-                    );
-                  })}
-                  <Textarea
-                    placeholder="Observações"
-                    value={observacoes[secao.id] || ''}
-                    onChange={(e) => setObservacoes((prev) => ({ ...prev, [secao.id]: e.target.value }))}
-                    className="mt-2 text-sm"
-                    rows={2}
-                  />
-                </CardContent>
+                        <ChevronDown
+                          className={`h-4 w-4 text-muted-foreground transition-transform ${aberta ? 'rotate-180' : ''}`}
+                        />
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                </button>
+                {aberta && (
+                  <CardContent className="p-4 pt-0 space-y-2">
+                    {secao.itens.map((item) => {
+                      const checked = verificados.has(item.id);
+                      return (
+                        <label
+                          key={item.id}
+                          className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                            checked ? 'border-green-200 bg-green-50' : 'border-gray-200 hover:bg-gray-50'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 accent-[#0f172a]"
+                            checked={checked}
+                            onChange={() => toggleItem(secao.id, item.id)}
+                          />
+                          <span className="text-sm">
+                            <span className="font-mono text-xs text-muted-foreground mr-1.5">{item.id}</span>
+                            {item.texto}
+                          </span>
+                        </label>
+                      );
+                    })}
+                    <Textarea
+                      placeholder="Observações"
+                      value={observacoes[secao.id] || ''}
+                      onChange={(e) => setObservacoes((prev) => ({ ...prev, [secao.id]: e.target.value }))}
+                      className="mt-2 text-sm"
+                      rows={2}
+                    />
+                  </CardContent>
+                )}
               </Card>
             );
           })}
