@@ -1,11 +1,11 @@
 'use server'
 import prisma from '@/lib/prisma';
-import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { sign, verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
-const prismaClient = new PrismaClient()
+// Usa o client compartilhado para não abrir um segundo pool de conexões
+const prismaClient = prisma
 
 export const save = async (data: any) => {
   const { user } = await checkAuth();
@@ -190,6 +190,7 @@ export async function checkAuth() {
         email: true,
         role: true,
         campusId: true,
+        approved: true,
         profileImageUrl: true,
         roleRelation: {
           select: {
@@ -251,27 +252,10 @@ export async function checkAuth() {
       return { isAuthenticated: false, user: null };
     }
 
-    // Verificar se o usuário está aprovado (se o campo existir)
-    // MySQL retorna booleanos como 1 (true) ou 0 (false)
-    // Se o campo approved não existir ainda (usuários antigos), considerar como aprovado
-    try {
-      const userWithApproved = await (prismaClient.users.findUnique as any)({
-        where: { id: decoded.userId },
-        select: { approved: true }
-      });
-      
-      if (userWithApproved) {
-        const approvedValue = userWithApproved.approved;
-        // Tratar valores do MySQL: 0 = false, qualquer outro valor = true
-        // Se for 0 ou false, usuário não está aprovado
-        if (approvedValue === 0 || approvedValue === false) {
-          // Limpar cookie se não estiver aprovado
-          cookies().delete('authToken');
-          return { isAuthenticated: false, user: null };
-        }
-      }
-    } catch (error) {
-      // Se o campo não existir ainda no banco, ignorar erro e permitir login (usuários antigos)
+    // Usuário não aprovado: limpa o cookie e trata como não autenticado
+    if (!user.approved) {
+      cookies().delete('authToken');
+      return { isAuthenticated: false, user: null };
     }
 
     // Usar o nome da role da relação, ou fallback para o campo legado

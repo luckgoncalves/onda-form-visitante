@@ -38,12 +38,14 @@ export default function ChecklistPage() {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
 
   useEffect(() => {
+    // Autenticação e modelo em paralelo (a API também valida o acesso)
+    const modeloPromise = fetch('/api/checklist/modelo');
     checkAuth().then(async ({ user }) => {
       if (!user) { router.push('/'); return; }
       if (!canAccessChecklist(user)) { router.push('/register'); return; }
 
       try {
-        const res = await fetch('/api/checklist/modelo');
+        const res = await modeloPromise;
         if (!res.ok) throw new Error();
         const data: { topicos: ChecklistTopicoModelo[]; podeEditar: boolean } = await res.json();
         setTopicos(data.topicos);
