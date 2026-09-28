@@ -68,7 +68,7 @@ export default function Home() {
       title: 'Grupos Pequenos',
       description: 'Encontre um grupo pequeno perto de você e conecte-se com outras pessoas.',
       icon: UsersRound,
-      href: 'https://ondaduracuritiba.inpeaceapp.com/groups',
+      href: 'https://igrejaondacuritiba.inpeaceapp.com/groups',
       color: 'bg-onda-teal',
       external: true,
     },

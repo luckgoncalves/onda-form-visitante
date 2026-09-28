@@ -104,7 +104,7 @@ export const navigationItems: NavigationItem[] = [
   },
   {
     label: 'Grupos',
-    externalHref: 'https://ondaduracuritiba.inpeaceapp.com/groups',
+    externalHref: 'https://igrejaondacuritiba.inpeaceapp.com/groups',
     icon: UsersRound,
     section: 'Comunidade',
     mobilePrimaryUser: true,
