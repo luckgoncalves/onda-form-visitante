@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Save } from 'lucide-react';
-import { CHECKLIST_INSPECAO, canAccessChecklist, formatDataHora } from '@/config/checklist-inspecao';
+import { Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Pencil, Save } from 'lucide-react';
+import { ChecklistTopicoModelo, canAccessChecklist, formatDataHora } from '@/config/checklist-inspecao';
 
 interface ChecklistResumo {
   id: string;
@@ -19,8 +19,6 @@ interface ChecklistResumo {
   responsavel: { id: string; name: string };
 }
 
-const TOTAL_ITENS = CHECKLIST_INSPECAO.reduce((acc, s) => acc + s.itens.length, 0);
-
 export default function ChecklistPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -29,7 +27,9 @@ export default function ChecklistPage() {
   const [aba, setAba] = useState<'preencher' | 'historico'>('preencher');
   const [agora, setAgora] = useState(() => new Date());
   const [verificados, setVerificados] = useState<Set<string>>(new Set());
-  const [secoesAbertas, setSecoesAbertas] = useState<Set<string>>(() => new Set([CHECKLIST_INSPECAO[0].id]));
+  const [topicos, setTopicos] = useState<ChecklistTopicoModelo[]>([]);
+  const [podeEditar, setPodeEditar] = useState(false);
+  const [secoesAbertas, setSecoesAbertas] = useState<Set<string>>(new Set());
   const [observacoes, setObservacoes] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
 
@@ -38,12 +38,23 @@ export default function ChecklistPage() {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
 
   useEffect(() => {
-    checkAuth().then(({ user }) => {
+    checkAuth().then(async ({ user }) => {
       if (!user) { router.push('/'); return; }
       if (!canAccessChecklist(user)) { router.push('/register'); return; }
+
+      try {
+        const res = await fetch('/api/checklist/modelo');
+        if (!res.ok) throw new Error();
+        const data: { topicos: ChecklistTopicoModelo[]; podeEditar: boolean } = await res.json();
+        setTopicos(data.topicos);
+        setPodeEditar(data.podeEditar);
+        if (data.topicos[0]) setSecoesAbertas(new Set([data.topicos[0].id]));
+      } catch {
+        toast({ title: 'Erro', description: 'Erro ao carregar o checklist', variant: 'destructive' });
+      }
       setUserName(user.name);
     });
-  }, [router]);
+  }, [router, toast]);
 
   useEffect(() => {
     const timer = setInterval(() => setAgora(new Date()), 30_000);
@@ -85,12 +96,12 @@ export default function ChecklistPage() {
     setVerificados(next);
 
     // Ao completar uma seção, fecha ela e abre a próxima ainda incompleta
-    const secao = CHECKLIST_INSPECAO.find((s) => s.id === secaoId);
+    const secao = topicos.find((s) => s.id === secaoId);
     const completou = !verificados.has(itemId) && secao?.itens.every((i) => next.has(i.id));
     if (!completou) return;
 
-    const indice = CHECKLIST_INSPECAO.findIndex((s) => s.id === secaoId);
-    const proxima = CHECKLIST_INSPECAO.slice(indice + 1).find((s) => s.itens.some((i) => !next.has(i.id)));
+    const indice = topicos.findIndex((s) => s.id === secaoId);
+    const proxima = topicos.slice(indice + 1).find((s) => s.itens.some((i) => !next.has(i.id)));
     setSecoesAbertas((prev) => {
       const abertas = new Set(prev);
       abertas.delete(secaoId);
@@ -99,8 +110,9 @@ export default function ChecklistPage() {
     });
   };
 
-  const pendentes = TOTAL_ITENS - verificados.size;
-  const progresso = useMemo(() => Math.round((verificados.size / TOTAL_ITENS) * 100), [verificados]);
+  const totalItens = useMemo(() => topicos.reduce((acc, t) => acc + t.itens.length, 0), [topicos]);
+  const pendentes = totalItens - verificados.size;
+  const progresso = totalItens ? Math.round((verificados.size / totalItens) * 100) : 0;
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -115,7 +127,7 @@ export default function ChecklistPage() {
       toast({ title: 'Checklist salvo', description: 'A verificação foi registrada com sucesso.' });
       setVerificados(new Set());
       setObservacoes({});
-      setSecoesAbertas(new Set([CHECKLIST_INSPECAO[0].id]));
+      setSecoesAbertas(new Set(topicos[0] ? [topicos[0].id] : []));
       setAba('historico');
       window.scrollTo({ top: 0 });
     } catch {
@@ -139,9 +151,18 @@ export default function ChecklistPage() {
 
   return (
     <div className="p-2 sm:p-6 mt-[72px] max-w-3xl mx-auto pb-32 sm:pb-6">
-      <div className="mb-4">
-        <h1 className="text-xl font-bold">Checklist de Verificação e Inspeção</h1>
-        <p className="text-xs text-muted-foreground">Manutenção</p>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold">Checklist de Verificação e Inspeção</h1>
+          <p className="text-xs text-muted-foreground">Manutenção</p>
+        </div>
+        {podeEditar && (
+          <Button variant="outline" size="sm" className="shrink-0 gap-2" onClick={() => router.push('/checklist/modelo')}>
+            <Pencil className="h-4 w-4" />
+            <span className="hidden sm:inline">Editar checklist</span>
+            <span className="sm:hidden">Editar</span>
+          </Button>
+        )}
       </div>
 
       <div className="flex gap-1.5 mb-5">
@@ -182,7 +203,15 @@ export default function ChecklistPage() {
             </CardContent>
           </Card>
 
-          {CHECKLIST_INSPECAO.map((secao) => {
+          {topicos.length === 0 && (
+            <Card>
+              <CardContent className="p-6 text-center text-sm text-muted-foreground">
+                Nenhum tópico cadastrado.{podeEditar && ' Use "Editar checklist" para adicionar.'}
+              </CardContent>
+            </Card>
+          )}
+
+          {topicos.map((secao, t) => {
             const feitos = secao.itens.filter((i) => verificados.has(i.id)).length;
             const aberta = secoesAbertas.has(secao.id);
             return (
@@ -195,7 +224,7 @@ export default function ChecklistPage() {
                 >
                   <CardHeader className="p-4">
                     <CardTitle className="text-base flex items-center justify-between gap-2">
-                      <span>{secao.id}. {secao.titulo}</span>
+                      <span>{t + 1}. {secao.titulo}</span>
                       <span className="flex items-center gap-2 shrink-0">
                         {observacoes[secao.id]?.trim() && !aberta && (
                           <span className="text-xs font-normal text-muted-foreground">com obs.</span>
@@ -216,7 +245,7 @@ export default function ChecklistPage() {
                 </button>
                 {aberta && (
                   <CardContent className="p-4 pt-0 space-y-2">
-                    {secao.itens.map((item) => {
+                    {secao.itens.map((item, i) => {
                       const checked = verificados.has(item.id);
                       return (
                         <label
@@ -232,7 +261,7 @@ export default function ChecklistPage() {
                             onChange={() => toggleItem(secao.id, item.id)}
                           />
                           <span className="text-sm">
-                            <span className="font-mono text-xs text-muted-foreground mr-1.5">{item.id}</span>
+                            <span className="font-mono text-xs text-muted-foreground mr-1.5">{t + 1}.{i + 1}</span>
                             {item.texto}
                           </span>
                         </label>
@@ -254,7 +283,7 @@ export default function ChecklistPage() {
           <Card>
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">{verificados.size} de {TOTAL_ITENS} itens verificados</span>
+                <span className="font-medium">{verificados.size} de {totalItens} itens verificados</span>
                 <span className="text-muted-foreground">{progresso}%</span>
               </div>
               <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -267,7 +296,7 @@ export default function ChecklistPage() {
               )}
               <Button
                 onClick={handleSave}
-                disabled={isSaving}
+                disabled={isSaving || totalItens === 0}
                 className="w-full bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white gap-2"
               >
                 <Save className="h-4 w-4" />

@@ -2,11 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { checkAuth } from '@/app/actions';
 import { z } from 'zod';
-import {
-  CHECKLIST_INSPECAO,
-  ChecklistSecaoPreenchida,
-  canAccessChecklist,
-} from '@/config/checklist-inspecao';
+import { ChecklistSecaoPreenchida, canAccessChecklist } from '@/config/checklist-inspecao';
+import { getModeloChecklist } from '@/lib/checklist';
 
 const createChecklistSchema = z.object({
   verificados: z.array(z.string()),
@@ -65,12 +62,22 @@ export async function POST(request: NextRequest) {
     const validated = createChecklistSchema.parse(body);
     const verificados = new Set(validated.verificados);
 
-    // Monta o snapshot a partir do modelo do servidor, não do texto enviado pelo cliente
-    const secoes: ChecklistSecaoPreenchida[] = CHECKLIST_INSPECAO.map((secao) => ({
-      id: secao.id,
-      titulo: secao.titulo,
-      observacoes: validated.observacoes?.[secao.id]?.trim() || '',
-      itens: secao.itens.map((item) => ({ ...item, verificado: verificados.has(item.id) })),
+    // Monta o snapshot a partir do modelo atual no banco, não do texto enviado pelo cliente.
+    // verificados/observacoes chegam com os ids do banco; o snapshot guarda a numeração exibida.
+    const modelo = await getModeloChecklist();
+    if (modelo.length === 0) {
+      return NextResponse.json({ error: 'O checklist não possui tópicos cadastrados' }, { status: 400 });
+    }
+
+    const secoes: ChecklistSecaoPreenchida[] = modelo.map((topico, t) => ({
+      id: String(t + 1),
+      titulo: topico.titulo,
+      observacoes: validated.observacoes?.[topico.id]?.trim() || '',
+      itens: topico.itens.map((item, i) => ({
+        id: `${t + 1}.${i + 1}`,
+        texto: item.texto,
+        verificado: verificados.has(item.id),
+      })),
     }));
 
     const todosItens = secoes.flatMap((s) => s.itens);

@@ -493,3 +493,25 @@ model ChecklistInspecao {
   responsavel users   @relation(fields: [responsavelId], references: [id])
   campus      Campus? @relation(fields: [campusId], references: [id])
 }
+
+// Modelo editável do checklist (tópicos e itens)
+model ChecklistTopico {
+  id        String   @id @default(cuid())
+  titulo    String
+  ordem     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  itens ChecklistItem[]
+}
+
+model ChecklistItem {
+  id        String   @id @default(cuid())
+  topicoId  String
+  texto     String   @db.Text
+  ordem     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  topico ChecklistTopico @relation(fields: [topicoId], references: [id], onDelete: Cascade)
+}
