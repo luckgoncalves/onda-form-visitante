@@ -169,7 +169,7 @@ function getNavKey(item: NavigationItem): string {
 /**
  * Agrupa os itens do menu em seções. Páginas restritas (adminOnly) liberadas
  * por um ministério do usuário aparecem na seção desse ministério; as demais
- * mantêm a seção padrão.
+ * mantêm a seção padrão, com Comunidade dentro de Geral.
  */
 export function groupNavigationBySection(
   items: NavigationItem[],
@@ -186,13 +186,14 @@ export function groupNavigationBySection(
     const ministerio = item.adminOnly
       ? ministerios.find((m) => m.paginasHabilitadas.includes(key))
       : undefined;
-    const title = ministerio?.nome || item.section || 'Geral';
+    const section = item.section === 'Comunidade' ? undefined : item.section;
+    const title = ministerio?.nome || section || 'Geral';
     sections.set(title, [...(sections.get(title) || []), item]);
   }
 
-  // Comunidade sempre por último
+  // Geral (inclui Comunidade) sempre primeiro
   return Array.from(sections, ([title, sectionItems]) => ({ title, items: sectionItems })).sort(
-    (a, b) => Number(a.title === 'Comunidade') - Number(b.title === 'Comunidade')
+    (a, b) => Number(b.title === 'Geral') - Number(a.title === 'Geral')
   );
 }
 
