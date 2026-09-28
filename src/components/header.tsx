@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { PWAInstallButton } from "@/components/pwa-install-button";
 import { PushNotificationButton } from "@/components/push-notification-button";
-import { getDesktopPrimaryItems, getNavItemsForMinisterio, NavigationItem } from "@/config/navigation";
+import { getDesktopPrimaryItems, getNavItemsForMinisterio, MinisterioNav, NavigationItem } from "@/config/navigation";
 import { MoreMenuSheet } from "@/components/navigation/more-menu-sheet";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
@@ -17,10 +17,11 @@ type HeaderProps = {
   isAdmin: boolean;
   campusNome?: string | null;
   navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
+  ministerios?: MinisterioNav[];
   onLogout: () => void;
 };
 
-export function Header({ userName, userId, isAdmin, campusNome, navConfig, onLogout }: HeaderProps) {
+export function Header({ userName, userId, isAdmin, campusNome, navConfig, ministerios, onLogout }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -115,6 +116,7 @@ export function Header({ userName, userId, isAdmin, campusNome, navConfig, onLog
               userId={userId}
               campusNome={campusNome}
               navConfig={navConfig}
+              ministerios={ministerios}
               onLogout={onLogout}
             >
               <Button
@@ -134,6 +136,7 @@ export function Header({ userName, userId, isAdmin, campusNome, navConfig, onLog
         userId={userId}
         campusNome={campusNome}
         navConfig={navConfig}
+        ministerios={ministerios}
         onLogout={onLogout}
       />
     </>

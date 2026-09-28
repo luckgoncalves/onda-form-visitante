@@ -151,14 +151,58 @@ export function getMobileMoreNavigationItems(isAdmin: boolean) {
   );
 }
 
+export type MinisterioNav = {
+  id: string;
+  nome: string;
+  paginasHabilitadas: string[];
+};
+
+export type NavigationMenuSection = {
+  title: string;
+  items: NavigationItem[];
+};
+
+function getNavKey(item: NavigationItem): string {
+  return item.href ?? (item.externalHref?.includes('groups') ? 'grupos' : '');
+}
+
+/**
+ * Agrupa os itens do menu em seções. Páginas restritas (adminOnly) liberadas
+ * por um ministério do usuário aparecem na seção desse ministério; as demais
+ * mantêm a seção padrão.
+ */
+export function groupNavigationBySection(
+  items: NavigationItem[],
+  ministerios: MinisterioNav[] = []
+): NavigationMenuSection[] {
+  const sections = new Map<string, NavigationItem[]>();
+  const seen = new Set<string>();
+
+  for (const item of items) {
+    const key = getNavKey(item);
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const ministerio = item.adminOnly
+      ? ministerios.find((m) => m.paginasHabilitadas.includes(key))
+      : undefined;
+    const title = ministerio?.nome || item.section || 'Geral';
+    sections.set(title, [...(sections.get(title) || []), item]);
+  }
+
+  // Comunidade sempre por último
+  return Array.from(sections, ([title, sectionItems]) => ({ title, items: sectionItems })).sort(
+    (a, b) => Number(a.title === 'Comunidade') - Number(b.title === 'Comunidade')
+  );
+}
+
 export function filterByNavConfig(
   items: NavigationItem[],
   paginasHabilitadas: string[]
 ): NavigationItem[] {
   if (!paginasHabilitadas.length) return items;
   return items.filter(item => {
-    const key = item.href ?? (item.externalHref?.includes('groups') ? 'grupos' : '');
-    return paginasHabilitadas.includes(key);
+    return paginasHabilitadas.includes(getNavKey(item));
   });
 }
 
@@ -171,7 +215,7 @@ export function getNavItemsForMinisterio(paginasHabilitadas: string[]): Navigati
   if (!paginasHabilitadas.length) return [];
   const seen = new Set<string>();
   return navigationItems.filter(item => {
-    const key = item.href ?? (item.externalHref?.includes('groups') ? 'grupos' : '');
+    const key = getNavKey(item);
     if (!paginasHabilitadas.includes(key)) return false;
     if (seen.has(key)) return false;
     seen.add(key);

@@ -205,6 +205,7 @@ export async function checkAuth() {
         ministeriosLiderados: {
           select: {
             id: true,
+            nome: true,
             navConfig: {
               select: {
                 paginaInicial: true,
@@ -216,6 +217,7 @@ export async function checkAuth() {
         ministeriosCoLiderados: {
           select: {
             id: true,
+            nome: true,
             navConfig: {
               select: {
                 paginaInicial: true,
@@ -229,6 +231,7 @@ export async function checkAuth() {
             ministerio: {
               select: {
                 id: true,
+                nome: true,
                 navConfig: {
                   select: {
                     paginaInicial: true,
@@ -287,6 +290,17 @@ export async function checkAuth() {
       ...user.ministerios.map((m) => m.ministerio.navConfig),
     ].filter(Boolean) as { paginaInicial: string; paginasHabilitadas: unknown }[];
 
+    // Páginas liberadas por ministério, para agrupar o menu por ministério
+    const ministeriosNav: { id: string; nome: string; paginasHabilitadas: string[] }[] = [];
+    for (const m of [
+      ...user.ministeriosLiderados,
+      ...user.ministeriosCoLiderados,
+      ...user.ministerios.map((um) => um.ministerio),
+    ]) {
+      if (!m.navConfig || ministeriosNav.some((n) => n.id === m.id)) continue;
+      ministeriosNav.push({ id: m.id, nome: m.nome, paginasHabilitadas: parsePages(m.navConfig.paginasHabilitadas) });
+    }
+
     if (allConfigs.length > 0) {
       const merged = Array.from(
         new Set(allConfigs.flatMap((c) => parsePages(c.paginasHabilitadas)))
@@ -308,6 +322,7 @@ export async function checkAuth() {
         campusNome: user.campus?.nome,
         requirePasswordChange: user.requirePasswordChange,
         ministerioNavConfig,
+        ministeriosNav,
       }
     };
   } catch (error) {

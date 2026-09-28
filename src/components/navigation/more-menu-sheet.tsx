@@ -8,6 +8,8 @@ import {
   getMobileMoreNavigationItems,
   getNavItemsForMinisterio,
   getSecondaryNavigationItems,
+  groupNavigationBySection,
+  MinisterioNav,
   NavigationItem,
 } from '@/config/navigation';
 import { Button } from '@/components/ui/button';
@@ -28,6 +30,7 @@ type MoreMenuSheetProps = {
   userId: string;
   campusNome?: string | null;
   navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
+  ministerios?: MinisterioNav[];
   onLogout: () => void;
   variant?: 'desktop' | 'mobile';
   children: React.ReactNode;
@@ -44,6 +47,7 @@ export function MoreMenuSheet({
   userId,
   campusNome,
   navConfig,
+  ministerios,
   onLogout,
   variant = 'desktop',
   children,
@@ -61,11 +65,7 @@ export function MoreMenuSheet({
       : getSecondaryNavigationItems(isAdmin);
   })();
   const FeedbackIcon = feedbackItem.icon;
-  const sections = navigationItems.reduce<Record<string, NavigationItem[]>>((acc, item) => {
-    const section = item.section || 'Outros';
-    acc[section] = [...(acc[section] || []), item];
-    return acc;
-  }, {});
+  const sections = groupNavigationBySection(navigationItems, ministerios);
 
   const handleNavigate = (item: Pick<NavigationItem, 'href' | 'externalHref'>) => {
     setOpen(false);
@@ -97,7 +97,7 @@ export function MoreMenuSheet({
         </DrawerHeader>
 
         <div className="mt-6 space-y-6">
-          {Object.entries(sections).map(([section, items]) => (
+          {sections.map(({ title: section, items }) => (
             <div key={section}>
               <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
                 {section}

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { checkAuth, logout } from '@/app/actions';
 import { Header } from '@/components/header';
 import { usePushListener } from '@/hooks/usePushListener';
+import type { MinisterioNav } from '@/config/navigation';
 
 type AuthUser = {
   id: string;
@@ -12,6 +13,7 @@ type AuthUser = {
   isAdmin: boolean;
   campusNome?: string | null;
   ministerioNavConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
+  ministeriosNav?: MinisterioNav[];
 };
 
 const routesWithoutAuthenticatedHeader = new Set([
@@ -54,6 +56,7 @@ export function PersistentHeader() {
           isAdmin: authResult.user.role === 'admin',
           campusNome: authResult.user.campusNome || null,
           ministerioNavConfig: authResult.user.ministerioNavConfig || null,
+          ministeriosNav: authResult.user.ministeriosNav || [],
         });
       } else {
         setUser(null);
@@ -86,6 +89,7 @@ export function PersistentHeader() {
       isAdmin={user.isAdmin}
       campusNome={user.campusNome}
       navConfig={user.ministerioNavConfig}
+      ministerios={user.ministeriosNav}
       onLogout={handleLogout}
     />
   );

@@ -2,7 +2,7 @@
 
 import { MoreHorizontal } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getMobilePrimaryItems, getNavItemsForMinisterio, NavigationItem } from '@/config/navigation';
+import { getMobilePrimaryItems, getNavItemsForMinisterio, MinisterioNav, NavigationItem } from '@/config/navigation';
 import { MoreMenuSheet } from '@/components/navigation/more-menu-sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ type MobileBottomNavProps = {
   userId: string;
   campusNome?: string | null;
   navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
+  ministerios?: MinisterioNav[];
   onLogout: () => void;
 };
 
@@ -27,6 +28,7 @@ export function MobileBottomNav({
   userId,
   campusNome,
   navConfig,
+  ministerios,
   onLogout,
 }: MobileBottomNavProps) {
   const router = useRouter();
@@ -80,6 +82,7 @@ export function MobileBottomNav({
           userId={userId}
           campusNome={campusNome}
           navConfig={navConfig}
+          ministerios={ministerios}
           onLogout={onLogout}
           variant="mobile"
         >
