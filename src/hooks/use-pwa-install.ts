@@ -9,11 +9,24 @@ interface BeforeInstallPromptEvent extends Event {
 export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     // Detectar iOS
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     setIsIOS(iOS);
+
+    // Já instalado (aberto como app)
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    setIsInstalled(standalone);
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+    };
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     // Detectar evento beforeinstallprompt (Android/Chrome)
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -25,6 +38,7 @@ export function usePWAInstall() {
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
@@ -59,6 +73,8 @@ export function usePWAInstall() {
 
   return {
     isIOS,
+    // Instalação possível: prompt disponível (Android/Chrome) ou iOS no navegador (instruções)
+    canInstall: !isInstalled && (!!deferredPrompt || isIOS),
     handleInstall,
   };
 }
