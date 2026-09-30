@@ -1,27 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Card, CardContent } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Info } from 'lucide-react';
-import { registerUserSchema } from '@/lib/validations/register';
-import ButtonForm from '@/components/button-form';
-import Image from 'next/image';
 import { z } from 'zod';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CampusCombobox } from '@/components/campus-combobox';
+import { AlertCircle, ArrowLeft, ChevronDown, Clock, Eye, EyeOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Cadastro pede só os dados obrigatórios; telefone, foto, membresia e empresas
-// podem ser completados depois em "Meu perfil".
-const signupSchema = registerUserSchema.pick({ name: true, email: true, password: true });
+// são completados depois em "Meu perfil". A API (/api/register) não muda.
+function buildSchema(exigeCampus: boolean) {
+  return z.object({
+    name: z.string().trim().min(3, 'Digite seu nome completo'),
+    email: z.string().trim().email('Confira o e-mail. Ex.: nome@email.com'),
+    campusId: exigeCampus
+      ? z.string().min(1, 'Escolha o campus que você frequenta')
+      : z.string().optional(),
+    password: z.string().min(6, 'A senha precisa ter pelo menos 6 caracteres'),
+  });
+}
 
-type SignupData = z.infer<typeof signupSchema>;
+type SignupData = z.infer<ReturnType<typeof buildSchema>>;
 
 type Campus = {
   id: string;
@@ -30,13 +32,66 @@ type Campus = {
   estado: string;
 };
 
+const LABEL = 'mb-2 block text-sm font-semibold text-[#0E1024]';
+const INPUT =
+  'h-[52px] w-full rounded-xl border-[1.5px] border-[#D5D8E6] bg-white px-4 text-base text-[#0E1024] placeholder:text-[#6B7280] transition-colors focus:border-onda-blue focus:outline-none focus:ring-2 focus:ring-onda-blue/20';
+const INPUT_ERRO = 'border-2 border-[#B42A08] focus:border-[#B42A08] focus:ring-[#B42A08]/20';
+
+function MensagemCampo({ id, erro, ajuda }: { id: string; erro?: string; ajuda?: string }) {
+  if (erro) {
+    return (
+      <p id={id} className="mt-2 flex items-start gap-1.5 text-[13px] font-medium text-[#B42A08]">
+        <AlertCircle aria-hidden="true" className="mt-px h-4 w-4 shrink-0" />
+        {erro}
+      </p>
+    );
+  }
+  if (ajuda) {
+    return (
+      <p id={id} className="mt-2 text-[13px] text-[#4A5068]">
+        {ajuda}
+      </p>
+    );
+  }
+  return null;
+}
+
+function LogoBranca() {
+  return (
+    <Image
+      src="/logos/logo-principal-branco.png"
+      alt="igreja onda"
+      width={192}
+      height={40}
+      className="h-[22px] w-auto"
+      priority
+    />
+  );
+}
+
 export default function SignupPage() {
   const router = useRouter();
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [campusList, setCampusList] = useState<Campus[]>([]);
-  const [selectedCampusId, setSelectedCampusId] = useState<string>('');
-  const [campusError, setCampusError] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [erroServidor, setErroServidor] = useState<string | null>(null);
+  const [emailCadastrado, setEmailCadastrado] = useState<string | null>(null);
+  const tituloSucessoRef = useRef<HTMLHeadingElement>(null);
+
+  const schema = useMemo(() => buildSchema(campusList.length > 0), [campusList.length]);
+
+  const form = useForm<SignupData>({
+    resolver: zodResolver(schema),
+    mode: 'onBlur',
+    reValidateMode: 'onBlur',
+    shouldFocusError: true,
+    defaultValues: { name: '', email: '', campusId: '', password: '' },
+  });
+
+  const {
+    register,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = form;
 
   // Buscar lista de campus ao carregar a página
   useEffect(() => {
@@ -44,11 +99,11 @@ export default function SignupPage() {
       try {
         const response = await fetch('/api/campus');
         if (response.ok) {
-          const data = await response.json();
+          const data: Campus[] = await response.json();
           setCampusList(data);
           // Se houver apenas um campus, seleciona automaticamente
           if (data.length === 1) {
-            setSelectedCampusId(data[0].id);
+            setValue('campusId', data[0].id);
           }
         }
       } catch (error) {
@@ -56,180 +111,248 @@ export default function SignupPage() {
       }
     }
     fetchCampus();
-  }, []);
+  }, [setValue]);
 
-  const form = useForm<SignupData>({
-    resolver: zodResolver(signupSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-    },
-  });
+  const temErros = Object.keys(errors).length > 0;
 
-  const handleSubmit = form.handleSubmit(async (userData) => {
-    if (campusList.length > 0 && !selectedCampusId) {
-      setCampusError(true);
-      return;
-    }
+  // Foco no título ao abrir a confirmação
+  useEffect(() => {
+    if (emailCadastrado) tituloSucessoRef.current?.focus();
+  }, [emailCadastrado]);
 
+  const onSubmit = form.handleSubmit(async (dados) => {
+    setErroServidor(null);
     try {
-      setIsSubmitting(true);
-
       const response = await fetch('/api/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user: {
-            ...userData,
+            name: dados.name.trim(),
+            email: dados.email.trim(),
+            password: dados.password,
             role: 'user',
-            campusId: selectedCampusId || undefined,
+            campusId: dados.campusId || undefined,
           },
           empresas: [],
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erro ao criar conta');
+        const mensagem: string = data.error || 'Não foi possível criar sua conta. Tente novamente.';
+        // Erro do servidor ligado a um campo aparece no próprio campo
+        if (/e-?mail/i.test(mensagem)) {
+          form.setError('email', { message: mensagem }, { shouldFocus: true });
+        } else {
+          setErroServidor(mensagem);
+        }
+        return;
       }
 
-      toast({
-        title: 'Cadastro realizado com sucesso!',
-        description: data.message || 'Sua conta foi criada. Aguarde a aprovação de um administrador para fazer login.',
-      });
-
-      // Redirecionar para página de login após alguns segundos
-      setTimeout(() => {
-        router.push('/login');
-      }, 3000);
-    } catch (error) {
-      console.error('Erro ao criar conta:', error);
-      toast({
-        title: 'Erro',
-        description: error instanceof Error ? error.message : 'Erro ao criar conta. Tente novamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
+      setEmailCadastrado(dados.email.trim());
+      window.scrollTo({ top: 0 });
+    } catch {
+      setErroServidor('Não foi possível criar sua conta. Verifique sua conexão e tente novamente.');
     }
   });
 
-  return (
-    <main className="flex w-full min-h-screen flex-col items-center gap-4 p-2 sm:p-6">
-      <div className="p-2 sm:p-6 max-w-2xl mx-auto w-full">
-        {/* Header da página */}
-        <div className="flex items-center justify-center mb-6">
-          <Image
-            src="/logos/logo-principal-preto.png"
-            alt="Igreja Onda"
-            width={240}
-            height={50}
-            className="h-10 w-auto mx-auto"
-            priority
-          />
-        </div>
+  // ─── Estado de sucesso ────────────────────────────────────────────────────
+  if (emailCadastrado) {
+    return (
+      <div className="flex min-h-dvh flex-col bg-onda-blue">
+        <header className="mx-auto flex w-full max-w-[440px] justify-center px-5 pb-7 pt-[calc(20px+env(safe-area-inset-top))]">
+          <LogoBranca />
+        </header>
 
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold">Criar Conta</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Preencha seus dados para se cadastrar
+        <main className="mx-auto flex w-full max-w-[440px] flex-1 flex-col rounded-t-[24px] bg-white px-5 pb-[calc(24px+env(safe-area-inset-bottom))] pt-10">
+          <div className="flex flex-1 flex-col items-center text-center">
+            <span aria-hidden="true" className="flex h-20 w-20 items-center justify-center rounded-full bg-[#E5F4FE]">
+              <Clock className="h-10 w-10 text-onda-blue" />
+            </span>
+            <h1
+              ref={tituloSucessoRef}
+              tabIndex={-1}
+              className="mt-6 text-[26px] font-bold text-[#0E1024] focus:outline-none"
+            >
+              Cadastro enviado!
+            </h1>
+            <p className="mt-3 text-base leading-normal text-[#4A5068]">
+              Agora um administrador do seu campus vai aprovar seu acesso. Você recebe um e-mail assim
+              que ele for liberado. Depois, é só entrar com o e-mail e a senha que você cadastrou.
             </p>
+            <div className="mt-6 w-full rounded-[14px] border-[1.5px] border-[#D5D8E6] px-4 py-3 text-left">
+              <p className="text-[13px] text-[#4A5068]">Conta criada com</p>
+              <p className="break-all text-base font-semibold text-[#0E1024]">{emailCadastrado}</p>
+            </div>
           </div>
-          <Button variant="outline" onClick={() => router.push('/')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
-        </div>
 
-        <Card className="bg-white border border-slate-200">
-          <CardContent className="p-6">
-            <Alert className="mb-6">
-              <Info className="h-4 w-4" />
-              <AlertDescription className="text-xs">
-                Sua conta precisará ser aprovada por um administrador antes de você poder fazer login.
-                Telefone, foto e empresas podem ser adicionados depois, em Meu perfil.
-              </AlertDescription>
-            </Alert>
-
-            <Form {...form}>
-              <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Digite seu nome completo" autoComplete="name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>E-mail</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="Digite seu e-mail" autoComplete="email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {campusList.length > 0 && (
-                  <div>
-                    <CampusCombobox
-                      label="Campus"
-                      options={campusList}
-                      value={selectedCampusId}
-                      onChange={(id) => {
-                        setSelectedCampusId(id);
-                        setCampusError(false);
-                      }}
-                      placeholder="Selecione um campus"
-                      required
-                    />
-                    {campusError && (
-                      <p className="mt-2 text-sm font-medium text-red-500">Selecione um campus</p>
-                    )}
-                  </div>
-                )}
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Senha</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Mínimo 6 caracteres" autoComplete="new-password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <ButtonForm
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitting}
-                  label={isSubmitting ? 'Criando conta...' : 'Criar Conta'}
-                />
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+          <Link
+            href="/"
+            className="mt-8 flex h-[54px] w-full items-center justify-center rounded-[14px] bg-onda-blue text-base font-bold text-white transition-colors hover:bg-onda-blue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2"
+          >
+            Voltar para o início
+          </Link>
+        </main>
       </div>
-    </main>
+    );
+  }
+
+  // ─── Formulário ──────────────────────────────────────────────────────────
+  const ariaCampo = (campo: keyof SignupData, temAjuda = false) => ({
+    'aria-invalid': errors[campo] ? true : undefined,
+    'aria-describedby': errors[campo] || temAjuda ? `${campo}-mensagem` : undefined,
+  });
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-onda-blue">
+      <header className="mx-auto w-full max-w-[440px] px-5 pb-7 pt-[calc(12px+env(safe-area-inset-top))]">
+        <div className="relative flex h-11 items-center justify-center">
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            aria-label="Voltar"
+            className="absolute left-0 flex h-11 w-11 -translate-x-2.5 items-center justify-center rounded-xl text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          >
+            <ArrowLeft aria-hidden="true" className="h-[22px] w-[22px]" />
+          </button>
+          <LogoBranca />
+        </div>
+        <h1 className="mt-5 text-[28px] font-bold leading-tight text-white">Criar conta</h1>
+        <p className="mt-1.5 text-[15px] leading-normal text-[#D6DAF0]">
+          Leva menos de um minuto. Depois é só aguardar a aprovação.
+        </p>
+      </header>
+
+      <main className="mx-auto w-full max-w-[440px] flex-1 rounded-t-[24px] bg-white px-5 pb-[calc(24px+env(safe-area-inset-bottom))] pt-6">
+        {!temErros && (
+          <div role="note" className="mb-6 flex gap-3 rounded-[14px] bg-[#E5F4FE] px-4 py-3.5 text-onda-darkNavy">
+            <Clock aria-hidden="true" className="h-[22px] w-[22px] shrink-0 text-onda-medBlue" />
+            <div>
+              <p className="text-[15px] font-bold">Sua conta passa por aprovação</p>
+              <p className="mt-0.5 text-sm leading-normal">
+                Um administrador libera seu acesso. Telefone, foto e empresas você completa depois, em Meu perfil.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+          <div>
+            <label htmlFor="name" className={LABEL}>Nome completo</label>
+            <input
+              id="name"
+              type="text"
+              autoComplete="name"
+              autoCapitalize="words"
+              placeholder="Seu nome e sobrenome"
+              className={cn(INPUT, errors.name && INPUT_ERRO)}
+              {...ariaCampo('name')}
+              {...register('name')}
+            />
+            <MensagemCampo id="name-mensagem" erro={errors.name?.message} />
+          </div>
+
+          <div>
+            <label htmlFor="email" className={LABEL}>E-mail</label>
+            <input
+              id="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              placeholder="voce@email.com"
+              className={cn(INPUT, errors.email && INPUT_ERRO)}
+              {...ariaCampo('email')}
+              {...register('email')}
+            />
+            <MensagemCampo id="email-mensagem" erro={errors.email?.message} />
+          </div>
+
+          {campusList.length > 0 && (
+            <div>
+              <label htmlFor="campusId" className={LABEL}>Campus</label>
+              <div className="relative">
+                <select
+                  id="campusId"
+                  className={cn(INPUT, 'appearance-none pr-11', errors.campusId && INPUT_ERRO)}
+                  {...ariaCampo('campusId', true)}
+                  {...register('campusId')}
+                >
+                  <option value="">Selecione seu campus</option>
+                  {campusList.map((campus) => (
+                    <option key={campus.id} value={campus.id}>
+                      {campus.nome}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#4A5068]"
+                />
+              </div>
+              <MensagemCampo
+                id="campusId-mensagem"
+                erro={errors.campusId?.message}
+                ajuda="O campus que você frequenta"
+              />
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="password" className={LABEL}>Senha</label>
+            <div className="relative">
+              <input
+                id="password"
+                type={mostrarSenha ? 'text' : 'password'}
+                autoComplete="new-password"
+                className={cn(INPUT, 'pr-14', errors.password && INPUT_ERRO)}
+                {...ariaCampo('password', true)}
+                {...register('password')}
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarSenha((v) => !v)}
+                aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-[#4A5068] transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40"
+              >
+                {mostrarSenha
+                  ? <EyeOff aria-hidden="true" className="h-5 w-5" />
+                  : <Eye aria-hidden="true" className="h-5 w-5" />}
+              </button>
+            </div>
+            <MensagemCampo id="password-mensagem" erro={errors.password?.message} ajuda="Mínimo de 6 caracteres" />
+          </div>
+
+          {erroServidor && (
+            <div role="alert" className="flex gap-2 rounded-[14px] border border-[#B42A08]/30 bg-[#FDF1EE] px-4 py-3 text-sm font-medium text-[#B42A08]">
+              <AlertCircle aria-hidden="true" className="mt-px h-4 w-4 shrink-0" />
+              {erroServidor}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="mt-1 h-[54px] w-full rounded-[14px] bg-onda-blue text-base font-bold text-white transition-colors hover:bg-onda-blue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isSubmitting ? 'Criando conta…' : 'Criar conta'}
+          </button>
+
+          <p className="flex items-center justify-center gap-1 text-[15px] text-[#4A5068]">
+            Já tem uma conta?
+            <Link
+              href="/login"
+              className="inline-flex min-h-11 items-center px-1 font-bold text-onda-blue underline underline-offset-2"
+            >
+              Entrar
+            </Link>
+          </p>
+        </form>
+      </main>
+    </div>
   );
 }
