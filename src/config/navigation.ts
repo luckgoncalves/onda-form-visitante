@@ -128,11 +128,39 @@ export const inicioItem: NavigationItem = {
   icon: Home,
 };
 
-/** Barra inferior de quem não tem ministério: Início, Empresas e Grupos (+ Mais). */
-export function getSemMinisterioPrimaryItems(): NavigationItem[] {
-  const porRota = (href: string) => navigationItems.find((i) => i.href === href && !i.adminOnly);
-  const grupos = navigationItems.find((i) => i.externalHref?.includes('groups'));
-  return [inicioItem, porRota('/empresas'), grupos].filter((i): i is NavigationItem => !!i);
+/**
+ * Itens da barra inferior (celular), exceto "Mais"/"Perfil", que o componente acrescenta.
+ * Início é sempre o primeiro. Com ministério ou perfil de acesso: Início + até 3 itens + Mais
+ * (o que passar disso fica no "Mais"). Sem ministério: Início · Empresas · Grupos (+ Perfil).
+ */
+export function getBottomNavItems({
+  isAdmin,
+  paginasHabilitadas = [],
+  semMinisterio = false,
+}: {
+  isAdmin: boolean;
+  paginasHabilitadas?: string[];
+  semMinisterio?: boolean;
+}): NavigationItem[] {
+  if (!isAdmin && semMinisterio) {
+    const empresas = navigationItems.find((i) => i.href === '/empresas' && !i.adminOnly);
+    const grupos = navigationItems.find((i) => i.externalHref?.includes('groups'));
+    return [inicioItem, empresas, grupos].filter((i): i is NavigationItem => !!i);
+  }
+
+  const doPerfil = isAdmin
+    ? getMobilePrimaryItems(true)
+    : paginasHabilitadas.length
+      ? getNavItemsForMinisterio(paginasHabilitadas)
+      : getMobilePrimaryItems(false);
+  return [inicioItem, ...doPerfil.slice(0, 3)];
+}
+
+/** Página de entrada de um ministério: a página inicial configurada ou a primeira habilitada. */
+export function getEntradaMinisterio(ministerio: MinisterioNav): NavigationItem | null {
+  const paginas = getNavItemsForMinisterio(ministerio.paginasHabilitadas);
+  if (!paginas.length) return null;
+  return paginas.find((p) => getNavKey(p) === ministerio.paginaInicial) ?? paginas[0];
 }
 
 export const feedbackItem = {
@@ -160,6 +188,7 @@ export type MinisterioNav = {
   nome: string;
   icone?: string | null;
   cor?: string | null;
+  paginaInicial?: string | null;
   paginasHabilitadas: string[];
 };
 

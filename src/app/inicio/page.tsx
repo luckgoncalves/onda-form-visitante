@@ -4,11 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, ChevronDown, ChevronRight, Handshake, User } from 'lucide-react';
-import { checkAuth, checkIsAdmin } from '@/app/actions';
+import { checkAuth } from '@/app/actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { MINISTERIO_CORES, MINISTERIO_COR_KEYS, resolverVisualMinisterio } from '@/config/ministerio-visual';
-import { paginaInicialDoUsuario } from '@/lib/pagina-inicial';
+import { getEntradaMinisterio, MinisterioNav } from '@/config/navigation';
 
 type EmpresaDestaque = { id: string; nomeNegocio: string; ramoAtuacao?: string; logoUrl?: string | null };
 type MinisterioLideres = { id: string; nome: string; icone: string | null; cor: string | null; lideres: string[] };
@@ -66,6 +66,8 @@ export default function InicioPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [hub, setHub] = useState<Secao<{ total: number; empresas: EmpresaDestaque[] }>>({ estado: 'carregando' });
   const [lideres, setLideres] = useState<Secao<MinisterioLideres[]>>({ estado: 'carregando' });
+  // null enquanto carrega; [] = sem ministério
+  const [meusMinisterios, setMeusMinisterios] = useState<MinisterioNav[] | null>(null);
   const [faltando, setFaltando] = useState<Faltando[]>([]);
 
   const carregarHub = useCallback(async () => {
@@ -93,31 +95,29 @@ export default function InicioPage() {
   }, []);
 
   useEffect(() => {
-    // Dados das seções em paralelo com a checagem de acesso
+    // Hub e perfil em paralelo com a checagem de acesso
     carregarHub();
-    carregarLideres();
     fetch('/api/inicio/perfil')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => data && setFaltando(data.faltando))
       .catch(() => {});
 
-    Promise.all([checkAuth(), checkIsAdmin()]).then(([{ user }, { isAdmin }]) => {
+    checkAuth().then(({ user }) => {
       if (!user) {
         router.replace('/');
         return;
       }
-      // Quem já está em um ministério (ou é admin) vai para a home normal
-      const destino = paginaInicialDoUsuario(user, isAdmin);
-      if (destino !== '/inicio') {
-        router.replace(destino);
-        return;
-      }
       setPrimeiroNome(user.name.trim().split(/\s+/)[0]);
       setUserId(user.id);
+      setMeusMinisterios(user.ministeriosNav);
+      // Líderes só para quem ainda não participa de um ministério
+      if (!user.temMinisterio) carregarLideres();
     });
   }, [router, carregarHub, carregarLideres]);
 
   const empresas = hub.dados?.empresas ?? [];
+  const semMinisterio = meusMinisterios !== null && meusMinisterios.length === 0;
+  const comMinisterio = meusMinisterios !== null && meusMinisterios.length > 0;
 
   return (
     <div className="mt-[72px] min-h-[calc(100dvh-72px)] bg-[#F5F6FA]">
@@ -127,14 +127,67 @@ export default function InicioPage() {
           <h1 className="text-[28px] font-bold leading-tight text-white lg:text-[32px]">
             {primeiroNome ? `Olá, ${primeiroNome}!` : <span className="invisible">Olá!</span>}
           </h1>
-          <p className="mt-1 text-base text-[#D6DAF0]">Que bom ter você na Onda. Sua conta está ativa.</p>
+          <p className="mt-1 text-base text-[#D6DAF0]">
+            Que bom ter você na Onda.{semMinisterio && ' Sua conta está ativa.'}
+          </p>
         </div>
       </div>
 
       {/* Celular/tablet: uma coluna · Desktop (≥1024px): principal 2/3 + lateral 1/3 (mín. 300px) */}
       <div className="grid gap-6 px-4 pb-6 pt-4 md:px-6 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] lg:items-start">
         <div className="flex min-w-0 flex-col gap-6">
-          {/* Card do ministério (horizontal no desktop) */}
+          {meusMinisterios === null && <Skeleton className="h-40 w-full rounded-2xl" />}
+
+          {/* Seus ministérios: atalho para a página de entrada de cada ministério */}
+          {comMinisterio && (
+            <section aria-labelledby="meus-ministerios-titulo">
+              <h2 id="meus-ministerios-titulo" className={`${ROTULO} mb-3`}>Seus ministérios</h2>
+              <ul className={`${CARD} overflow-hidden`}>
+                {meusMinisterios.map((m) => {
+                  const { icon: Icon, color } = resolverVisualMinisterio(m.icone, m.cor);
+                  const entrada = getEntradaMinisterio(m);
+                  const conteudo = (
+                    <>
+                      <span
+                        aria-hidden="true"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: color.bg, color: color.fg }}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[15px] font-bold text-[#0E1024]">{m.nome}</span>
+                        {!entrada && (
+                          <span className="block truncate text-sm text-[#4A5068]">Nenhuma página liberada ainda</span>
+                        )}
+                      </span>
+                    </>
+                  );
+                  const linha = 'flex min-h-16 items-center gap-3 px-4 py-3';
+                  return (
+                    <li key={m.id} className="border-b border-[#ECEDF3] last:border-b-0">
+                      {entrada?.href ? (
+                        <Link href={entrada.href} className={cn(linha, 'transition-colors hover:bg-[#F8F9FC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-onda-blue/40')}>
+                          {conteudo}
+                          <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-[#4A5068]" />
+                        </Link>
+                      ) : entrada?.externalHref ? (
+                        <a href={entrada.externalHref} target="_blank" rel="noopener noreferrer" className={cn(linha, 'transition-colors hover:bg-[#F8F9FC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-onda-blue/40')}>
+                          {conteudo}
+                          <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-[#4A5068]" />
+                        </a>
+                      ) : (
+                        <div className={linha}>{conteudo}</div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
+          {/* Card do ministério (horizontal no desktop) — só para quem não tem ministério */}
+          {semMinisterio && (
           <section aria-labelledby="sem-ministerio-titulo" className={`${CARD} flex flex-col gap-[18px] p-5 lg:flex-row lg:gap-5`}>
             <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[#E5F4FE] lg:h-14 lg:w-14">
               <Handshake className="h-6 w-6 text-onda-medBlue lg:h-7 lg:w-7" />
@@ -169,6 +222,7 @@ export default function InicioPage() {
               </details>
             </div>
           </section>
+          )}
 
           {/* Destaques do Hub */}
           <section aria-labelledby="hub-titulo">
@@ -247,8 +301,8 @@ export default function InicioPage() {
 
         <div className="flex min-w-0 flex-col gap-6">
 
-          {/* Líderes dos ministérios */}
-          {!(lideres.estado === 'pronto' && lideres.dados!.length === 0) && (
+          {/* Líderes dos ministérios — só para quem não tem ministério */}
+          {semMinisterio && !(lideres.estado === 'pronto' && lideres.dados!.length === 0) && (
             <section aria-labelledby="lideres-titulo">
               <h2 id="lideres-titulo" className={`${ROTULO} mb-3`}>Líderes dos ministérios</h2>
               {lideres.estado === 'carregando' ? (

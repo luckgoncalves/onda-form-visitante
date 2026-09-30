@@ -132,7 +132,7 @@ export default function PaginasMinisterioPage() {
           <CardTitle>Páginas do Ministério — {ministerio.nome}</CardTitle>
           <CardDescription>
             Configure quais páginas são visíveis para os membros deste ministério e qual é a página
-            inicial após o login. Se nenhuma página for marcada, todas as páginas padrão serão
+            de entrada do ministério. Se nenhuma página for marcada, todas as páginas padrão serão
             exibidas.
           </CardDescription>
         </CardHeader>
@@ -170,10 +170,13 @@ export default function PaginasMinisterioPage() {
 
           {/* Initial page select */}
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-gray-700">Página inicial após login</h3>
+            <h3 className="text-sm font-semibold text-gray-700">Página de entrada do ministério</h3>
+            <p className="text-xs text-gray-500">
+              Para onde o atalho do ministério leva, em &quot;Seus ministérios&quot; no Início.
+            </p>
             {checkedPages.length === 0 ? (
               <p className="text-sm text-gray-500">
-                Marque ao menos uma página acima para definir a página inicial.
+                Marque ao menos uma página acima para definir a página de entrada.
               </p>
             ) : (
               <select

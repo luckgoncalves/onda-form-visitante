@@ -3,13 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormField, FormLabel } from "@/components/ui/form";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { login, loginWithInpeace, checkAuth, checkIsAdmin } from "../actions";
+import { login, loginWithInpeace, checkAuth } from "../actions";
 import ButtonForm from "@/components/button-form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadingOnda from "@/components/loading-onda";
-import { paginaInicialDoUsuario } from "@/lib/pagina-inicial";
+import { PAGINA_INICIAL } from "@/lib/pagina-inicial";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,15 +33,13 @@ export default function LoginPage() {
             reject(new Error('Timeout'));
           }, 10000);
         });
-        const authPromise = Promise.all([checkAuth(), checkIsAdmin()]);
-
-        const [{isAuthenticated, user}, {isAdmin}] = await Promise.race([authPromise, timeoutPromise]) as [Awaited<ReturnType<typeof checkAuth>>, Awaited<ReturnType<typeof checkIsAdmin>>];
+        const { isAuthenticated, user } = await Promise.race([checkAuth(), timeoutPromise]);
 
         if (isAuthenticated) {
           if (user?.requirePasswordChange) {
             router.push('/change-password');
           } else {
-            router.push(paginaInicialDoUsuario(user!, isAdmin));
+            router.push(PAGINA_INICIAL);
           }
         }
       } catch (error) {
@@ -54,21 +52,8 @@ export default function LoginPage() {
     checkAuthentication();
   }, [router]);
 
-  const redirecionarAposLogin = async (loginUser: { role: string; requirePasswordChange: boolean }) => {
-    if (loginUser.requirePasswordChange) {
-      router.push('/change-password');
-      return;
-    }
-
-    const { isAdmin, user } = await Promise.all([
-      checkIsAdmin(),
-      checkAuth(),
-    ]).then(([adminResult, authResult]) => ({
-      isAdmin: adminResult.isAdmin,
-      user: authResult.user,
-    }));
-
-    router.push(paginaInicialDoUsuario(user ?? { role: loginUser.role, temMinisterio: true }, isAdmin));
+  const redirecionarAposLogin = async (loginUser: { requirePasswordChange: boolean }) => {
+    router.push(loginUser.requirePasswordChange ? '/change-password' : PAGINA_INICIAL);
   };
 
   const submitAction = form.handleSubmit(async (formData) => {

@@ -36,15 +36,18 @@ export function Header({ userName, userId, isAdmin, campusNome, campusCidade, pr
     };
   }, []);
 
-  const desktopPrimaryItems = (() => {
-    if (isAdmin) return getDesktopPrimaryItems(true);
-    if (navConfig?.paginasHabilitadas?.length) {
-      // Ministry config: show exactly the granted pages (may include admin-only ones)
-      return getNavItemsForMinisterio(navConfig.paginasHabilitadas);
-    }
-    const itens = getDesktopPrimaryItems(false);
-    return semMinisterio ? [inicioItem, ...itens] : itens;
-  })();
+  // Início é sempre o primeiro link, seguido dos itens do ministério ou do perfil de acesso
+  const desktopPrimaryItems = [
+    inicioItem,
+    ...(() => {
+      if (isAdmin) return getDesktopPrimaryItems(true);
+      if (navConfig?.paginasHabilitadas?.length) {
+        // Ministry config: show exactly the granted pages (may include admin-only ones)
+        return getNavItemsForMinisterio(navConfig.paginasHabilitadas);
+      }
+      return getDesktopPrimaryItems(false);
+    })(),
+  ];
 
   const isActive = (item: NavigationItem) => {
     if (!item.href) return false;
@@ -70,7 +73,7 @@ export function Header({ userName, userId, isAdmin, campusNome, campusCidade, pr
             <button
               type="button"
               className="shrink-0 cursor-pointer"
-              onClick={() => router.push(isAdmin ? '/list' : semMinisterio ? '/inicio' : '/register')}
+              onClick={() => router.push('/inicio')}
               aria-label="Ir para início"
             >
               <Image
@@ -123,7 +126,6 @@ export function Header({ userName, userId, isAdmin, campusNome, campusCidade, pr
               profileImageUrl={profileImageUrl}
               navConfig={navConfig}
               ministerios={ministerios}
-              semMinisterio={semMinisterio}
               onLogout={onLogout}
             >
               <Button

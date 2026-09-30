@@ -1,9 +1,9 @@
 'use client';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { checkAuth, checkIsAdmin } from "./actions";
+import { checkAuth } from "./actions";
 import LoadingOnda from "@/components/loading-onda";
-import { paginaInicialDoUsuario } from "@/lib/pagina-inicial";
+import { PAGINA_INICIAL } from "@/lib/pagina-inicial";
 import Link from "next/link";
 import { UsersRound, Building, LogIn, UserPlus, ArrowRight, ChevronRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,17 +25,13 @@ export default function Home() {
             reject(new Error('Timeout'));
           }, 10000);
         });
-        const authPromise = Promise.all([checkAuth(), checkIsAdmin()]);
-
-        const [{isAuthenticated, user}, {isAdmin}] = await Promise.race([authPromise, timeoutPromise]) as [Awaited<ReturnType<typeof checkAuth>>, Awaited<ReturnType<typeof checkIsAdmin>>];
+        const { isAuthenticated, user } = await Promise.race([checkAuth(), timeoutPromise]);
 
         if (isAuthenticated) {
           if (user?.requirePasswordChange) {
             router.push('/change-password');
           } else {
-            if (isAdmin || user?.role === 'base_pessoal' || user?.role === 'user') {
-              router.push(paginaInicialDoUsuario(user!, isAdmin));
-            }
+            router.push(PAGINA_INICIAL);
           }
           return;
         }

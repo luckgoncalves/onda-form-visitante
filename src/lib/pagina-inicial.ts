@@ -1,15 +1,5 @@
-type UsuarioInicial = {
-  role: string;
-  temMinisterio?: boolean;
-  ministerioNavConfig?: { paginaInicial: string } | null;
-};
-
-/** Página para onde o usuário vai ao abrir o app ou depois do login. */
-export function paginaInicialDoUsuario(user: UsuarioInicial, isAdmin: boolean): string {
-  if (isAdmin) return '/list';
-  if (user.ministerioNavConfig?.paginaInicial) return user.ministerioNavConfig.paginaInicial;
-  if (user.role === 'base_pessoal') return '/register';
-  // Conta aprovada que ainda não participa de nenhum ministério
-  if (!user.temMinisterio) return '/inicio';
-  return '/empresas';
-}
+/**
+ * Página para onde todo usuário vai ao abrir o app ou depois do login.
+ * O Início é a home de todos; o conteúdo muda conforme a pessoa tem ou não ministério.
+ */
+export const PAGINA_INICIAL = '/inicio';

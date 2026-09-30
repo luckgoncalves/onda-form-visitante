@@ -1,10 +1,10 @@
 'use client';
 
-import { MoreHorizontal } from 'lucide-react';
+import { forwardRef } from 'react';
+import { LucideIcon, MoreHorizontal, User } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getMobilePrimaryItems, getNavItemsForMinisterio, getSemMinisterioPrimaryItems, MinisterioNav, NavigationItem } from '@/config/navigation';
+import { getBottomNavItems, MinisterioNav, NavigationItem } from '@/config/navigation';
 import { MoreMenuSheet } from '@/components/navigation/more-menu-sheet';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type MobileBottomNavProps = {
@@ -20,10 +20,44 @@ type MobileBottomNavProps = {
   onLogout: () => void;
 };
 
-function isActive(pathname: string, item: NavigationItem) {
-  if (!item.href) return false;
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+function isActive(pathname: string, href?: string) {
+  if (!href) return false;
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
+
+type ItemBarraProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  icon: LucideIcon;
+  label: string;
+  active: boolean;
+};
+
+// Item da barra: pílula atrás do ícone quando ativo
+const ItemBarra = forwardRef<HTMLButtonElement, ItemBarraProps>(function ItemBarra(
+  { icon: Icon, label, active, className, ...props },
+  ref
+) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      aria-current={active ? 'page' : undefined}
+      className={cn(
+        'flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40',
+        active ? 'font-bold text-onda-blue' : 'font-medium text-[#5B6478]',
+        className
+      )}
+      {...props}
+    >
+      <span
+        aria-hidden="true"
+        className={cn('flex h-[30px] w-[52px] items-center justify-center rounded-full', active && 'bg-[#E8E9F4]')}
+      >
+        <Icon className="h-[22px] w-[22px]" />
+      </span>
+      <span className="max-w-full truncate px-0.5">{label}</span>
+    </button>
+  );
+});
 
 export function MobileBottomNav({
   isAdmin,
@@ -39,77 +73,71 @@ export function MobileBottomNav({
 }: MobileBottomNavProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const primaryItems = (() => {
-    if (isAdmin) return getMobilePrimaryItems(true);
-    if (navConfig?.paginasHabilitadas?.length) {
-      // Ministry config: show exactly the granted pages (may include admin-only ones)
-      return getNavItemsForMinisterio(navConfig.paginasHabilitadas);
-    }
-    if (semMinisterio) return getSemMinisterioPrimaryItems();
-    return getMobilePrimaryItems(false);
-  })();
 
-  // "Mais" fica ativo quando a página atual não é um dos atalhos da barra
-  const maisAtivo = !primaryItems.slice(0, 3).some((item) => isActive(pathname, item));
+  const itens = getBottomNavItems({
+    isAdmin,
+    paginasHabilitadas: navConfig?.paginasHabilitadas,
+    semMinisterio,
+  });
+  // Sem ministério a barra termina em "Perfil"; nos demais casos, em "Mais"
+  const comPerfil = !isAdmin && !!semMinisterio;
+  const perfilHref = `/users/${userId}`;
+  const maisAtivo = !comPerfil && !itens.some((item) => isActive(pathname, item.href));
 
   const handleNavigate = (item: NavigationItem) => {
     if (item.externalHref) {
       window.open(item.externalHref, '_blank', 'noopener,noreferrer');
       return;
     }
-
-    if (item.href) {
-      router.push(item.href);
+    if (!item.href) return;
+    // Tocar na página em que já está (ex.: Início) rola até o topo
+    if (pathname === item.href) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
+    router.push(item.href);
   };
 
+  const colunas = itens.length + 1;
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
-      <div className="grid grid-cols-4 gap-1">
-        {primaryItems.slice(0, 3).map((item) => {
-          const Icon = item.icon;
-          const active = isActive(pathname, item);
+    <nav
+      aria-label="Navegação principal"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#ECEDF3] bg-white px-1 pb-[calc(env(safe-area-inset-bottom)+0.25rem)] pt-1 md:hidden"
+    >
+      <div className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${colunas}, minmax(0, 1fr))` }}>
+        {itens.map((item) => (
+          <ItemBarra
+            key={item.label}
+            icon={item.icon}
+            label={item.label}
+            active={isActive(pathname, item.href)}
+            onClick={() => handleNavigate(item)}
+          />
+        ))}
 
-          return (
-            <Button
-              key={item.label}
-              variant="ghost"
-              className={cn(
-                'h-14 flex-col gap-1 rounded-2xl px-2 text-xs text-gray-500',
-                active && 'bg-onda-darkBlue/10 text-onda-darkBlue'
-              )}
-              onClick={() => handleNavigate(item)}
-            >
-              <Icon className="h-5 w-5" />
-              <span>{item.label}</span>
-            </Button>
-          );
-        })}
-
-        <MoreMenuSheet
-          isAdmin={isAdmin}
-          userName={userName}
-          userId={userId}
-          campusNome={campusNome}
-          campusCidade={campusCidade}
-          profileImageUrl={profileImageUrl}
-          navConfig={navConfig}
-          ministerios={ministerios}
-          semMinisterio={semMinisterio}
-          onLogout={onLogout}
-        >
-          <Button
-            variant="ghost"
-            aria-current={maisAtivo ? 'page' : undefined}
-            className={cn(
-              'h-14 flex-col gap-1 rounded-2xl px-2 text-xs text-gray-500',
-              maisAtivo && 'font-bold text-onda-blue'
-            )}
+        {comPerfil ? (
+          <ItemBarra
+            icon={User}
+            label="Perfil"
+            active={isActive(pathname, perfilHref)}
+            onClick={() => handleNavigate({ label: 'Perfil', href: perfilHref, icon: User })}
+          />
+        ) : (
+          <MoreMenuSheet
+            isAdmin={isAdmin}
+            userName={userName}
+            userId={userId}
+            campusNome={campusNome}
+            campusCidade={campusCidade}
+            profileImageUrl={profileImageUrl}
+            navConfig={navConfig}
+            ministerios={ministerios}
+            onLogout={onLogout}
           >
-            <MoreHorizontal aria-hidden="true" className="h-5 w-5" />
-            <span>Mais</span>
-          </Button>
-        </MoreMenuSheet>
+            <ItemBarra icon={MoreHorizontal} label="Mais" active={maisAtivo} />
+          </MoreMenuSheet>
+        )}
       </div>
     </nav>
   );

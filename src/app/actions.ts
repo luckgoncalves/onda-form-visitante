@@ -392,19 +392,28 @@ export async function checkAuth() {
     ].filter(Boolean) as { paginaInicial: string; paginasHabilitadas: unknown }[];
 
     // Páginas liberadas por ministério, para agrupar o menu por ministério
-    const ministeriosNav: { id: string; nome: string; icone: string | null; cor: string | null; paginasHabilitadas: string[] }[] = [];
+    // Todos os ministérios do usuário (inclusive sem páginas configuradas), na ordem líder > co-líder > membro
+    const ministeriosNav: {
+      id: string;
+      nome: string;
+      icone: string | null;
+      cor: string | null;
+      paginaInicial: string | null;
+      paginasHabilitadas: string[];
+    }[] = [];
     for (const m of [
       ...user.ministeriosLiderados,
       ...user.ministeriosCoLiderados,
       ...user.ministerios.map((um) => um.ministerio),
     ]) {
-      if (!m.navConfig || ministeriosNav.some((n) => n.id === m.id)) continue;
+      if (ministeriosNav.some((n) => n.id === m.id)) continue;
       ministeriosNav.push({
         id: m.id,
-        nome: m.nome,
+        nome: m.nome.trim(),
         icone: m.icone,
         cor: m.cor,
-        paginasHabilitadas: parsePages(m.navConfig.paginasHabilitadas),
+        paginaInicial: m.navConfig?.paginaInicial ?? null,
+        paginasHabilitadas: m.navConfig ? parsePages(m.navConfig.paginasHabilitadas) : [],
       });
     }
 
