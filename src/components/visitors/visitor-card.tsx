@@ -109,7 +109,7 @@ function VisitorCard({ visitante, onItemClick, onWhatsAppClick, onMessageStatusC
                   </p>
                 )}
                 {visitante.etiquetas && visitante.etiquetas.length > 0 && (
-                  <div className="hidden sm:flex flex-wrap gap-1.5 mt-3">
+                  <div className="flex flex-wrap gap-1.5 mt-2 sm:mt-3">
                     {visitante.etiquetas.map((etiqueta) => (
                       <Badge
                         key={etiqueta.id}
