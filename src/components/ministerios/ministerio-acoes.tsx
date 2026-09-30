@@ -92,7 +92,8 @@ export function MinisterioAcoes({ nome, lideres, identidade, acoes }: Props) {
   return (
     <>
       {botao}
-      <Drawer open={aberta} onOpenChange={setAberta}>
+      {/* noBodyStyles: evita o scroll da página ao fechar a folha e navegar (Safari/iOS) */}
+      <Drawer open={aberta} onOpenChange={setAberta} noBodyStyles>
         <DrawerContent
           hideCloseButton
           overlayClassName="bg-[rgba(12,14,40,0.55)]"

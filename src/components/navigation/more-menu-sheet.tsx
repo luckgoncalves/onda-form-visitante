@@ -207,16 +207,12 @@ export function MoreMenuSheet({
   };
 
   const handleNavigate = (item: Pick<NavigationItem, 'href' | 'externalHref'>) => {
-    setOpen(false);
-
     if (item.externalHref) {
       window.open(item.externalHref, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
-    if (item.href) {
+    } else if (item.href) {
       router.push(item.href);
     }
+    setOpen(false);
   };
 
   const handleLogout = () => {
@@ -228,7 +224,10 @@ export function MoreMenuSheet({
   const FeedbackIcon = feedbackItem.icon;
 
   return (
-    <Drawer open={open} onOpenChange={setOpen} direction="right">
+    // handleOnly: toques nos itens nunca viram gesto de arrastar (evita fechar no pointerup e o toque cair na página de trás).
+    // noBodyStyles: sem o position:fixed + scrollTo do vaul no Safari/iOS, que rolava a página durante a navegação.
+    // O scroll do fundo continua travado pelo Dialog do Radix.
+    <Drawer open={open} onOpenChange={setOpen} direction="right" handleOnly noBodyStyles>
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
         side="right"
