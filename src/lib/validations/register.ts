@@ -20,3 +20,6 @@ export const registerSchema = z.object({
 export type RegisterUserData = z.infer<typeof registerUserSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;
 
+
+// Finalidade do token devolvido por /api/register para cadastrar empresas antes da aprovação
+export const CADASTRO_EMPRESA_TOKEN_PURPOSE = 'cadastro-empresa';

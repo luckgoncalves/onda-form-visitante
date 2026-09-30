@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import { CADASTRO_EMPRESA_TOKEN_PURPOSE } from '@/lib/validations/register';
 import { registerSchema } from '@/lib/validations/register';
 
 // POST /api/register - Registrar novo usuário
@@ -95,9 +96,17 @@ export async function POST(request: NextRequest) {
     // Não fazer auto-login pois o usuário precisa ser aprovado primeiro
     // O usuário será notificado que precisa aguardar aprovação
 
+    // Token de uso curto para cadastrar empresas logo após criar a conta (a pessoa ainda não pode logar)
+    const empresaToken = sign(
+      { userId: resultado.user.id, purpose: CADASTRO_EMPRESA_TOKEN_PURPOSE },
+      process.env.JWT_SECRET!,
+      { expiresIn: '30m' }
+    );
+
     return NextResponse.json({
       success: true,
       message: 'Cadastro realizado com sucesso! Aguarde a aprovação de um administrador para acessar o sistema.',
+      empresaToken,
       user: {
         id: resultado.user.id,
         name: resultado.user.name,

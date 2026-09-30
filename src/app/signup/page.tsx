@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { AlertCircle, ArrowLeft, ChevronDown, Clock, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Building, Check, ChevronDown, Clock, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { INPUT, INPUT_ERRO, LABEL, LogoBranca, MensagemCampo } from '@/components/signup/campos';
+import { CadastroEmpresaForm } from '@/components/signup/cadastro-empresa-form';
 
 // Cadastro pede só os dados obrigatórios; telefone, foto, membresia e empresas
 // são completados depois em "Meu perfil". A API (/api/register) não muda.
@@ -32,50 +33,18 @@ type Campus = {
   estado: string;
 };
 
-const LABEL = 'mb-2 block text-sm font-semibold text-[#0E1024]';
-const INPUT =
-  'h-[52px] w-full rounded-xl border-[1.5px] border-[#D5D8E6] bg-white px-4 text-base text-[#0E1024] placeholder:text-[#6B7280] transition-colors focus:border-onda-blue focus:outline-none focus:ring-2 focus:ring-onda-blue/20';
-const INPUT_ERRO = 'border-2 border-[#B42A08] focus:border-[#B42A08] focus:ring-[#B42A08]/20';
-
-function MensagemCampo({ id, erro, ajuda }: { id: string; erro?: string; ajuda?: string }) {
-  if (erro) {
-    return (
-      <p id={id} className="mt-2 flex items-start gap-1.5 text-[13px] font-medium text-[#B42A08]">
-        <AlertCircle aria-hidden="true" className="mt-px h-4 w-4 shrink-0" />
-        {erro}
-      </p>
-    );
-  }
-  if (ajuda) {
-    return (
-      <p id={id} className="mt-2 text-[13px] text-[#4A5068]">
-        {ajuda}
-      </p>
-    );
-  }
-  return null;
-}
-
-function LogoBranca() {
-  return (
-    <Image
-      src="/logos/logo-principal-branco.png"
-      alt="igreja onda"
-      width={192}
-      height={40}
-      className="h-[22px] w-auto"
-      priority
-    />
-  );
-}
-
 export default function SignupPage() {
   const router = useRouter();
   const [campusList, setCampusList] = useState<Campus[]>([]);
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erroServidor, setErroServidor] = useState<string | null>(null);
   const [emailCadastrado, setEmailCadastrado] = useState<string | null>(null);
+  const [empresaToken, setEmpresaToken] = useState<string | null>(null);
+  const [cadastrandoEmpresa, setCadastrandoEmpresa] = useState(false);
+  const [empresasCadastradas, setEmpresasCadastradas] = useState<string[]>([]);
+  const [avisoEmpresa, setAvisoEmpresa] = useState<string | null>(null);
   const tituloSucessoRef = useRef<HTMLHeadingElement>(null);
+  const tituloEmpresaRef = useRef<HTMLHeadingElement>(null);
 
   const schema = useMemo(() => buildSchema(campusList.length > 0), [campusList.length]);
 
@@ -115,10 +84,12 @@ export default function SignupPage() {
 
   const temErros = Object.keys(errors).length > 0;
 
-  // Foco no título ao abrir a confirmação
+  // Foco no título ao trocar de tela (confirmação ↔ cadastro de empresa)
   useEffect(() => {
-    if (emailCadastrado) tituloSucessoRef.current?.focus();
-  }, [emailCadastrado]);
+    if (!emailCadastrado) return;
+    (cadastrandoEmpresa ? tituloEmpresaRef : tituloSucessoRef).current?.focus();
+    window.scrollTo({ top: 0 });
+  }, [emailCadastrado, cadastrandoEmpresa]);
 
   const onSubmit = form.handleSubmit(async (dados) => {
     setErroServidor(null);
@@ -151,12 +122,60 @@ export default function SignupPage() {
         return;
       }
 
+      setEmpresaToken(data.empresaToken || null);
       setEmailCadastrado(dados.email.trim());
-      window.scrollTo({ top: 0 });
     } catch {
       setErroServidor('Não foi possível criar sua conta. Verifique sua conexão e tente novamente.');
     }
   });
+
+  // ─── Cadastro de empresa (após criar a conta) ─────────────────────────────
+  if (emailCadastrado && cadastrandoEmpresa && empresaToken) {
+    return (
+      <div className="flex min-h-dvh flex-col bg-onda-blue">
+        <header className="mx-auto w-full max-w-[440px] px-5 pb-7 pt-[calc(12px+env(safe-area-inset-top))]">
+          <div className="relative flex h-11 items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setCadastrandoEmpresa(false)}
+              aria-label="Voltar"
+              className="absolute left-0 flex h-11 w-11 -translate-x-2.5 items-center justify-center rounded-xl text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+            >
+              <ArrowLeft aria-hidden="true" className="h-[22px] w-[22px]" />
+            </button>
+            <LogoBranca />
+          </div>
+          <h1
+            ref={tituloEmpresaRef}
+            tabIndex={-1}
+            className="mt-5 text-[28px] font-bold leading-tight text-white focus:outline-none"
+          >
+            Cadastrar empresa
+          </h1>
+          <p className="mt-1.5 text-[15px] leading-normal text-[#D6DAF0]">
+            Ela aparece no Hub da comunidade depois que sua conta for aprovada.
+          </p>
+        </header>
+
+        <main className="mx-auto w-full max-w-[440px] flex-1 rounded-t-[24px] bg-white px-5 pb-[calc(24px+env(safe-area-inset-bottom))] pt-6">
+          <CadastroEmpresaForm
+            token={empresaToken}
+            onCancelar={() => setCadastrandoEmpresa(false)}
+            onSalva={(nome) => {
+              setEmpresasCadastradas((atuais) => [...atuais, nome]);
+              setAvisoEmpresa(null);
+              setCadastrandoEmpresa(false);
+            }}
+            onTokenExpirado={(mensagem) => {
+              setEmpresaToken(null);
+              setAvisoEmpresa(mensagem || 'O prazo para cadastrar empresas por aqui expirou. Você pode cadastrar em Meu perfil depois da aprovação.');
+              setCadastrandoEmpresa(false);
+            }}
+          />
+        </main>
+      </div>
+    );
+  }
 
   // ─── Estado de sucesso ────────────────────────────────────────────────────
   if (emailCadastrado) {
@@ -188,11 +207,50 @@ export default function SignupPage() {
             </div>
           </div>
 
+          {/* Pergunta: cadastrar empresa */}
+          <section aria-labelledby="pergunta-empresa" className="mt-8 rounded-[14px] bg-[#F3F4F8] p-4">
+            {empresasCadastradas.length > 0 && (
+              <ul className="mb-4 space-y-2">
+                {empresasCadastradas.map((nome, i) => (
+                  <li key={`${nome}-${i}`} className="flex items-center gap-2 text-sm font-medium text-[#0E1024]">
+                    <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-green-700" />
+                    <span className="min-w-0 break-words">{nome} cadastrada</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="flex items-start gap-3">
+              <Building aria-hidden="true" className="mt-0.5 h-[22px] w-[22px] shrink-0 text-onda-medBlue" />
+              <div>
+                <h2 id="pergunta-empresa" className="text-[15px] font-bold text-[#0E1024]">
+                  {empresasCadastradas.length > 0
+                    ? 'Quer cadastrar outra empresa?'
+                    : 'Você tem uma empresa ou negócio?'}
+                </h2>
+                <p className="mt-0.5 text-sm leading-normal text-[#4A5068]">
+                  {avisoEmpresa ||
+                    'Cadastre agora para ela aparecer no Hub da comunidade depois da aprovação. Você também pode fazer isso depois, em Meu perfil.'}
+                </p>
+              </div>
+            </div>
+
+            {empresaToken && (
+              <button
+                type="button"
+                onClick={() => setCadastrandoEmpresa(true)}
+                className="mt-4 h-[54px] w-full rounded-[14px] bg-onda-blue text-base font-bold text-white transition-colors hover:bg-onda-blue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2"
+              >
+                {empresasCadastradas.length > 0 ? 'Cadastrar outra empresa' : 'Sim, cadastrar empresa'}
+              </button>
+            )}
+          </section>
+
           <Link
             href="/"
-            className="mt-8 flex h-[54px] w-full items-center justify-center rounded-[14px] bg-onda-blue text-base font-bold text-white transition-colors hover:bg-onda-blue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2"
+            className="mt-3 flex h-[54px] w-full items-center justify-center rounded-[14px] border-[1.5px] border-onda-blue text-base font-semibold text-onda-blue transition-colors hover:bg-onda-blue/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2"
           >
-            Voltar para o início
+            {empresasCadastradas.length > 0 || !empresaToken ? 'Concluir' : 'Agora não'}
           </Link>
         </main>
       </div>
