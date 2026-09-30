@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { AlertCircle, Plus, Search, X } from 'lucide-react';
 import { checkAuth } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Search, X, Settings2, Globe } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,385 +16,306 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Skeleton } from '@/components/ui/skeleton';
-
-interface Membro {
-  user: { id: string; name: string; email: string };
-}
+import { ICONES_ACOES, MinisterioAcoes } from '@/components/ministerios/ministerio-acoes';
+import { resolverVisualMinisterio } from '@/config/ministerio-visual';
 
 interface Ministerio {
   id: string;
   nome: string;
-  descricao?: string;
-  lider: { id: string; name: string; email: string };
-  coLider?: { id: string; name: string; email: string } | null;
-  membros: Membro[];
-  createdAt: string;
+  icone?: string | null;
+  cor?: string | null;
+  lider: { id: string; name: string } | null;
+  coLider?: { id: string; name: string } | null;
 }
 
-interface PaginationInfo {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
+const BOTAO_PRIMARIO =
+  'inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-onda-blue px-4 text-[15px] font-bold text-white transition-colors hover:bg-onda-blue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2';
+const BOTAO_SECUNDARIO =
+  'inline-flex h-11 items-center justify-center rounded-xl border-[1.5px] border-onda-blue px-4 text-[15px] font-semibold text-onda-blue transition-colors hover:bg-onda-blue/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2';
+
+function normalizar(texto: string) {
+  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
+function nomesLideres(m: Ministerio) {
+  const nomes = [m.lider?.name, m.coLider?.name].filter(Boolean);
+  return nomes.length ? `Líder: ${nomes.join(', ')}` : 'Sem líder definido';
 }
 
-function TableSkeleton() {
+function IconeMinisterio({ ministerio }: { ministerio: Ministerio }) {
+  const { icon: Icon, color } = resolverVisualMinisterio(ministerio.icone, ministerio.cor);
   return (
-    <div className="space-y-3">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex gap-4 p-4 border-b">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-4 w-16" />
-        </div>
-      ))}
+    <span
+      aria-hidden="true"
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+      style={{ backgroundColor: color.bg, color: color.fg }}
+    >
+      <Icon className="h-[22px] w-[22px]" />
+    </span>
+  );
+}
+
+function EstadoVazio({
+  icone,
+  titulo,
+  texto,
+  children,
+}: {
+  icone?: React.ReactNode;
+  titulo: string;
+  texto: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-[#ECEDF3] bg-white px-6 py-10 text-center">
+      {icone}
+      <h2 className="text-lg font-bold text-[#0E1024]">{titulo}</h2>
+      <p className="mx-auto mt-1.5 max-w-sm text-sm leading-normal text-[#4A5068]">{texto}</p>
+      <div className="mt-5 flex flex-wrap justify-center gap-2.5">{children}</div>
     </div>
   );
 }
 
 export default function MinisteriosPage() {
-  const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [pagination, setPagination] = useState<PaginationInfo>({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-  });
   const router = useRouter();
   const { toast } = useToast();
+  const buscaRef = useRef<HTMLInputElement>(null);
 
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
+  const [estado, setEstado] = useState<'carregando' | 'erro' | 'pronto'>('carregando');
+  const [busca, setBusca] = useState('');
+  const [excluir, setExcluir] = useState<Ministerio | null>(null);
+  const [excluindo, setExcluindo] = useState(false);
 
-  const loadMinisterios = useCallback(
-    async (page = 1, limit = 10, search = '') => {
-      try {
-        setIsLoading(true);
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-          ...(search.trim() && { search: search.trim() }),
-        });
-
-        const response = await fetch(`/api/ministerios?${params}`);
-        if (!response.ok) throw new Error('Erro ao carregar ministérios');
-
-        const data = await response.json();
-        setMinisterios(data.ministerios);
-        setPagination(data.pagination);
-      } catch (error) {
-        console.error('Erro ao carregar ministérios:', error);
-        toast({ title: 'Erro', description: 'Erro ao carregar ministérios', variant: 'destructive' });
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [toast]
-  );
+  const carregar = useCallback(async () => {
+    setEstado('carregando');
+    try {
+      // Lista completa: a busca é local, em tempo real e sem acentos
+      const res = await fetch('/api/ministerios?limit=1000');
+      if (!res.ok) throw new Error();
+      const data: { ministerios: Ministerio[] } = await res.json();
+      setMinisterios(
+        [...data.ministerios].sort((a, b) => a.nome.trim().localeCompare(b.nome.trim(), 'pt-BR'))
+      );
+      setEstado('pronto');
+    } catch {
+      setEstado('erro');
+    }
+  }, []);
 
   useEffect(() => {
-    async function init() {
-      const { user } = await checkAuth();
+    checkAuth().then(({ user }) => {
       if (!user) {
         router.push('/');
         return;
       }
-      setIsAuthenticated(true);
-      await loadMinisterios();
-    }
-    init();
-  }, [router, loadMinisterios]);
+      carregar();
+    });
+  }, [router, carregar]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadMinisterios(1, 10, debouncedSearchTerm);
-    }
-  }, [debouncedSearchTerm, isAuthenticated, loadMinisterios]);
+  const termo = normalizar(busca);
+  const filtrados = useMemo(
+    () =>
+      termo
+        ? ministerios.filter((m) =>
+            [m.nome, m.lider?.name, m.coLider?.name].some((t) => t && normalizar(t).includes(termo))
+          )
+        : ministerios,
+    [ministerios, termo]
+  );
 
-  const handleDelete = async (id: string) => {
-    try {
-      const response = await fetch(`/api/ministerios/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Erro ao remover ministério');
-      toast({ title: 'Sucesso', description: 'Ministério removido com sucesso!' });
-      await loadMinisterios(1, 10, debouncedSearchTerm);
-    } catch (error) {
-      console.error('Erro ao remover ministério:', error);
-      toast({ title: 'Erro', description: 'Erro ao remover ministério', variant: 'destructive' });
-    }
+  const total = ministerios.length;
+  const contagem = termo
+    ? `${filtrados.length} de ${total} ${total === 1 ? 'ministério' : 'ministérios'}`
+    : `${total} ${total === 1 ? 'ministério' : 'ministérios'}`;
+
+  const limparBusca = () => {
+    setBusca('');
+    buscaRef.current?.focus();
   };
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-      loadMinisterios(newPage, 10, debouncedSearchTerm);
+  const confirmarExclusao = async () => {
+    if (!excluir) return;
+    setExcluindo(true);
+    try {
+      const res = await fetch(`/api/ministerios/${excluir.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      setMinisterios((atuais) => atuais.filter((m) => m.id !== excluir.id));
+      toast({ title: 'Ministério excluído' });
+      setExcluir(null);
+    } catch {
+      toast({ title: 'Erro', description: 'Não foi possível excluir o ministério', variant: 'destructive' });
+    } finally {
+      setExcluindo(false);
     }
   };
 
   return (
-    <div className="p-2 sm:p-6 mt-[72px]">
-      {/* Cabeçalho */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Ministérios</h1>
-        <Button
-          onClick={() => router.push('/dashboard/ministerios/new')}
-          className="hidden sm:flex bg-onda-darkBlue hover:bg-onda-darkBlue/90 text-white items-center gap-2"
-        >
-          <Plus size={18} />
-          Novo Ministério
-        </Button>
-      </div>
+    <div className="mt-[72px] min-h-[calc(100dvh-72px)] bg-[#F5F6FA]">
+      <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 pb-6 pt-5">
+        {/* Título + Novo */}
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-[26px] font-bold leading-tight text-[#0E1024]">Ministérios</h1>
+            {estado === 'pronto' && (
+              <p aria-live="polite" className="mt-0.5 text-sm text-[#4A5068]">{contagem}</p>
+            )}
+          </div>
+          <Link href="/dashboard/ministerios/new" className={BOTAO_PRIMARIO}>
+            <Plus aria-hidden="true" className="h-5 w-5" />
+            Novo
+          </Link>
+        </div>
 
-      {/* Busca */}
-      <div className="relative mb-4 w-full max-w-md">
-        <Input
-          type="text"
-          placeholder="Buscar por nome ou líder..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 pr-10 bg-white rounded-md border-gray-300 focus:border-gray-500 focus:ring-gray-500 w-full"
-        />
-        {searchTerm && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSearchTerm('')}
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-      </div>
-
-      {!isLoading && (
-        <div className="mb-4 text-sm text-gray-600">
-          {searchTerm ? (
-            <span>
-              {pagination.total} ministério{pagination.total !== 1 ? 's' : ''} encontrado{pagination.total !== 1 ? 's' : ''} para &quot;{searchTerm}&quot;
-            </span>
-          ) : (
-            <span>{pagination.total} ministério{pagination.total !== 1 ? 's' : ''} no total</span>
+        {/* Busca */}
+        <div className="relative">
+          <label htmlFor="busca-ministerio" className="sr-only">Buscar ministério</label>
+          <Search aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#4A5068]" />
+          <input
+            ref={buscaRef}
+            id="busca-ministerio"
+            type="search"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar por nome ou líder"
+            autoComplete="off"
+            className="h-12 w-full rounded-xl border-[1.5px] border-[#D5D8E6] bg-white pl-11 pr-12 text-base text-[#0E1024] placeholder:text-[#6B7280] focus:border-onda-blue focus:outline-none focus:ring-2 focus:ring-onda-blue/20 [&::-webkit-search-cancel-button]:hidden"
+          />
+          {busca && (
+            <button
+              type="button"
+              onClick={limparBusca}
+              aria-label="Limpar busca"
+              className="absolute right-0.5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-[#4A5068] hover:bg-[#F3F4F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40"
+            >
+              <X aria-hidden="true" className="h-5 w-5" />
+            </button>
           )}
         </div>
-      )}
 
-      {isLoading ? (
-        <TableSkeleton />
-      ) : (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Gerencie os ministérios da igreja</CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            {ministerios.length === 0 ? (
-              <div className="text-center py-8">
-                <Search className="h-12 w-12 text-gray-400 mb-4 mx-auto" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {searchTerm ? 'Nenhum ministério encontrado' : 'Nenhum ministério cadastrado'}
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {searchTerm
-                    ? `Não encontramos ministérios com "${searchTerm}".`
-                    : 'Comece criando o primeiro ministério.'}
-                </p>
-                {searchTerm ? (
-                  <Button variant="outline" onClick={() => setSearchTerm('')}>
-                    Limpar busca
-                  </Button>
-                ) : (
-                  <Button onClick={() => router.push('/dashboard/ministerios/new')}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Criar Ministério
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-3 font-medium">Nome</th>
-                      <th className="text-left p-3 font-medium">Líder</th>
-                      <th className="text-left p-3 font-medium hidden md:table-cell">Co-Líder</th>
-                      <th className="text-left p-3 font-medium hidden sm:table-cell">Membros</th>
-                      <th className="text-left p-3 font-medium">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ministerios.map((ministerio) => (
-                      <tr key={ministerio.id} className="border-b hover:bg-gray-50">
-                        <td className="p-3 font-medium">
-                          <div>{ministerio.nome}</div>
-                          {ministerio.descricao && (
-                            <div className="text-xs text-gray-500 mt-1 line-clamp-1">
-                              {ministerio.descricao}
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-3 text-sm">{ministerio.lider.name}</td>
-                        <td className="p-3 text-sm hidden md:table-cell">{ministerio.coLider?.name || '-'}</td>
-                        <td className="p-3 hidden sm:table-cell">
-                          <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                            {ministerio.membros.length}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              title="Configurar campos do formulário"
-                              onClick={() => router.push(`/dashboard/ministerios/${ministerio.id}/campos`)}
-                            >
-                              <Settings2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              title="Configurar páginas do ministério"
-                              onClick={() => router.push(`/dashboard/ministerios/${ministerio.id}/paginas`)}
-                            >
-                              <Globe className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => router.push(`/dashboard/ministerios/${ministerio.id}/edit`)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Tem certeza que deseja remover o ministério &quot;{ministerio.nome}&quot;? Esta ação não pode ser desfeita.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDelete(ministerio.id)}
-                                    className="bg-red-500 hover:bg-red-600"
-                                  >
-                                    Remover
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {pagination.totalPages > 1 && (
-              <div className="border-t">
-                <div className="hidden sm:flex items-center justify-between px-4 py-3">
-                  <div className="text-sm text-gray-500">
-                    Mostrando {(pagination.page - 1) * pagination.limit + 1} até{' '}
-                    {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} resultados
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(pagination.page - 1)}
-                      disabled={pagination.page === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      <span className="hidden sm:inline">Anterior</span>
-                    </Button>
-                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                      let pageNumber: number;
-                      if (pagination.totalPages <= 5) pageNumber = i + 1;
-                      else if (pagination.page <= 3) pageNumber = i + 1;
-                      else if (pagination.page >= pagination.totalPages - 2)
-                        pageNumber = pagination.totalPages - 4 + i;
-                      else pageNumber = pagination.page - 2 + i;
-                      return (
-                        <Button
-                          key={pageNumber}
-                          variant={pagination.page === pageNumber ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => handlePageChange(pageNumber)}
-                          className="min-w-[40px]"
-                        >
-                          {pageNumber}
-                        </Button>
-                      );
-                    })}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(pagination.page + 1)}
-                      disabled={pagination.page === pagination.totalPages}
-                    >
-                      <span className="hidden sm:inline">Próxima</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center space-x-2 px-4 py-3 sm:hidden">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm text-gray-500">
-                    {pagination.page} / {pagination.totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page === pagination.totalPages}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+        {/* Lista e estados */}
+        {estado === 'carregando' ? (
+          <div className="overflow-hidden rounded-2xl border border-[#ECEDF3] bg-white" aria-busy="true">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex min-h-[72px] items-center gap-3 border-b border-[#ECEDF3] px-4 last:border-b-0">
+                <Skeleton className="h-11 w-11 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-36" />
+                  <Skeleton className="h-3.5 w-48" />
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+            ))}
+          </div>
+        ) : estado === 'erro' ? (
+          <EstadoVazio
+            icone={<AlertCircle aria-hidden="true" className="mx-auto mb-3 h-10 w-10 text-[#4A5068]" />}
+            titulo="Não foi possível carregar os ministérios."
+            texto="Verifique sua conexão e tente de novo."
+          >
+            <button type="button" onClick={carregar} className={BOTAO_PRIMARIO}>Tentar de novo</button>
+          </EstadoVazio>
+        ) : total === 0 ? (
+          <EstadoVazio titulo="Nenhum ministério ainda" texto="Crie o primeiro para organizar líderes e membros.">
+            <Link href="/dashboard/ministerios/new" className={BOTAO_PRIMARIO}>
+              <Plus aria-hidden="true" className="h-5 w-5" />
+              Novo ministério
+            </Link>
+          </EstadoVazio>
+        ) : filtrados.length === 0 ? (
+          <EstadoVazio
+            icone={<Search aria-hidden="true" className="mx-auto mb-3 h-10 w-10 text-[#4A5068]" />}
+            titulo="Nenhum ministério encontrado"
+            texto={`Nada com “${busca.trim()}” no nome ou no líder. Confira a grafia ou crie um novo ministério.`}
+          >
+            <button type="button" onClick={limparBusca} className={BOTAO_SECUNDARIO}>Limpar busca</button>
+            <Link href="/dashboard/ministerios/new" className={BOTAO_PRIMARIO}>
+              <Plus aria-hidden="true" className="h-5 w-5" />
+              Novo ministério
+            </Link>
+          </EstadoVazio>
+        ) : (
+          <ul aria-label="Lista de ministérios" className="overflow-hidden rounded-2xl border border-[#ECEDF3] bg-white">
+            {filtrados.map((m) => {
+              const lideres = nomesLideres(m);
+              return (
+                <li key={m.id} className="flex min-h-[72px] items-center border-b border-[#ECEDF3] pr-2 last:border-b-0">
+                  <Link
+                    href={`/dashboard/ministerios/${m.id}/edit`}
+                    className="flex min-h-[72px] min-w-0 flex-1 items-center gap-3 py-3 pl-4 pr-2 transition-colors hover:bg-[#F8F9FC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-onda-blue/40"
+                  >
+                    <IconeMinisterio ministerio={m} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-base font-bold text-[#0E1024]">{m.nome.trim()}</span>
+                      <span className="block truncate text-sm text-[#4A5068]">{lideres}</span>
+                    </span>
+                  </Link>
+                  <MinisterioAcoes
+                    nome={m.nome.trim()}
+                    lideres={lideres}
+                    identidade={<IconeMinisterio ministerio={m} />}
+                    acoes={[
+                      {
+                        key: 'editar',
+                        titulo: 'Editar ministério',
+                        descricao: 'Nome, líder, co-líder e membros',
+                        icon: ICONES_ACOES.editar,
+                        onSelect: () => router.push(`/dashboard/ministerios/${m.id}/edit`),
+                      },
+                      {
+                        key: 'campos',
+                        titulo: 'Campos do chamado',
+                        descricao: 'Perguntas do formulário de chamado',
+                        icon: ICONES_ACOES.campos,
+                        onSelect: () => router.push(`/dashboard/ministerios/${m.id}/campos`),
+                      },
+                      {
+                        key: 'paginas',
+                        titulo: 'Páginas do menu',
+                        descricao: 'O que os membros veem no menu',
+                        icon: ICONES_ACOES.paginas,
+                        onSelect: () => router.push(`/dashboard/ministerios/${m.id}/paginas`),
+                      },
+                      {
+                        key: 'excluir',
+                        titulo: 'Excluir ministério',
+                        descricao: 'Remove o ministério e seus vínculos',
+                        icon: ICONES_ACOES.excluir,
+                        perigo: true,
+                        onSelect: () => setExcluir(m),
+                      },
+                    ]}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
 
-      {/* FAB mobile */}
-      <button
-        onClick={() => router.push('/dashboard/ministerios/new')}
-        className="sm:hidden fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-40 flex items-center gap-2 bg-onda-darkBlue text-white rounded-full px-4 py-3 shadow-lg"
-      >
-        <Plus size={20} />
-        <span className="text-sm font-medium">Novo Ministério</span>
-      </button>
+      <AlertDialog open={!!excluir} onOpenChange={(open) => !open && setExcluir(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir ministério?</AlertDialogTitle>
+            <AlertDialogDescription>
+              &quot;{excluir?.nome.trim()}&quot; será removido. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={excluindo}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                confirmarExclusao();
+              }}
+              disabled={excluindo}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {excluindo ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

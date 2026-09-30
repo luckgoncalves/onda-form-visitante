@@ -318,6 +318,8 @@ export async function checkAuth() {
           select: {
             id: true,
             nome: true,
+            icone: true,
+            cor: true,
             navConfig: {
               select: {
                 paginaInicial: true,
@@ -330,6 +332,8 @@ export async function checkAuth() {
           select: {
             id: true,
             nome: true,
+            icone: true,
+            cor: true,
             navConfig: {
               select: {
                 paginaInicial: true,
@@ -344,6 +348,8 @@ export async function checkAuth() {
               select: {
                 id: true,
                 nome: true,
+                icone: true,
+                cor: true,
                 navConfig: {
                   select: {
                     paginaInicial: true,
@@ -386,14 +392,20 @@ export async function checkAuth() {
     ].filter(Boolean) as { paginaInicial: string; paginasHabilitadas: unknown }[];
 
     // Páginas liberadas por ministério, para agrupar o menu por ministério
-    const ministeriosNav: { id: string; nome: string; paginasHabilitadas: string[] }[] = [];
+    const ministeriosNav: { id: string; nome: string; icone: string | null; cor: string | null; paginasHabilitadas: string[] }[] = [];
     for (const m of [
       ...user.ministeriosLiderados,
       ...user.ministeriosCoLiderados,
       ...user.ministerios.map((um) => um.ministerio),
     ]) {
       if (!m.navConfig || ministeriosNav.some((n) => n.id === m.id)) continue;
-      ministeriosNav.push({ id: m.id, nome: m.nome, paginasHabilitadas: parsePages(m.navConfig.paginasHabilitadas) });
+      ministeriosNav.push({
+        id: m.id,
+        nome: m.nome,
+        icone: m.icone,
+        cor: m.cor,
+        paginasHabilitadas: parsePages(m.navConfig.paginasHabilitadas),
+      });
     }
 
     if (allConfigs.length > 0) {

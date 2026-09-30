@@ -364,6 +364,8 @@ model Ministerio {
   id        String   @id @default(cuid())
   nome      String
   descricao String?  @db.Text
+  icone     String? // chave do ícone (config/ministerio-visual.ts)
+  cor       String? // chave da paleta (config/ministerio-visual.ts)
   campusId  String?
   liderId   String
   coLiderId String?

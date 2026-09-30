@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
+import { MINISTERIO_COR_KEYS, MINISTERIO_ICONE_KEYS } from '@/config/ministerio-visual';
 
 const createMinisterioSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
@@ -10,6 +11,8 @@ const createMinisterioSchema = z.object({
   liderId: z.string().min(1, 'Líder é obrigatório'),
   coLiderId: z.string().optional(),
   membrosIds: z.array(z.string()).optional(),
+  icone: z.enum(MINISTERIO_ICONE_KEYS).nullable().optional(),
+  cor: z.enum(MINISTERIO_COR_KEYS).nullable().optional(),
 });
 
 // GET /api/ministerios - Listar ministérios
@@ -81,6 +84,8 @@ export async function POST(request: NextRequest) {
           campusId: validatedData.campusId,
           liderId: validatedData.liderId,
           coLiderId: validatedData.coLiderId || null,
+          icone: validatedData.icone ?? null,
+          cor: validatedData.cor ?? null,
           membros: validatedData.membrosIds?.length
             ? {
                 create: validatedData.membrosIds.map((userId) => ({ userId })),

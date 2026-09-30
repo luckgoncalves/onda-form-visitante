@@ -13,6 +13,7 @@ import {
   UsersRound,
   Church,
 } from 'lucide-react';
+import { resolverVisualMinisterio } from '@/config/ministerio-visual';
 
 export type NavigationSection = 'Gestão' | 'Comunidade';
 
@@ -142,6 +143,8 @@ export function getMobilePrimaryItems(isAdmin: boolean) {
 export type MinisterioNav = {
   id: string;
   nome: string;
+  icone?: string | null;
+  cor?: string | null;
   paginasHabilitadas: string[];
 };
 
@@ -218,7 +221,10 @@ export function buildNavMenu(
   }
   for (const m of ministerios) {
     const pages = porMinisterio.get(m.id);
-    if (pages?.length) departments.push({ id: m.id, name: m.nome, icon: Church, pages });
+    if (pages?.length) {
+      const visual = resolverVisualMinisterio(m.icone, m.cor);
+      departments.push({ id: m.id, name: m.nome, icon: visual.icon, color: visual.color, pages });
+    }
   }
 
   return { general, departments };

@@ -46,6 +46,9 @@ export function MobileBottomNav({
     return getMobilePrimaryItems(false);
   })();
 
+  // "Mais" fica ativo quando a página atual não é um dos atalhos da barra
+  const maisAtivo = !primaryItems.slice(0, 3).some((item) => isActive(pathname, item));
+
   const handleNavigate = (item: NavigationItem) => {
     if (item.externalHref) {
       window.open(item.externalHref, '_blank', 'noopener,noreferrer');
@@ -93,9 +96,13 @@ export function MobileBottomNav({
         >
           <Button
             variant="ghost"
-            className="h-14 flex-col gap-1 rounded-2xl px-2 text-xs text-gray-500"
+            aria-current={maisAtivo ? 'page' : undefined}
+            className={cn(
+              'h-14 flex-col gap-1 rounded-2xl px-2 text-xs text-gray-500',
+              maisAtivo && 'font-bold text-onda-blue'
+            )}
           >
-            <MoreHorizontal className="h-5 w-5" />
+            <MoreHorizontal aria-hidden="true" className="h-5 w-5" />
             <span>Mais</span>
           </Button>
         </MoreMenuSheet>
