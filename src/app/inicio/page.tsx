@@ -292,9 +292,9 @@ export default function InicioPage() {
             </section>
           )}
 
-          {/* Complete seu perfil */}
+          {/* Complete seu perfil — no desktop fica acima dos líderes (lg:order-first) */}
           {faltando.length > 0 && userId && (
-            <section aria-labelledby="perfil-titulo">
+            <section aria-labelledby="perfil-titulo" className="lg:order-first">
               <Link
                 href={`/users/${userId}`}
                 className={`${CARD} flex items-center gap-3 p-4 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40`}
