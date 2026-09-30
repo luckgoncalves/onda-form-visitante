@@ -12,6 +12,7 @@ import {
   Users,
   UsersRound,
   Church,
+  Home,
 } from 'lucide-react';
 import { resolverVisualMinisterio } from '@/config/ministerio-visual';
 
@@ -119,6 +120,20 @@ export const navigationItems: NavigationItem[] = [
     mobilePrimaryUser: true,
   },
 ];
+
+// Início de quem ainda não participa de nenhum ministério (/inicio)
+export const inicioItem: NavigationItem = {
+  label: 'Início',
+  href: '/inicio',
+  icon: Home,
+};
+
+/** Barra inferior de quem não tem ministério: Início, Empresas e Grupos (+ Mais). */
+export function getSemMinisterioPrimaryItems(): NavigationItem[] {
+  const porRota = (href: string) => navigationItems.find((i) => i.href === href && !i.adminOnly);
+  const grupos = navigationItems.find((i) => i.externalHref?.includes('groups'));
+  return [inicioItem, porRota('/empresas'), grupos].filter((i): i is NavigationItem => !!i);
+}
 
 export const feedbackItem = {
   label: 'Feedback',

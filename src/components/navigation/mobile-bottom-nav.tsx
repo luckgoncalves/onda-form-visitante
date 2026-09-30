@@ -2,7 +2,7 @@
 
 import { MoreHorizontal } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getMobilePrimaryItems, getNavItemsForMinisterio, MinisterioNav, NavigationItem } from '@/config/navigation';
+import { getMobilePrimaryItems, getNavItemsForMinisterio, getSemMinisterioPrimaryItems, MinisterioNav, NavigationItem } from '@/config/navigation';
 import { MoreMenuSheet } from '@/components/navigation/more-menu-sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,7 @@ type MobileBottomNavProps = {
   profileImageUrl?: string | null;
   navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   ministerios?: MinisterioNav[];
+  semMinisterio?: boolean;
   onLogout: () => void;
 };
 
@@ -33,6 +34,7 @@ export function MobileBottomNav({
   profileImageUrl,
   navConfig,
   ministerios,
+  semMinisterio,
   onLogout,
 }: MobileBottomNavProps) {
   const router = useRouter();
@@ -43,6 +45,7 @@ export function MobileBottomNav({
       // Ministry config: show exactly the granted pages (may include admin-only ones)
       return getNavItemsForMinisterio(navConfig.paginasHabilitadas);
     }
+    if (semMinisterio) return getSemMinisterioPrimaryItems();
     return getMobilePrimaryItems(false);
   })();
 
@@ -92,6 +95,7 @@ export function MobileBottomNav({
           profileImageUrl={profileImageUrl}
           navConfig={navConfig}
           ministerios={ministerios}
+          semMinisterio={semMinisterio}
           onLogout={onLogout}
         >
           <Button

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { checkAuth, checkIsAdmin } from "./actions";
 import LoadingOnda from "@/components/loading-onda";
+import { paginaInicialDoUsuario } from "@/lib/pagina-inicial";
 import Link from "next/link";
 import { UsersRound, Building, LogIn, UserPlus, ArrowRight, ChevronRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,13 +33,8 @@ export default function Home() {
           if (user?.requirePasswordChange) {
             router.push('/change-password');
           } else {
-            if (isAdmin) {
-              router.push('/list');
-            } else if (user?.role === 'base_pessoal') {
-              router.push('/register');
-            } else if (user?.role === 'user') {
-              const paginaInicial = user?.ministerioNavConfig?.paginaInicial;
-              router.push(paginaInicial ?? '/empresas');
+            if (isAdmin || user?.role === 'base_pessoal' || user?.role === 'user') {
+              router.push(paginaInicialDoUsuario(user!, isAdmin));
             }
           }
           return;

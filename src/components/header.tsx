@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { PWAInstallButton } from "@/components/pwa-install-button";
 import { PushNotificationButton } from "@/components/push-notification-button";
-import { getDesktopPrimaryItems, getNavItemsForMinisterio, MinisterioNav, NavigationItem } from "@/config/navigation";
+import { getDesktopPrimaryItems, getNavItemsForMinisterio, inicioItem, MinisterioNav, NavigationItem } from "@/config/navigation";
 import { MoreMenuSheet } from "@/components/navigation/more-menu-sheet";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
@@ -20,10 +20,11 @@ type HeaderProps = {
   profileImageUrl?: string | null;
   navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   ministerios?: MinisterioNav[];
+  semMinisterio?: boolean;
   onLogout: () => void;
 };
 
-export function Header({ userName, userId, isAdmin, campusNome, campusCidade, profileImageUrl, navConfig, ministerios, onLogout }: HeaderProps) {
+export function Header({ userName, userId, isAdmin, campusNome, campusCidade, profileImageUrl, navConfig, ministerios, semMinisterio, onLogout }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -41,7 +42,8 @@ export function Header({ userName, userId, isAdmin, campusNome, campusCidade, pr
       // Ministry config: show exactly the granted pages (may include admin-only ones)
       return getNavItemsForMinisterio(navConfig.paginasHabilitadas);
     }
-    return getDesktopPrimaryItems(false);
+    const itens = getDesktopPrimaryItems(false);
+    return semMinisterio ? [inicioItem, ...itens] : itens;
   })();
 
   const isActive = (item: NavigationItem) => {
@@ -68,7 +70,7 @@ export function Header({ userName, userId, isAdmin, campusNome, campusCidade, pr
             <button
               type="button"
               className="shrink-0 cursor-pointer"
-              onClick={() => router.push(isAdmin ? '/list' : '/register')}
+              onClick={() => router.push(isAdmin ? '/list' : semMinisterio ? '/inicio' : '/register')}
               aria-label="Ir para início"
             >
               <Image
@@ -121,6 +123,7 @@ export function Header({ userName, userId, isAdmin, campusNome, campusCidade, pr
               profileImageUrl={profileImageUrl}
               navConfig={navConfig}
               ministerios={ministerios}
+              semMinisterio={semMinisterio}
               onLogout={onLogout}
             >
               <Button
@@ -143,6 +146,7 @@ export function Header({ userName, userId, isAdmin, campusNome, campusCidade, pr
         profileImageUrl={profileImageUrl}
         navConfig={navConfig}
         ministerios={ministerios}
+        semMinisterio={semMinisterio}
         onLogout={onLogout}
       />
     </>

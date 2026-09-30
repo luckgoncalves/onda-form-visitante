@@ -7,6 +7,7 @@ import {
   buildNavMenu,
   DEPARTMENT_FALLBACK_COLOR,
   feedbackItem,
+  inicioItem,
   MinisterioNav,
   NavigationItem,
 } from '@/config/navigation';
@@ -29,6 +30,7 @@ type MoreMenuSheetProps = {
   profileImageUrl?: string | null;
   navConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   ministerios?: MinisterioNav[];
+  semMinisterio?: boolean;
   onLogout: () => void;
   children: React.ReactNode;
 };
@@ -126,6 +128,7 @@ export function MoreMenuSheet({
   profileImageUrl,
   navConfig,
   ministerios,
+  semMinisterio,
   onLogout,
   children,
 }: MoreMenuSheetProps) {
@@ -137,10 +140,10 @@ export function MoreMenuSheet({
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [chamadosAbertos, setChamadosAbertos] = useState(0);
 
-  const menu = useMemo(
-    () => buildNavMenu(isAdmin, navConfig?.paginasHabilitadas, ministerios),
-    [isAdmin, navConfig?.paginasHabilitadas, ministerios]
-  );
+  const menu = useMemo(() => {
+    const base = buildNavMenu(isAdmin, navConfig?.paginasHabilitadas, ministerios);
+    return semMinisterio ? { ...base, general: [inicioItem, ...base.general] } : base;
+  }, [isAdmin, navConfig?.paginasHabilitadas, ministerios, semMinisterio]);
 
   // Página ativa = href mais específico que casa com a rota atual
   const activeHref = useMemo(() => {

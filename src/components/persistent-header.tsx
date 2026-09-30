@@ -16,6 +16,7 @@ type AuthUser = {
   profileImageUrl?: string | null;
   ministerioNavConfig?: { paginaInicial: string; paginasHabilitadas: string[] } | null;
   ministeriosNav?: MinisterioNav[];
+  semMinisterio?: boolean;
 };
 
 const routesWithoutAuthenticatedHeader = new Set([
@@ -61,6 +62,7 @@ export function PersistentHeader() {
           profileImageUrl: authResult.user.profileImageUrl || null,
           ministerioNavConfig: authResult.user.ministerioNavConfig || null,
           ministeriosNav: authResult.user.ministeriosNav || [],
+          semMinisterio: authResult.user.role === 'user' && !authResult.user.temMinisterio,
         });
       } else {
         setUser(null);
@@ -96,6 +98,7 @@ export function PersistentHeader() {
       profileImageUrl={user.profileImageUrl}
       navConfig={user.ministerioNavConfig}
       ministerios={user.ministeriosNav}
+      semMinisterio={!user.isAdmin && user.semMinisterio}
       onLogout={handleLogout}
     />
   );

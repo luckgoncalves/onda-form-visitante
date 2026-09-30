@@ -45,6 +45,12 @@ export default function EmpresasPage() {
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
+  // Link direto para uma empresa (ex.: carrossel do Início): /empresas?busca=Nome
+  useEffect(() => {
+    const busca = new URLSearchParams(window.location.search).get('busca');
+    if (busca) setSearchTerm(busca);
+  }, []);
+
   // Verificar autenticação
   useEffect(() => {
     async function checkAuthentication() {

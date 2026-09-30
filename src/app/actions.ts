@@ -433,6 +433,9 @@ export async function checkAuth() {
         requirePasswordChange: decoded.provider === 'inpeace' ? false : user.requirePasswordChange,
         ministerioNavConfig,
         ministeriosNav,
+        // Participa de algum ministério (como líder, co-líder ou membro), com ou sem páginas configuradas
+        temMinisterio:
+          user.ministeriosLiderados.length + user.ministeriosCoLiderados.length + user.ministerios.length > 0,
       }
     };
   } catch (error) {

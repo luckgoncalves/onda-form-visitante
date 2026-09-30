@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadingOnda from "@/components/loading-onda";
+import { paginaInicialDoUsuario } from "@/lib/pagina-inicial";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,18 +41,7 @@ export default function LoginPage() {
           if (user?.requirePasswordChange) {
             router.push('/change-password');
           } else {
-            if (isAdmin) {
-              router.push('/list');
-            } else {
-              const navConfig = user?.ministerioNavConfig;
-              if (navConfig?.paginaInicial) {
-                router.push(navConfig.paginaInicial);
-              } else if (user?.role === 'base_pessoal') {
-                router.push('/register');
-              } else {
-                router.push('/empresas');
-              }
-            }
+            router.push(paginaInicialDoUsuario(user!, isAdmin));
           }
         }
       } catch (error) {
@@ -78,18 +68,7 @@ export default function LoginPage() {
       user: authResult.user,
     }));
 
-    if (isAdmin) {
-      router.push('/list');
-    } else {
-      const navConfig = user?.ministerioNavConfig;
-      if (navConfig?.paginaInicial) {
-        router.push(navConfig.paginaInicial);
-      } else if (loginUser.role === 'base_pessoal') {
-        router.push('/register');
-      } else {
-        router.push('/empresas');
-      }
-    }
+    router.push(paginaInicialDoUsuario(user ?? { role: loginUser.role, temMinisterio: true }, isAdmin));
   };
 
   const submitAction = form.handleSubmit(async (formData) => {
