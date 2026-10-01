@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef } from 'react';
-import { LucideIcon, MoreHorizontal, User } from 'lucide-react';
+import { LucideIcon, MoreHorizontal } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getBottomNavItems, MinisterioNav, NavigationItem } from '@/config/navigation';
 import { MoreMenuSheet } from '@/components/navigation/more-menu-sheet';
@@ -79,12 +79,8 @@ export function MobileBottomNav({
     paginasHabilitadas: navConfig?.paginasHabilitadas,
     semMinisterio,
   });
-  // Sem ministério a barra também tem "Perfil" (antes do "Mais"). O "Mais" existe para todos:
-  // é por ele que se chega às demais páginas e ao Sair.
-  const comPerfil = !isAdmin && !!semMinisterio;
-  const perfilHref = `/users/${userId}`;
-  const maisAtivo =
-    !itens.some((item) => isActive(pathname, item.href)) && !(comPerfil && isActive(pathname, perfilHref));
+  // "Mais" existe para todos: é por ele que se chega às demais páginas, ao perfil e ao Sair
+  const maisAtivo = !itens.some((item) => isActive(pathname, item.href));
 
   const handleNavigate = (item: NavigationItem) => {
     if (item.externalHref) {
@@ -100,7 +96,7 @@ export function MobileBottomNav({
     router.push(item.href);
   };
 
-  const colunas = itens.length + (comPerfil ? 2 : 1);
+  const colunas = itens.length + 1;
 
   return (
     <nav
@@ -117,15 +113,6 @@ export function MobileBottomNav({
             onClick={() => handleNavigate(item)}
           />
         ))}
-
-        {comPerfil && (
-          <ItemBarra
-            icon={User}
-            label="Perfil"
-            active={isActive(pathname, perfilHref)}
-            onClick={() => handleNavigate({ label: 'Perfil', href: perfilHref, icon: User })}
-          />
-        )}
 
         <MoreMenuSheet
           isAdmin={isAdmin}
