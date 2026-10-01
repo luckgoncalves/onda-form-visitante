@@ -79,10 +79,12 @@ export function MobileBottomNav({
     paginasHabilitadas: navConfig?.paginasHabilitadas,
     semMinisterio,
   });
-  // Sem ministério a barra termina em "Perfil"; nos demais casos, em "Mais"
+  // Sem ministério a barra também tem "Perfil" (antes do "Mais"). O "Mais" existe para todos:
+  // é por ele que se chega às demais páginas e ao Sair.
   const comPerfil = !isAdmin && !!semMinisterio;
   const perfilHref = `/users/${userId}`;
-  const maisAtivo = !comPerfil && !itens.some((item) => isActive(pathname, item.href));
+  const maisAtivo =
+    !itens.some((item) => isActive(pathname, item.href)) && !(comPerfil && isActive(pathname, perfilHref));
 
   const handleNavigate = (item: NavigationItem) => {
     if (item.externalHref) {
@@ -98,7 +100,7 @@ export function MobileBottomNav({
     router.push(item.href);
   };
 
-  const colunas = itens.length + 1;
+  const colunas = itens.length + (comPerfil ? 2 : 1);
 
   return (
     <nav
@@ -116,28 +118,28 @@ export function MobileBottomNav({
           />
         ))}
 
-        {comPerfil ? (
+        {comPerfil && (
           <ItemBarra
             icon={User}
             label="Perfil"
             active={isActive(pathname, perfilHref)}
             onClick={() => handleNavigate({ label: 'Perfil', href: perfilHref, icon: User })}
           />
-        ) : (
-          <MoreMenuSheet
-            isAdmin={isAdmin}
-            userName={userName}
-            userId={userId}
-            campusNome={campusNome}
-            campusCidade={campusCidade}
-            profileImageUrl={profileImageUrl}
-            navConfig={navConfig}
-            ministerios={ministerios}
-            onLogout={onLogout}
-          >
-            <ItemBarra icon={MoreHorizontal} label="Mais" active={maisAtivo} />
-          </MoreMenuSheet>
         )}
+
+        <MoreMenuSheet
+          isAdmin={isAdmin}
+          userName={userName}
+          userId={userId}
+          campusNome={campusNome}
+          campusCidade={campusCidade}
+          profileImageUrl={profileImageUrl}
+          navConfig={navConfig}
+          ministerios={ministerios}
+          onLogout={onLogout}
+        >
+          <ItemBarra icon={MoreHorizontal} label="Mais" active={maisAtivo} />
+        </MoreMenuSheet>
       </div>
     </nav>
   );

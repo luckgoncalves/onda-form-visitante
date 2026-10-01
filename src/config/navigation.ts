@@ -131,7 +131,7 @@ export const inicioItem: NavigationItem = {
 /**
  * Itens da barra inferior (celular), exceto "Mais"/"Perfil", que o componente acrescenta.
  * Início é sempre o primeiro. Com ministério ou perfil de acesso: Início + até 3 itens + Mais
- * (o que passar disso fica no "Mais"). Sem ministério: Início · Empresas · Grupos (+ Perfil).
+ * (o que passar disso fica no "Mais"). Sem ministério: Início · Empresas · Grupos (+ Perfil e Mais).
  */
 export function getBottomNavItems({
   isAdmin,
