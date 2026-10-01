@@ -717,6 +717,10 @@ export async function createUser(data: { email: string; password?: string; name:
   }
   
   const { user: currentUser } = await checkAuth();
+  // Só admin cria usuários (e define o papel, inclusive admin)
+  if (currentUser?.role !== 'admin') {
+    throw new Error('Não autorizado');
+  }
   
   const hashedPassword = await bcrypt.hash(data.password, 10);
   
@@ -801,6 +805,11 @@ export async function listUsers(searchTerm?: string) {
 }
 
 export async function deleteUser(id: string) {
+  const { user: currentUser } = await checkAuth();
+  if (currentUser?.role !== 'admin') {
+    throw new Error('Não autorizado');
+  }
+
   await prismaClient.users.delete({
     where: { id },
   });
@@ -819,7 +828,35 @@ type UpdateUserData = {
   requirePasswordChange?: boolean;
 };
 
-export async function updateUser(id: string, data: UpdateUserData) {
+export async function updateUser(id: string, input: UpdateUserData) {
+  const { user: currentUser } = await checkAuth();
+  if (!currentUser) {
+    throw new Error('Não autorizado');
+  }
+
+  // Só admin altera outras pessoas e muda papel/e-mail (ninguém se promove a admin).
+  // Quem não é admin edita apenas os próprios dados e a senha.
+  let data = input;
+  if (currentUser.role !== 'admin') {
+    if (currentUser.id !== id) {
+      throw new Error('Não autorizado');
+    }
+    const atual = await prismaClient.users.findUnique({
+      where: { id },
+      select: { email: true, role: true, roleRelation: { select: { name: true } } },
+    });
+    if (!atual) {
+      throw new Error('Usuário não encontrado');
+    }
+    data = {
+      ...input,
+      email: atual.email,
+      role: atual.roleRelation?.name || atual.role,
+      // "Exigir troca de senha" redefine a senha: só admin pode pedir
+      requirePasswordChange: input.requirePasswordChange === true ? undefined : input.requirePasswordChange,
+    };
+  }
+
   // Buscar o roleId baseado no nome da role
   const roleRecord = await prismaClient.role.findUnique({
     where: { name: data.role }
@@ -831,8 +868,11 @@ export async function updateUser(id: string, data: UpdateUserData) {
     phone: data.phone,
     role: data.role, // Manter campo legado por compatibilidade
     roleId: roleRecord?.id || null,
-    dataMembresia: data.dataMembresia && data.dataMembresia.trim() !== '' ? data.dataMembresia : null,
-    profileImageUrl: data.profileImageUrl && data.profileImageUrl.trim() !== '' ? data.profileImageUrl : null,
+    // Campos não enviados ficam como estão (undefined não altera no Prisma)
+    dataMembresia:
+      data.dataMembresia === undefined ? undefined : data.dataMembresia.trim() !== '' ? data.dataMembresia : null,
+    profileImageUrl:
+      data.profileImageUrl === undefined ? undefined : data.profileImageUrl.trim() !== '' ? data.profileImageUrl : null,
     requirePasswordChange: data.requirePasswordChange
   };
 
