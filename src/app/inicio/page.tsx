@@ -350,7 +350,7 @@ export default function InicioPage() {
           {faltando.length > 0 && userId && (
             <section aria-labelledby="perfil-titulo" className="lg:order-first">
               <Link
-                href={`/users/${userId}`}
+                href="/perfil"
                 className={`${CARD} flex items-center gap-3 p-4 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40`}
               >
                 <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F3F4F8]">

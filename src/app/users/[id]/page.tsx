@@ -18,7 +18,7 @@ import UserMinisterios from '@/components/users/user-ministerios';
 import { checkAuth, checkIsAdmin, logout, updateUser } from '@/app/actions';
 import { editUserPageSchema, userSchema } from '../validate'; // Assuming validate.ts is in the parent users folder src/app/users/validate.ts
 import { formatPhone } from '@/lib/utils';
-import { ArrowLeft, User, Building2, Church, LogOut } from 'lucide-react';
+import { ArrowLeft, User, Building2, Church } from 'lucide-react';
 import { MonthYearPicker } from '@/components/ui/month-year-picker';
 import { ImageUpload } from '@/components/ui/image-upload';
 
@@ -67,6 +67,11 @@ export default function EditUserPage() {
         const auth = await checkAuth();
         if (!auth.user) {
           router.push('/');
+          return;
+        }
+        // O próprio perfil fica em /perfil; esta tela segue para o admin editar outros usuários
+        if (auth.user.id === userId) {
+          router.replace('/perfil');
           return;
         }
         setUserName(auth.user.name);
@@ -396,19 +401,6 @@ export default function EditUserPage() {
             <UserMinisterios userId={userId} />
           </TabsContent>
         </Tabs>
-
-        {/* No próprio perfil: sair (quem não tem ministério não tem o "Mais" na barra inferior) */}
-        {currentUser?.id === userId && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleLogout}
-            className="mt-6 h-11 w-full gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 md:w-auto"
-          >
-            <LogOut aria-hidden="true" className="h-4 w-4" />
-            Sair da conta
-          </Button>
-        )}
       </div>
     </>
   );

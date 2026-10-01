@@ -243,7 +243,7 @@ export function MoreMenuSheet({
         <div className="flex items-center gap-1 px-3 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
           <button
             type="button"
-            onClick={() => handleNavigate({ href: `/users/${userId}` })}
+            onClick={() => handleNavigate({ href: '/perfil' })}
             className="flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-xl px-2 text-left transition-colors hover:bg-[#F3F4F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             {profileImageUrl ? (
