@@ -60,6 +60,9 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },
+  "engines": {
+    "node": "24.x"
+  },
   "name": "onda-ficha-visita",
   "private": true,
   "scripts": {
