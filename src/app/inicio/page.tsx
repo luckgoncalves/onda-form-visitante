@@ -7,16 +7,23 @@ import { ArrowRight, ChevronDown, ChevronRight, Handshake, LayoutGrid, User } fr
 import { checkAuth } from '@/app/actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { MINISTERIO_CORES, MINISTERIO_COR_KEYS, resolverVisualMinisterio } from '@/config/ministerio-visual';
+import { resolverVisualMinisterio } from '@/config/ministerio-visual';
 import { getEntradaMinisterio, MinisterioNav } from '@/config/navigation';
 
-type EmpresaDestaque = { id: string; nomeNegocio: string; ramoAtuacao?: string; logoUrl?: string | null };
 type MinisterioLideres = { id: string; nome: string; icone: string | null; cor: string | null; lideres: string[] };
 type Faltando = 'phone' | 'photo' | 'company';
 type CategoriaHub = { id: string; nome: string; total: number };
+type ResumoCategorias = { totalEmpresas: number; categorias: CategoriaHub[] };
 type Secao<T> = { estado: 'carregando' | 'erro' | 'pronto'; dados?: T };
 
 const CARD = 'rounded-2xl border border-[#ECEDF3] bg-white';
+// Celular: 2 colunas · tablet/desktop: colunas automáticas (mín. 200px)
+const GRADE_CATEGORIAS = 'grid grid-cols-2 gap-[10px] md:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]';
+
+function plural(n: number, singular: string, pluralTexto: string) {
+  return `${n} ${n === 1 ? singular : pluralTexto}`;
+}
+
 const ROTULO = 'text-[13px] font-bold uppercase tracking-[0.06em] text-[#5B6478]';
 
 const PASSOS = [
@@ -24,18 +31,6 @@ const PASSOS = [
   { titulo: 'Ele adiciona você', texto: 'O líder inclui você no ministério pelo app.' },
   { titulo: 'Tudo aparece aqui', texto: 'As páginas do ministério surgem no seu menu.' },
 ];
-
-function iniciais(nome: string) {
-  const partes = nome.trim().split(/\s+/).filter(Boolean);
-  return ((partes[0]?.[0] ?? '') + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase() || '?';
-}
-
-// Cor estável por empresa (sempre a mesma para o mesmo id)
-function corDaEmpresa(id: string) {
-  let hash = 0;
-  for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return MINISTERIO_CORES[MINISTERIO_COR_KEYS[hash % MINISTERIO_COR_KEYS.length]];
-}
 
 function textoPerfil(faltando: Faltando[]) {
   // Um item só: "Adicione sua foto." · Vários: "Adicione telefone, foto e sua empresa."
@@ -65,24 +60,11 @@ export default function InicioPage() {
   const router = useRouter();
   const [primeiroNome, setPrimeiroNome] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [hub, setHub] = useState<Secao<{ total: number; empresas: EmpresaDestaque[] }>>({ estado: 'carregando' });
   const [lideres, setLideres] = useState<Secao<MinisterioLideres[]>>({ estado: 'carregando' });
-  const [categorias, setCategorias] = useState<Secao<CategoriaHub[]>>({ estado: 'carregando' });
+  const [categorias, setCategorias] = useState<Secao<ResumoCategorias>>({ estado: 'carregando' });
   // null enquanto carrega; [] = sem ministério
   const [meusMinisterios, setMeusMinisterios] = useState<MinisterioNav[] | null>(null);
   const [faltando, setFaltando] = useState<Faltando[]>([]);
-
-  const carregarHub = useCallback(async () => {
-    setHub({ estado: 'carregando' });
-    try {
-      const res = await fetch('/api/empresas?page=1&limit=10');
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setHub({ estado: 'pronto', dados: { total: data.pagination.total, empresas: data.empresas } });
-    } catch {
-      setHub({ estado: 'erro' });
-    }
-  }, []);
 
   const carregarCategorias = useCallback(async () => {
     setCategorias({ estado: 'carregando' });
@@ -90,7 +72,7 @@ export default function InicioPage() {
       const res = await fetch('/api/empresas/categorias');
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setCategorias({ estado: 'pronto', dados: data.categorias });
+      setCategorias({ estado: 'pronto', dados: { totalEmpresas: data.totalEmpresas, categorias: data.categorias } });
     } catch {
       setCategorias({ estado: 'erro' });
     }
@@ -110,7 +92,6 @@ export default function InicioPage() {
 
   useEffect(() => {
     // Hub e perfil em paralelo com a checagem de acesso
-    carregarHub();
     carregarCategorias();
     fetch('/api/inicio/perfil')
       .then((res) => (res.ok ? res.json() : null))
@@ -128,9 +109,8 @@ export default function InicioPage() {
       // Líderes só para quem ainda não participa de um ministério
       if (!user.temMinisterio) carregarLideres();
     });
-  }, [router, carregarHub, carregarCategorias, carregarLideres]);
+  }, [router, carregarCategorias, carregarLideres]);
 
-  const empresas = hub.dados?.empresas ?? [];
   const semMinisterio = meusMinisterios !== null && meusMinisterios.length === 0;
   const comMinisterio = meusMinisterios !== null && meusMinisterios.length > 0;
 
@@ -239,20 +219,20 @@ export default function InicioPage() {
             </details>
           )}
 
-          {/* Hub de empresas: destaques + categorias */}
-          <section aria-labelledby="hub-titulo">
+          {/* Empresas por categoria (Opção B): grade com as categorias que mais têm empresas */}
+          <section aria-labelledby="categorias-titulo">
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
-                <h2 id="hub-titulo" className="text-lg font-bold text-[#0E1024]">Hub de empresas</h2>
-                {hub.estado === 'pronto' && (
+                <h2 id="categorias-titulo" className="text-lg font-bold text-[#0E1024]">Empresas por categoria</h2>
+                {categorias.estado === 'pronto' && (
                   <p className="text-sm text-[#4A5068]">
-                    {hub.dados!.total > 0
-                      ? `${hub.dados!.total} ${hub.dados!.total === 1 ? 'empresa' : 'empresas'} da comunidade`
+                    {categorias.dados!.categorias.length > 0
+                      ? `${plural(categorias.dados!.totalEmpresas, 'empresa', 'empresas')} · ${plural(categorias.dados!.categorias.length, 'categoria', 'categorias')}`
                       : 'Nenhuma empresa no Hub ainda'}
                   </p>
                 )}
               </div>
-              {hub.estado === 'pronto' && hub.dados!.total > 0 && (
+              {categorias.estado === 'pronto' && categorias.dados!.categorias.length > 0 && (
                 <Link
                   href="/empresas"
                   className="inline-flex min-h-11 shrink-0 items-center gap-1 text-[15px] font-bold text-onda-blue"
@@ -262,100 +242,43 @@ export default function InicioPage() {
               )}
             </div>
 
-            {hub.estado === 'carregando' ? (
-              <div className="-mx-4 flex gap-3 overflow-hidden px-4 md:mx-0 md:grid md:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] md:px-0">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-[178px] w-[164px] shrink-0 rounded-2xl md:w-auto" />
+            {categorias.estado === 'carregando' ? (
+              <div className={GRADE_CATEGORIAS}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-[92px] rounded-2xl" />
                 ))}
               </div>
-            ) : hub.estado === 'erro' ? (
-              <ErroSecao onRetry={carregarHub} />
-            ) : empresas.length > 0 ? (
-              <ul
-                aria-label="Empresas em destaque"
-                className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:snap-none md:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] md:overflow-visible md:px-0 md:pb-0"
-              >
-                {empresas.map((empresa, i) => {
-                  const cor = corDaEmpresa(empresa.id);
-                  return (
-                    // Grade (tablet/desktop) mostra até 8; o carrossel do celular, até 10
-                    <li key={empresa.id} className={cn('w-[164px] shrink-0 snap-start md:w-auto', i >= 8 && 'md:hidden')}>
-                      <Link
-                        href={`/empresas?busca=${encodeURIComponent(empresa.nomeNegocio)}`}
-                        className={`${CARD} flex h-full flex-col p-3.5 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40`}
-                      >
-                        {empresa.logoUrl ? (
-                          <img
-                            src={empresa.logoUrl}
-                            alt=""
-                            className="h-[84px] w-full rounded-xl bg-[#F5F6FA] object-contain"
-                          />
-                        ) : (
-                          <span
-                            aria-hidden="true"
-                            className="flex h-[84px] w-full items-center justify-center rounded-xl text-2xl font-bold"
-                            style={{ backgroundColor: cor.bg, color: cor.fg }}
-                          >
-                            {iniciais(empresa.nomeNegocio)}
-                          </span>
-                        )}
-                        <span className="mt-2.5 line-clamp-2 text-[15px] font-bold leading-snug text-[#0E1024]">
-                          {empresa.nomeNegocio}
-                        </span>
-                        {empresa.ramoAtuacao && (
-                          <span className="mt-0.5 truncate text-[13px] text-[#4A5068]">{empresa.ramoAtuacao}</span>
-                        )}
-                      </Link>
-                    </li>
-                  );
-                })}
+            ) : categorias.estado === 'erro' ? (
+              <ErroSecao onRetry={carregarCategorias} />
+            ) : categorias.dados!.categorias.length > 0 ? (
+              <ul aria-label="Categorias de empresas" className={GRADE_CATEGORIAS}>
+                {categorias.dados!.categorias.slice(0, 8).map((c, i) => (
+                  // Celular: as 5 maiores · tablet/desktop: até 8
+                  <li key={c.id} className={cn(i >= 5 && 'hidden md:block')}>
+                    <Link
+                      href={`/empresas?categoria=${c.id}`}
+                      aria-label={`${c.nome}, ${plural(c.total, 'empresa', 'empresas')}`}
+                      className="flex h-full min-h-[92px] flex-col justify-between gap-2 rounded-2xl border border-[#ECEDF3] bg-white p-3.5 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40"
+                    >
+                      <span className="line-clamp-2 text-[15px] font-bold leading-snug text-[#0E1024]">{c.nome}</span>
+                      <span aria-hidden="true" className="flex items-baseline gap-1">
+                        <span className="text-[22px] font-bold leading-none text-onda-blue">{c.total}</span>
+                        <span className="text-[13px] text-[#4A5068]">{c.total === 1 ? 'empresa' : 'empresas'}</span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link
+                    href="/empresas/categorias"
+                    className="flex h-full min-h-[92px] flex-col justify-between gap-2 rounded-2xl bg-onda-blue p-3.5 text-white transition-colors hover:bg-onda-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2"
+                  >
+                    <LayoutGrid aria-hidden="true" className="h-[22px] w-[22px]" />
+                    <span className="text-[15px] font-bold leading-snug">Ver todas as categorias</span>
+                  </Link>
+                </li>
               </ul>
             ) : null}
-
-            {/* Por categoria: as 6 com mais empresas + "Todas" */}
-            {!(categorias.estado === 'pronto' && categorias.dados!.length === 0) && (
-              <div className="mt-5">
-                <h3 className={`${ROTULO} mb-2.5`}>Por categoria</h3>
-                {categorias.estado === 'carregando' ? (
-                  <div className="-mx-4 flex gap-2 overflow-hidden px-4 md:mx-0 md:flex-wrap md:px-0">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <Skeleton key={i} className="h-10 w-36 shrink-0 rounded-[20px]" />
-                    ))}
-                  </div>
-                ) : categorias.estado === 'erro' ? (
-                  <ErroSecao onRetry={carregarCategorias} />
-                ) : (
-                  <ul
-                    aria-label="Categorias de empresas"
-                    className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:flex-wrap md:overflow-visible md:px-0"
-                  >
-                    {categorias.dados!.slice(0, 6).map((c) => (
-                      <li key={c.id} className="shrink-0">
-                        <Link
-                          href={`/empresas?categoria=${c.id}`}
-                          aria-label={`${c.nome}, ${c.total} ${c.total === 1 ? 'empresa' : 'empresas'}`}
-                          className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[20px] border border-[#D5D8E6] bg-white pl-3.5 pr-1.5 text-sm font-semibold text-[#0E1024] transition-colors hover:border-onda-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40"
-                        >
-                          {c.nome}
-                          <span aria-hidden="true" className="inline-flex h-[26px] min-w-[26px] items-center justify-center rounded-full bg-[#E8E9F4] px-2 text-[13px] font-bold text-onda-blue">
-                            {c.total}
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                    <li className="shrink-0">
-                      <Link
-                        href="/empresas/categorias"
-                        className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[20px] bg-onda-blue px-4 text-sm font-semibold text-white transition-colors hover:bg-onda-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2"
-                      >
-                        <LayoutGrid aria-hidden="true" className="h-4 w-4" />
-                        Todas
-                      </Link>
-                    </li>
-                  </ul>
-                )}
-              </div>
-            )}
           </section>
         </div>
 
