@@ -152,7 +152,15 @@ export default function EmpresasPage() {
       }
 
       if (appliedFilters.ramos.length > 0) {
-        params.append('ramo', appliedFilters.ramos.join(','));
+        // Filtra pelo id da categoria: o nome pode ter vírgula (ex.: "Beleza, Saúde e Bem-estar")
+        const ids = categoriasRef.current
+          .filter((c) => appliedFilters.ramos.includes(c.nome))
+          .map((c) => c.id);
+        if (ids.length > 0) {
+          params.append('categoria', ids.join(','));
+        } else {
+          params.append('ramo', appliedFilters.ramos.join(','));
+        }
       }
 
       if (appliedFilters.channels.length > 0) {
