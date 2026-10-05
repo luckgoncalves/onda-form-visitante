@@ -224,9 +224,10 @@ export function EmpresaFilters({ selectedRamos, ownerName, searchTerm, onApplyFi
             </DrawerClose>
           </div>
 
-          {/* Corpo (só ele rola) */}
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-5">
-            <label htmlFor="filtro-responsavel" className="mb-2 block text-[15px] font-bold text-[#0E1024]">
+          {/* Corpo (só ele rola). Sem padding no topo: o sticky respeita o padding da área de rolagem
+              e deixaria uma faixa por onde os itens apareceriam; o espaço vem da margem do primeiro campo. */}
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6">
+            <label htmlFor="filtro-responsavel" className="mb-2 mt-5 block text-[15px] font-bold text-[#0E1024]">
               Responsável
             </label>
             <input
