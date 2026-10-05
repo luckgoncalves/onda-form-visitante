@@ -238,18 +238,19 @@ export function EmpresaFilters({ selectedRamos, ownerName, searchTerm, onApplyFi
               className="h-12 w-full rounded-xl border-[1.5px] border-[#D5D8E6] bg-white px-3.5 text-base text-[#0E1024] placeholder:text-[#6B7280] focus:border-onda-blue focus:outline-none focus:ring-2 focus:ring-onda-blue/20"
             />
 
-            <fieldset className="mt-6">
-              <legend className="mb-2 text-[15px] font-bold text-[#0E1024]">
+            {/* Grupo de checkboxes (role="group" no lugar de fieldset: o sticky dentro de fieldset falha no Safari/iOS) */}
+            <div role="group" aria-labelledby="filtro-categoria-legenda" className="mt-6">
+              <p id="filtro-categoria-legenda" className="mb-2 text-[15px] font-bold text-[#0E1024]">
                 Categoria
                 {nMarcadas > 0 && (
                   <span className="font-normal text-[#4A5068]">
                     {' '}· {nMarcadas} {nMarcadas === 1 ? 'selecionada' : 'selecionadas'}
                   </span>
                 )}
-              </legend>
+              </p>
 
               {/* Busca de categoria: fica fixa no topo enquanto a lista rola */}
-              <div className="sticky top-0 z-10 -mx-1 bg-white px-1 py-1">
+              <div className="sticky top-0 z-10 -mx-5 bg-white px-5 py-2">
                 <div className="relative">
                   <label htmlFor="filtro-busca-categoria" className="sr-only">Buscar categoria</label>
                   <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#4A5068]" />
@@ -342,7 +343,7 @@ export function EmpresaFilters({ selectedRamos, ownerName, searchTerm, onApplyFi
                   </div>
                 ))
               )}
-            </fieldset>
+            </div>
           </div>
 
           {/* Rodapé */}
