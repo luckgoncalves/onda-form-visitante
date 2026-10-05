@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
       const nova = await tx.empresa.create({
         data: {
           nomeNegocio: empresa.nomeNegocio.trim(),
+          categoriaId: empresa.categoriaId,
           ramoAtuacao: empresa.ramoAtuacao.trim(),
           detalhesServico: empresa.detalhesServico.trim(),
           whatsapp: empresa.whatsapp,

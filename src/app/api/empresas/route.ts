@@ -26,6 +26,7 @@ const listEmpresasSchema = z.object({
   search: z.string().optional(),
   userId: z.string().optional(),
   ramo: z.string().optional(),
+  categoria: z.string().optional(),
   channels: z.string().optional(),
   ownerName: z.string().optional(),
 });
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
     const queryParams = Object.fromEntries(searchParams.entries());
     const validatedParams = listEmpresasSchema.parse(queryParams);
 
-    const { page, limit, search, userId, ramo, channels, ownerName } = validatedParams;
+    const { page, limit, search, userId, ramo, categoria, channels, ownerName } = validatedParams;
     const skip = (page - 1) * limit;
 
     // Construir filtros
@@ -57,8 +58,17 @@ export async function GET(request: NextRequest) {
         .map(value => value.trim())
         .filter(Boolean);
 
+      // O filtro "ramo" agora usa as categorias padronizadas (pelo nome)
       if (ramoList.length > 0) {
-        where.ramoAtuacao = { in: ramoList };
+        where.categoria = { nome: { in: ramoList } };
+      }
+    }
+
+    // Filtro por categoria (id), usado nos links diretos: /empresas?categoria={id}
+    if (categoria) {
+      const categoriaIds = categoria.split(',').map((value) => value.trim()).filter(Boolean);
+      if (categoriaIds.length > 0) {
+        where.categoriaId = { in: categoriaIds };
       }
     }
 

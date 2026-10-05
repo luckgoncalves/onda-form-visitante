@@ -11,6 +11,7 @@ export interface Empresa {
   linkedin?: string | null;
   email: string;
   logoUrl?: string | null;
+  categoriaId?: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
   usuarios?: UserEmpresa[];
@@ -59,6 +60,7 @@ export interface EmpresaListResponse {
 
 export interface EmpresaFiltersResponse {
   ramos: string[];
+  categorias?: string[];
   channels: EmpresaContactChannel[];
 }
 

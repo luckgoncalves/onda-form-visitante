@@ -44,12 +44,44 @@ export default function EmpresasPage() {
   const requestIdRef = useRef(0);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
-  // Link direto para uma empresa (ex.: carrossel do Início): /empresas?busca=Nome
+  // Categorias (id ↔ nome): o filtro trabalha com nomes; a URL usa ids (/empresas?categoria={id})
+  const categoriasRef = useRef<{ id: string; nome: string }[]>([]);
+
+  // Links diretos: /empresas?busca=Nome (carrossel do Início) e /empresas?categoria={id} (categorias)
   useEffect(() => {
-    const busca = new URLSearchParams(window.location.search).get('busca');
+    const params = new URLSearchParams(window.location.search);
+    const busca = params.get('busca');
     if (busca) setSearchTerm(busca);
-  }, []);
+
+    fetch('/api/empresas/categorias?todas=1')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) return;
+        categoriasRef.current = data.categorias;
+        const ids = (params.get('categoria') || '').split(',').filter(Boolean);
+        const nomes = data.categorias
+          .filter((c: { id: string }) => ids.includes(c.id))
+          .map((c: { nome: string }) => c.nome);
+        if (nomes.length > 0) {
+          const comCategoria = { ...filtersRef.current, ramos: nomes };
+          setFilters(comCategoria);
+          fetchEmpresas(1, busca || '', comCategoria);
+        }
+      })
+      .catch(() => {});
+  }, []); //eslint-disable-line
+
+  // Mantém ?categoria= na URL de acordo com o filtro aplicado (voltar e links diretos)
+  const sincronizarUrlCategoria = (nomes: string[]) => {
+    const ids = categoriasRef.current.filter((c) => nomes.includes(c.nome)).map((c) => c.id);
+    const url = new URL(window.location.href);
+    if (ids.length > 0) url.searchParams.set('categoria', ids.join(','));
+    else url.searchParams.delete('categoria');
+    window.history.replaceState(window.history.state, '', url.toString());
+  };
 
   // Verificar autenticação
   useEffect(() => {
@@ -172,7 +204,8 @@ export default function EmpresasPage() {
       }
 
       const data: EmpresaFiltersResponse = await response.json();
-      setAvailableRamos(data.ramos);
+      // O filtro usa as categorias padronizadas (com empresas no Hub)
+      setAvailableRamos(data.categorias ?? data.ramos);
       setAvailableChannels(data.channels);
     } catch (error) {
       console.error('Erro ao carregar filtros de empresas:', error);
@@ -249,6 +282,7 @@ export default function EmpresasPage() {
       ownerName: '',
     };
     setFilters(clearedFilters);
+    sincronizarUrlCategoria([]);
     // Recarregar empresas com filtros limpos
     fetchEmpresas(1, debouncedSearchTerm, clearedFilters);
   };
@@ -266,6 +300,7 @@ export default function EmpresasPage() {
       channels: appliedFilters.channels,
       ownerName: appliedFilters.ownerName,
     });
+    sincronizarUrlCategoria(appliedFilters.ramos);
     // Recarregar empresas com os novos filtros
     fetchEmpresas(1, debouncedSearchTerm, appliedFilters);
   };

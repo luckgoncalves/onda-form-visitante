@@ -36,6 +36,7 @@ export type PerfilEmpresa = {
   facebook: string | null;
   linkedin: string | null;
   logoUrl: string | null;
+  categoriaId: string | null;
 };
 
 export type MeuPerfil = {
@@ -93,6 +94,7 @@ export async function getMeuPerfil(): Promise<Resultado<MeuPerfil>> {
         facebook: true,
         linkedin: true,
         logoUrl: true,
+        categoriaId: true,
       },
     }),
   ]);
@@ -202,6 +204,7 @@ function textoOuNull(valor?: string) {
 function dadosEmpresa(empresa: z.infer<typeof empresaSchema>) {
   return {
     nomeNegocio: empresa.nomeNegocio.trim(),
+    categoriaId: empresa.categoriaId,
     ramoAtuacao: empresa.ramoAtuacao.trim(),
     detalhesServico: empresa.detalhesServico.trim(),
     whatsapp: empresa.whatsapp,

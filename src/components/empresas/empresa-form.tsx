@@ -16,6 +16,7 @@ import { Empresa } from '@/types/empresa';
 import ButtonForm from '@/components/button-form';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { useCategoriasEmpresa } from '@/hooks/use-categorias-empresa';
 
 interface EmpresaFormProps {
   onModal?: boolean;
@@ -82,10 +83,13 @@ export default function EmpresaForm({
     fetchRamos();
   }, []);
 
+  const categorias = useCategoriasEmpresa();
+
   const form = useForm<EmpresaFormData>({
     resolver: zodResolver(empresaSchema),
     defaultValues: {
       nomeNegocio: initialData?.nomeNegocio || '',
+      categoriaId: initialData?.categoriaId || '',
       ramoAtuacao: initialData?.ramoAtuacao || '',
       detalhesServico: initialData?.detalhesServico || '',
       whatsapp: initialData?.whatsapp || '',
@@ -167,7 +171,30 @@ export default function EmpresaForm({
               )}
             />
 
-            {/* Ramo de Atuação */}
+            {/* Categoria (lista fixa) */}
+            <FormField
+              control={form.control}
+              name="categoriaId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoria</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-2 py-2 text-sm focus:border-onda-darkBlue focus-visible:outline-none"
+                    >
+                      <option value="">Selecione a categoria</option>
+                      {categorias.map((c) => (
+                        <option key={c.id} value={c.id}>{c.nome}</option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Ramo de Atuação (texto livre, aparece como subtítulo da empresa) */}
             <FormField
               control={form.control}
               name="ramoAtuacao"
@@ -187,7 +214,7 @@ export default function EmpresaForm({
                       <FormControl>
                         <div className="relative">
                           <Input
-                            placeholder="Ex.: Beleza e Estética"
+                            placeholder="Ex.: Mecânica automotiva"
                             value={ramoValue}
                             onChange={(e) => {
                               field.onChange(e.target.value);

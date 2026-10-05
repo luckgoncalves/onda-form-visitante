@@ -7,6 +7,7 @@ import { AlertCircle } from 'lucide-react';
 import { cn, formatPhone } from '@/lib/utils';
 import { empresaSchema, EmpresaFormData } from '@/lib/validations/empresa';
 import { INPUT, INPUT_ERRO, LABEL, MensagemCampo } from '@/components/signup/campos';
+import { useCategoriasEmpresa } from '@/hooks/use-categorias-empresa';
 
 type Props = {
   token: string;
@@ -27,7 +28,7 @@ type Campo = {
 
 const OBRIGATORIOS: Campo[] = [
   { name: 'nomeNegocio', label: 'Nome do negócio', placeholder: 'Ex.: Studio de Beleza Maria', autoComplete: 'organization' },
-  { name: 'ramoAtuacao', label: 'Ramo de atuação', placeholder: 'Ex.: Beleza e estética' },
+  { name: 'ramoAtuacao', label: 'Ramo de atuação', placeholder: 'Ex.: Mecânica automotiva' },
   { name: 'whatsapp', label: 'WhatsApp', placeholder: '(41) 99999-9999', type: 'tel', inputMode: 'tel', autoComplete: 'tel' },
   { name: 'email', label: 'E-mail da empresa', placeholder: 'contato@empresa.com', type: 'email', inputMode: 'email', autoComplete: 'email' },
 ];
@@ -40,6 +41,7 @@ const OPCIONAIS: Campo[] = [
 
 export function CadastroEmpresaForm({ token, onSalva, onTokenExpirado, onCancelar }: Props) {
   const [erroServidor, setErroServidor] = useState<string | null>(null);
+  const categorias = useCategoriasEmpresa();
 
   const form = useForm<EmpresaFormData>({
     resolver: zodResolver(empresaSchema),
@@ -48,6 +50,7 @@ export function CadastroEmpresaForm({ token, onSalva, onTokenExpirado, onCancela
     shouldFocusError: true,
     defaultValues: {
       nomeNegocio: '',
+      categoriaId: '',
       ramoAtuacao: '',
       detalhesServico: '',
       whatsapp: '',
@@ -122,7 +125,25 @@ export function CadastroEmpresaForm({ token, onSalva, onTokenExpirado, onCancela
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
-      {OBRIGATORIOS.slice(0, 2).map(renderCampo)}
+      {renderCampo(OBRIGATORIOS[0])}
+
+      <div>
+        <label htmlFor="empresa-categoriaId" className={LABEL}>Categoria</label>
+        <select
+          id="empresa-categoriaId"
+          className={cn(INPUT, 'appearance-none', errors.categoriaId && INPUT_ERRO)}
+          {...aria('categoriaId')}
+          {...register('categoriaId')}
+        >
+          <option value="">Selecione a categoria</option>
+          {categorias.map((c) => (
+            <option key={c.id} value={c.id}>{c.nome}</option>
+          ))}
+        </select>
+        <MensagemCampo id="empresa-categoriaId-mensagem" erro={errors.categoriaId?.message} />
+      </div>
+
+      {renderCampo(OBRIGATORIOS[1])}
 
       <div>
         <label htmlFor="empresa-detalhesServico" className={LABEL}>O que a empresa oferece</label>

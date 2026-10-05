@@ -274,11 +274,24 @@ model Empresa {
   linkedin        String?
   email           String
   logoUrl         String?
+  categoriaId     String? // categoria padronizada (o ramoAtuacao livre vira subtítulo)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   // Relação com usuários (muitos para muitos)
   usuarios UserEmpresa[]
+
+  categoria CategoriaEmpresa? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+}
+
+// Lista fixa de categorias de empresa (mantida pela administração)
+model CategoriaEmpresa {
+  id        String   @id @default(cuid())
+  nome      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  empresas Empresa[]
 }
 
 model UserEmpresa {

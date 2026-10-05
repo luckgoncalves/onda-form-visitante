@@ -2,6 +2,7 @@ import * as z from "zod";
 
 export const empresaSchema = z.object({
   nomeNegocio: z.string().min(1, "Nome do negócio é obrigatório"),
+  categoriaId: z.string().min(1, "Escolha a categoria"),
   ramoAtuacao: z.string().min(1, "Ramo de atuação é obrigatório"),
   detalhesServico: z.string().min(1, "Detalhes do serviço são obrigatórios"),
   whatsapp: z.string().min(1, "WhatsApp é obrigatório"),

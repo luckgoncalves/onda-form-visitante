@@ -126,6 +126,19 @@ export function EmpresaFilters({
     setOpen(false);
   };
 
+  // Remover um filtro aplicado pela badge reaplica os filtros na hora
+  const removerFiltroAplicado = (next: { ramos?: string[]; channels?: EmpresaContactChannel[]; ownerName?: string }) => {
+    const aplicados = {
+      ramos: next.ramos ?? selectedRamos,
+      channels: next.channels ?? selectedChannels,
+      ownerName: next.ownerName ?? ownerName,
+    };
+    setTempRamos(aplicados.ramos);
+    setTempChannels(aplicados.channels);
+    setTempOwnerName(aplicados.ownerName);
+    onApplyFilters(aplicados);
+  };
+
   const handleClear = () => {
     setTempRamos([]);
     setTempChannels([]);
@@ -181,7 +194,7 @@ export function EmpresaFilters({
 
           <div className="space-y-6">
             <div>
-              <p className="text-sm font-medium mb-3">Ramo de atuação</p>
+              <p className="text-sm font-medium mb-3">Categoria</p>
               {isFetchingOptions ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -210,8 +223,8 @@ export function EmpresaFilters({
                   >
                     <span className="truncate">
                       {tempRamos.length > 0
-                        ? `${tempRamos.length} ramo${tempRamos.length > 1 ? 's' : ''} selecionado${tempRamos.length > 1 ? 's' : ''}`
-                        : 'Selecione os ramos...'}
+                        ? `${tempRamos.length} categoria${tempRamos.length > 1 ? 's' : ''} selecionada${tempRamos.length > 1 ? 's' : ''}`
+                        : 'Selecione as categorias...'}
                     </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -219,7 +232,7 @@ export function EmpresaFilters({
                     <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
                       <div className="p-2 border-b space-y-2">
                         <Input
-                          placeholder="Buscar ramo..."
+                          placeholder="Buscar categoria..."
                           value={ramosSearchValue}
                           onChange={(e) => setRamosSearchValue(e.target.value)}
                           className="w-full"
@@ -366,7 +379,7 @@ export function EmpresaFilters({
               {ramo}
               <button
                 type="button"
-                onClick={() => handleRamoToggle(ramo)}
+                onClick={() => removerFiltroAplicado({ ramos: selectedRamos.filter((r) => r !== ramo) })}
                 className="ml-1 hover:opacity-80"
                 aria-label={`Remover filtro ${ramo}`}
               >
@@ -384,7 +397,7 @@ export function EmpresaFilters({
               {channelLabelMap[channel]}
               <button
                 type="button"
-                onClick={() => handleChannelToggle(channel)}
+                onClick={() => removerFiltroAplicado({ channels: selectedChannels.filter((c) => c !== channel) })}
                 className="ml-1 hover:opacity-80"
                 aria-label={`Remover filtro ${channelLabelMap[channel]}`}
               >
@@ -402,7 +415,7 @@ export function EmpresaFilters({
               Responsável: {ownerName}
               <button
                 type="button"
-                onClick={() => onOwnerNameChange('')}
+                onClick={() => removerFiltroAplicado({ ownerName: '' })}
                 className="ml-1 hover:opacity-80"
                 aria-label="Remover filtro de responsável"
               >

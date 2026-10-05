@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ChevronDown, ChevronRight, Handshake, User } from 'lucide-react';
+import { ArrowRight, ChevronDown, ChevronRight, Handshake, LayoutGrid, User } from 'lucide-react';
 import { checkAuth } from '@/app/actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ import { getEntradaMinisterio, MinisterioNav } from '@/config/navigation';
 type EmpresaDestaque = { id: string; nomeNegocio: string; ramoAtuacao?: string; logoUrl?: string | null };
 type MinisterioLideres = { id: string; nome: string; icone: string | null; cor: string | null; lideres: string[] };
 type Faltando = 'phone' | 'photo' | 'company';
+type CategoriaHub = { id: string; nome: string; total: number };
 type Secao<T> = { estado: 'carregando' | 'erro' | 'pronto'; dados?: T };
 
 const CARD = 'rounded-2xl border border-[#ECEDF3] bg-white';
@@ -66,6 +67,7 @@ export default function InicioPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [hub, setHub] = useState<Secao<{ total: number; empresas: EmpresaDestaque[] }>>({ estado: 'carregando' });
   const [lideres, setLideres] = useState<Secao<MinisterioLideres[]>>({ estado: 'carregando' });
+  const [categorias, setCategorias] = useState<Secao<CategoriaHub[]>>({ estado: 'carregando' });
   // null enquanto carrega; [] = sem ministério
   const [meusMinisterios, setMeusMinisterios] = useState<MinisterioNav[] | null>(null);
   const [faltando, setFaltando] = useState<Faltando[]>([]);
@@ -79,6 +81,18 @@ export default function InicioPage() {
       setHub({ estado: 'pronto', dados: { total: data.pagination.total, empresas: data.empresas } });
     } catch {
       setHub({ estado: 'erro' });
+    }
+  }, []);
+
+  const carregarCategorias = useCallback(async () => {
+    setCategorias({ estado: 'carregando' });
+    try {
+      const res = await fetch('/api/empresas/categorias');
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setCategorias({ estado: 'pronto', dados: data.categorias });
+    } catch {
+      setCategorias({ estado: 'erro' });
     }
   }, []);
 
@@ -97,6 +111,7 @@ export default function InicioPage() {
   useEffect(() => {
     // Hub e perfil em paralelo com a checagem de acesso
     carregarHub();
+    carregarCategorias();
     fetch('/api/inicio/perfil')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => data && setFaltando(data.faltando))
@@ -113,7 +128,7 @@ export default function InicioPage() {
       // Líderes só para quem ainda não participa de um ministério
       if (!user.temMinisterio) carregarLideres();
     });
-  }, [router, carregarHub, carregarLideres]);
+  }, [router, carregarHub, carregarCategorias, carregarLideres]);
 
   const empresas = hub.dados?.empresas ?? [];
   const semMinisterio = meusMinisterios !== null && meusMinisterios.length === 0;
@@ -186,26 +201,27 @@ export default function InicioPage() {
             </section>
           )}
 
-          {/* Card do ministério (horizontal no desktop) — só para quem não tem ministério */}
+          {/* Card do ministério — compacto (uma linha); tocar expande o texto e os passos */}
           {semMinisterio && (
-          <section aria-labelledby="sem-ministerio-titulo" className={`${CARD} flex flex-col gap-[18px] p-5 lg:flex-row lg:gap-5`}>
-            <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[#E5F4FE] lg:h-14 lg:w-14">
-              <Handshake className="h-6 w-6 text-onda-medBlue lg:h-7 lg:w-7" />
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col gap-[18px]">
-              <div>
-                <h2 id="sem-ministerio-titulo" className="text-[19px] font-bold leading-snug text-[#0E1024]">
-                  Você ainda não está em um ministério
-                </h2>
-                <p className="mt-1.5 text-[15px] leading-normal text-[#4A5068]">
+            <details className={`${CARD} group`}>
+              <summary className="flex min-h-[76px] cursor-pointer list-none items-center gap-3 rounded-2xl p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40 [&::-webkit-details-marker]:hidden">
+                <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#E5F4FE]">
+                  <Handshake className="h-[22px] w-[22px] text-onda-medBlue" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base font-bold leading-snug text-[#0E1024]">
+                    Você ainda não está em um ministério
+                  </span>
+                  <span className="mt-0.5 flex items-center gap-1 text-sm font-bold text-onda-blue">
+                    Como ser adicionado
+                    <ChevronDown aria-hidden="true" className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" />
+                  </span>
+                </span>
+              </summary>
+              <div className="border-t border-[#ECEDF3] px-4 pb-5 pt-4">
+                <p className="text-[15px] leading-normal text-[#4A5068]">
                   Se você já serve na Onda, peça ao líder do seu ministério para adicionar você no app.
                 </p>
-              </div>
-              <details className="group">
-                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between rounded-xl bg-[#F5F6FA] px-4 text-[15px] font-bold text-onda-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40 [&::-webkit-details-marker]:hidden">
-                  Como ser adicionado
-                  <ChevronDown aria-hidden="true" className="h-5 w-5 transition-transform duration-200 group-open:rotate-180" />
-                </summary>
                 <ol className="mt-4 flex flex-col gap-4 px-1">
                   {PASSOS.map((passo, i) => (
                     <li key={passo.titulo} className="flex gap-3">
@@ -219,16 +235,15 @@ export default function InicioPage() {
                     </li>
                   ))}
                 </ol>
-              </details>
-            </div>
-          </section>
+              </div>
+            </details>
           )}
 
-          {/* Destaques do Hub */}
+          {/* Hub de empresas: destaques + categorias */}
           <section aria-labelledby="hub-titulo">
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
-                <h2 id="hub-titulo" className="text-lg font-bold text-[#0E1024]">Destaques do Hub</h2>
+                <h2 id="hub-titulo" className="text-lg font-bold text-[#0E1024]">Hub de empresas</h2>
                 {hub.estado === 'pronto' && (
                   <p className="text-sm text-[#4A5068]">
                     {hub.dados!.total > 0
@@ -296,6 +311,51 @@ export default function InicioPage() {
                 })}
               </ul>
             ) : null}
+
+            {/* Por categoria: as 6 com mais empresas + "Todas" */}
+            {!(categorias.estado === 'pronto' && categorias.dados!.length === 0) && (
+              <div className="mt-5">
+                <h3 className={`${ROTULO} mb-2.5`}>Por categoria</h3>
+                {categorias.estado === 'carregando' ? (
+                  <div className="-mx-4 flex gap-2 overflow-hidden px-4 md:mx-0 md:flex-wrap md:px-0">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <Skeleton key={i} className="h-10 w-36 shrink-0 rounded-[20px]" />
+                    ))}
+                  </div>
+                ) : categorias.estado === 'erro' ? (
+                  <ErroSecao onRetry={carregarCategorias} />
+                ) : (
+                  <ul
+                    aria-label="Categorias de empresas"
+                    className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:flex-wrap md:overflow-visible md:px-0"
+                  >
+                    {categorias.dados!.slice(0, 6).map((c) => (
+                      <li key={c.id} className="shrink-0">
+                        <Link
+                          href={`/empresas?categoria=${c.id}`}
+                          aria-label={`${c.nome}, ${c.total} ${c.total === 1 ? 'empresa' : 'empresas'}`}
+                          className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[20px] border border-[#D5D8E6] bg-white pl-3.5 pr-1.5 text-sm font-semibold text-[#0E1024] transition-colors hover:border-onda-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue/40"
+                        >
+                          {c.nome}
+                          <span aria-hidden="true" className="inline-flex h-[26px] min-w-[26px] items-center justify-center rounded-full bg-[#E8E9F4] px-2 text-[13px] font-bold text-onda-blue">
+                            {c.total}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                    <li className="shrink-0">
+                      <Link
+                        href="/empresas/categorias"
+                        className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[20px] bg-onda-blue px-4 text-sm font-semibold text-white transition-colors hover:bg-onda-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2"
+                      >
+                        <LayoutGrid aria-hidden="true" className="h-4 w-4" />
+                        Todas
+                      </Link>
+                    </li>
+                  </ul>
+                )}
+              </div>
+            )}
           </section>
         </div>
 
