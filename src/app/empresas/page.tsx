@@ -8,9 +8,9 @@ import { checkAuth } from '@/app/actions';
 import { useDebounce } from '@/app/users/hooks/useDebounce';
 import EmpresaCard from '@/components/empresas/empresa-card';
 import { EmpresasGridSkeleton } from '@/components/empresas/empresa-skeleton';
-import { Empresa, EmpresaListResponse, EmpresaFiltersResponse, EmpresaContactChannel, EMPRESA_CONTACT_CHANNELS } from '@/types/empresa';
+import { Empresa, EmpresaListResponse } from '@/types/empresa';
 import { SearchInput } from '@/components/search-input';
-import { EmpresaFilters } from '@/components/empresas/empresa-filters';
+import { EmpresaFilters, FiltrosEmpresas } from '@/components/empresas/empresa-filters';
 import LoadingOnda from '@/components/loading-onda';
 
 export default function EmpresasPage() {
@@ -23,18 +23,7 @@ export default function EmpresasPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [deletingEmpresaId, setDeletingEmpresaId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<{
-    ramos: string[];
-    channels: EmpresaContactChannel[];
-    ownerName: string;
-  }>({
-    ramos: [],
-    channels: [],
-    ownerName: '',
-  });
-  const [availableRamos, setAvailableRamos] = useState<string[]>([]);
-  const [availableChannels, setAvailableChannels] = useState<EmpresaContactChannel[]>();
-  const [isFetchingFilterOptions, setIsFetchingFilterOptions] = useState(false);
+  const [filters, setFilters] = useState<FiltrosEmpresas>({ ramos: [], ownerName: '' });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
@@ -108,19 +97,6 @@ export default function EmpresasPage() {
   // Carregar empresas na inicialização (independente de autenticação)
   useEffect(() => {
     fetchEmpresas();
-    fetchFilterOptions();
-  }, []); //eslint-disable-line
-
-  // Recarregar filtros quando a página ganha foco (para pegar novos ramos criados em outras abas)
-  useEffect(() => {
-    const handleFocus = () => {
-      fetchFilterOptions();
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
   }, []); //eslint-disable-line
 
   // Recarregar empresas apenas quando busca mudar (filtros agora são aplicados manualmente)
@@ -131,7 +107,7 @@ export default function EmpresasPage() {
   const fetchEmpresas = async (
     page = 1,
     search = '',
-    appliedFilters: { ramos: string[]; channels: EmpresaContactChannel[]; ownerName: string } = filters,
+    appliedFilters: FiltrosEmpresas = filters,
     options?: { append?: boolean; showLoading?: boolean }
   ) => {
     const requestId = ++requestIdRef.current;
@@ -163,9 +139,6 @@ export default function EmpresasPage() {
         }
       }
 
-      if (appliedFilters.channels.length > 0) {
-        params.append('channels', appliedFilters.channels.join(','));
-      }
 
       if (appliedFilters.ownerName) {
         params.append('ownerName', appliedFilters.ownerName);
@@ -180,10 +153,6 @@ export default function EmpresasPage() {
       if (requestId === requestIdRef.current) {
         setEmpresas((prev) => (append ? [...prev, ...data.empresas] : data.empresas));
         setPagination(data.pagination);
-        // Recarregar filtros quando não for append para incluir novos ramos
-        if (!append) {
-          fetchFilterOptions();
-        }
       }
 
     } catch (error) {
@@ -197,29 +166,6 @@ export default function EmpresasPage() {
       if (showLoading && requestId === requestIdRef.current) {
         setIsLoading(false);
       }
-    }
-  };
-
-  const fetchFilterOptions = async () => {
-    try {
-      setIsFetchingFilterOptions(true);
-      const response = await fetch('/api/empresas/filters', {
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao carregar filtros');
-      }
-
-      const data: EmpresaFiltersResponse = await response.json();
-      // O filtro usa as categorias padronizadas (com empresas no Hub)
-      setAvailableRamos(data.categorias ?? data.ramos);
-      setAvailableChannels(data.channels);
-    } catch (error) {
-      console.error('Erro ao carregar filtros de empresas:', error);
-      setAvailableChannels(Array.from(EMPRESA_CONTACT_CHANNELS) as EmpresaContactChannel[]);
-    } finally {
-      setIsFetchingFilterOptions(false);
     }
   };
 
@@ -269,45 +215,8 @@ export default function EmpresasPage() {
     }
   };
 
-  const handleRamosChange = (nextRamos: string[]) => {
-    setFilters((prev) => ({
-      ...prev,
-      ramos: nextRamos,
-    }));
-  };
-
-  const handleChannelsChange = (nextChannels: EmpresaContactChannel[]) => {
-    setFilters((prev) => ({
-      ...prev,
-      channels: nextChannels,
-    }));
-  };
-
-  const handleClearFilters = () => {
-    const clearedFilters = {
-      ramos: [],
-      channels: [],
-      ownerName: '',
-    };
-    setFilters(clearedFilters);
-    sincronizarUrlCategoria([]);
-    // Recarregar empresas com filtros limpos
-    fetchEmpresas(1, debouncedSearchTerm, clearedFilters);
-  };
-
-  const handleOwnerNameChange = (value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      ownerName: value,
-    }));
-  };
-
-  const handleApplyFilters = (appliedFilters: { ramos: string[]; channels: EmpresaContactChannel[]; ownerName: string }) => {
-    setFilters({
-      ramos: appliedFilters.ramos,
-      channels: appliedFilters.channels,
-      ownerName: appliedFilters.ownerName,
-    });
+  const handleApplyFilters = (appliedFilters: FiltrosEmpresas) => {
+    setFilters(appliedFilters);
     sincronizarUrlCategoria(appliedFilters.ramos);
     // Recarregar empresas com os novos filtros
     fetchEmpresas(1, debouncedSearchTerm, appliedFilters);
@@ -339,18 +248,10 @@ export default function EmpresasPage() {
             />
 
             <EmpresaFilters
-              availableRamos={availableRamos}
-              availableChannels={availableChannels || Array.from(EMPRESA_CONTACT_CHANNELS) as EmpresaContactChannel[]}
               selectedRamos={filters.ramos}
-              selectedChannels={filters.channels}
               ownerName={filters.ownerName}
-              onRamosChange={handleRamosChange}
-              onChannelsChange={handleChannelsChange}
-              onOwnerNameChange={handleOwnerNameChange}
-              onClearAll={handleClearFilters}
+              searchTerm={debouncedSearchTerm}
               onApplyFilters={handleApplyFilters}
-              isFetchingOptions={isFetchingFilterOptions}
-              onRefreshFilters={fetchFilterOptions}
             />
           </div>
 
