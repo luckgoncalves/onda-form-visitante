@@ -168,13 +168,15 @@ export function EmpresaFilters({
     selectedChannels.length +
     (ownerName ? 1 : 0);
 
+  // "contents": o botão fica na linha da busca e as tags aplicadas descem para uma linha própria
   return (
-    <div className="flex flex-col gap-3">
+    <div className="contents">
       <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="w-auto justify-start gap-2 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40 text-onda-darkBlue"
+            aria-label={activeCount > 0 ? `Filtros (${activeCount} aplicados)` : 'Filtros'}
+            className="h-10 w-auto shrink-0 justify-start gap-2 px-3 border-onda-darkBlue/20 hover:bg-onda-darkBlue/10 hover:border-onda-darkBlue/40 text-onda-darkBlue"
           >
             <SlidersHorizontal className="h-4 w-4" />
             {activeCount > 0 && (
@@ -369,7 +371,7 @@ export function EmpresaFilters({
       </Sheet>
 
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex basis-full flex-wrap gap-2">
           {selectedRamos.map(ramo => (
             <Badge
               key={`ramo-${ramo}`}

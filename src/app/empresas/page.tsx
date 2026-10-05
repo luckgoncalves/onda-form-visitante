@@ -330,7 +330,7 @@ export default function EmpresasPage() {
           </div>
 
           {/* Barra de Pesquisa + Filtros */}
-          <div className="flex flex-row flex-nowrap items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <SearchInput
               value={searchTerm}
               onChange={setSearchTerm}
@@ -338,22 +338,20 @@ export default function EmpresasPage() {
               className="flex-1 min-w-0"
             />
 
-            <div className="shrink-0">
-              <EmpresaFilters
-                availableRamos={availableRamos}
-                availableChannels={availableChannels || Array.from(EMPRESA_CONTACT_CHANNELS) as EmpresaContactChannel[]}
-                selectedRamos={filters.ramos}
-                selectedChannels={filters.channels}
-                ownerName={filters.ownerName}
-                onRamosChange={handleRamosChange}
-                onChannelsChange={handleChannelsChange}
-                onOwnerNameChange={handleOwnerNameChange}
-                onClearAll={handleClearFilters}
-                onApplyFilters={handleApplyFilters}
-                isFetchingOptions={isFetchingFilterOptions}
-                onRefreshFilters={fetchFilterOptions}
-              />
-            </div>
+            <EmpresaFilters
+              availableRamos={availableRamos}
+              availableChannels={availableChannels || Array.from(EMPRESA_CONTACT_CHANNELS) as EmpresaContactChannel[]}
+              selectedRamos={filters.ramos}
+              selectedChannels={filters.channels}
+              ownerName={filters.ownerName}
+              onRamosChange={handleRamosChange}
+              onChannelsChange={handleChannelsChange}
+              onOwnerNameChange={handleOwnerNameChange}
+              onClearAll={handleClearFilters}
+              onApplyFilters={handleApplyFilters}
+              isFetchingOptions={isFetchingFilterOptions}
+              onRefreshFilters={fetchFilterOptions}
+            />
           </div>
 
           {/* Contador de empresas */}
