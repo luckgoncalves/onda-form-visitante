@@ -17,8 +17,10 @@ type ResumoCategorias = { totalEmpresas: number; categorias: CategoriaHub[] };
 type Secao<T> = { estado: 'carregando' | 'erro' | 'pronto'; dados?: T };
 
 const CARD = 'rounded-2xl border border-[#ECEDF3] bg-white';
-// Celular: 2 colunas · tablet/desktop: colunas automáticas (mín. 200px)
-const GRADE_CATEGORIAS = 'grid grid-cols-2 gap-[10px] md:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]';
+// Celular: carrossel com rolagem lateral (sangra até as bordas) · tablet/desktop: grade automática (mín. 200px)
+const LISTA_CATEGORIAS =
+  '-mx-4 flex snap-x snap-mandatory gap-[10px] overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:snap-none md:overflow-visible md:px-0 md:pb-0 md:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]';
+const ITEM_CATEGORIA = 'w-[150px] shrink-0 snap-start md:w-auto';
 
 function plural(n: number, singular: string, pluralTexto: string) {
   return `${n} ${n === 1 ? singular : pluralTexto}`;
@@ -243,18 +245,17 @@ export default function InicioPage() {
             </div>
 
             {categorias.estado === 'carregando' ? (
-              <div className={GRADE_CATEGORIAS}>
+              <div className={LISTA_CATEGORIAS}>
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-[92px] rounded-2xl" />
+                  <Skeleton key={i} className={cn(ITEM_CATEGORIA, 'h-[92px] rounded-2xl')} />
                 ))}
               </div>
             ) : categorias.estado === 'erro' ? (
               <ErroSecao onRetry={carregarCategorias} />
             ) : categorias.dados!.categorias.length > 0 ? (
-              <ul aria-label="Categorias de empresas" className={GRADE_CATEGORIAS}>
-                {categorias.dados!.categorias.slice(0, 8).map((c, i) => (
-                  // Celular: as 5 maiores · tablet/desktop: até 8
-                  <li key={c.id} className={cn(i >= 5 && 'hidden md:block')}>
+              <ul aria-label="Categorias de empresas" className={LISTA_CATEGORIAS}>
+                {categorias.dados!.categorias.slice(0, 8).map((c) => (
+                  <li key={c.id} className={ITEM_CATEGORIA}>
                     <Link
                       href={`/empresas?categoria=${c.id}`}
                       aria-label={`${c.nome}, ${plural(c.total, 'empresa', 'empresas')}`}
@@ -268,7 +269,7 @@ export default function InicioPage() {
                     </Link>
                   </li>
                 ))}
-                <li>
+                <li className={ITEM_CATEGORIA}>
                   <Link
                     href="/empresas/categorias"
                     className="flex h-full min-h-[92px] flex-col justify-between gap-2 rounded-2xl bg-onda-blue p-3.5 text-white transition-colors hover:bg-onda-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-onda-blue focus-visible:ring-offset-2"
