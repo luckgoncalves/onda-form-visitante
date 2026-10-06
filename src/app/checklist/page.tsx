@@ -8,16 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Check, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Pencil, Save } from 'lucide-react';
+import { ChevronDown, ClipboardCheck, Pencil, Save } from 'lucide-react';
 import { ChecklistTopicoModelo, canAccessChecklist, formatDataHora } from '@/config/checklist-inspecao';
-
-interface ChecklistResumo {
-  id: string;
-  totalItens: number;
-  itensVerificados: number;
-  createdAt: string;
-  responsavel: { id: string; name: string };
-}
+import { HistoricoTimeline, HistoricoTimelineSkeleton, RegistroChecklist } from '@/components/checklist/historico-timeline';
 
 export default function ChecklistPage() {
   const router = useRouter();
@@ -33,8 +26,9 @@ export default function ChecklistPage() {
   const [observacoes, setObservacoes] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
 
-  const [historico, setHistorico] = useState<ChecklistResumo[]>([]);
-  const [isLoadingHistorico, setIsLoadingHistorico] = useState(false);
+  const [historico, setHistorico] = useState<RegistroChecklist[]>([]);
+  const [estadoHistorico, setEstadoHistorico] = useState<'carregando' | 'erro' | 'pronto'>('carregando');
+  const [carregandoMais, setCarregandoMais] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
 
   useEffect(() => {
@@ -63,18 +57,26 @@ export default function ChecklistPage() {
     return () => clearInterval(timer);
   }, []);
 
+  // Página 1 substitui a lista; as seguintes ("Carregar mais") acrescentam e entram nos grupos de dia existentes
   const loadHistorico = useCallback(async (page: number) => {
-    setIsLoadingHistorico(true);
+    if (page === 1) setEstadoHistorico('carregando');
+    else setCarregandoMais(true);
     try {
       const res = await fetch(`/api/checklist?page=${page}&limit=20`);
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setHistorico(data.checklists);
+      setHistorico((atual) => {
+        if (page === 1) return data.checklists;
+        const ids = new Set(atual.map((r) => r.id));
+        return [...atual, ...data.checklists.filter((r: RegistroChecklist) => !ids.has(r.id))];
+      });
       setPagination({ page: data.pagination.page, totalPages: data.pagination.totalPages });
+      setEstadoHistorico('pronto');
     } catch {
-      toast({ title: 'Erro', description: 'Erro ao carregar histórico', variant: 'destructive' });
+      if (page === 1) setEstadoHistorico('erro');
+      else toast({ title: 'Erro', description: 'Não foi possível carregar mais registros', variant: 'destructive' });
     } finally {
-      setIsLoadingHistorico(false);
+      setCarregandoMais(false);
     }
   }, [toast]);
 
@@ -152,11 +154,11 @@ export default function ChecklistPage() {
   const { data, hora } = formatDataHora(agora);
 
   return (
-    <div className="p-2 sm:p-6 mt-[72px] max-w-3xl mx-auto pb-32 sm:pb-6">
+    <div className="px-3 py-2 sm:p-6 mt-[72px] max-w-3xl mx-auto pb-32 sm:pb-6">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold">Checklist de Verificação e Inspeção</h1>
-          <p className="text-xs text-muted-foreground">Manutenção</p>
+          <h1 className="text-xl font-bold">Checklist</h1>
+          <p className="text-[13px] text-[#4A5070]">Manutenção</p>
         </div>
         {podeEditar && (
           <Button variant="outline" size="sm" className="shrink-0 gap-2" onClick={() => router.push('/checklist/modelo')}>
@@ -307,68 +309,31 @@ export default function ChecklistPage() {
             </CardContent>
           </Card>
         </div>
-      ) : isLoadingHistorico ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+      ) : estadoHistorico === 'carregando' ? (
+        <HistoricoTimelineSkeleton />
+      ) : estadoHistorico === 'erro' ? (
+        <div className="text-center py-16">
+          <p className="font-medium mb-3">Não foi possível carregar o histórico.</p>
+          <Button variant="outline" onClick={() => loadHistorico(1)}>Tentar novamente</Button>
         </div>
       ) : historico.length === 0 ? (
         <div className="text-center py-16">
-          <ClipboardCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="font-medium mb-1">Nenhum checklist registrado</p>
-          <p className="text-sm text-muted-foreground">Os checklists salvos aparecerão aqui.</p>
+          <ClipboardCheck aria-hidden="true" className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="font-medium mb-3">Nenhum registro ainda</p>
+          <Button variant="outline" onClick={() => setAba('preencher')}>Preencher checklist</Button>
         </div>
       ) : (
         <>
-          <div className="space-y-3">
-            {historico.map((item) => {
-              const { data: d, hora: h } = formatDataHora(item.createdAt);
-              const completo = item.itensVerificados === item.totalItens;
-              return (
-                <Card
-                  key={item.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => router.push(`/checklist/${item.id}`)}
-                >
-                  <CardContent className="p-4 flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="font-medium">{d} às {h}</p>
-                      <p className="text-sm text-muted-foreground truncate">{item.responsavel.name}</p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span
-                        className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                          completo ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                        }`}
-                      >
-                        {completo && <Check className="h-3 w-3" />}
-                        {item.itensVerificados}/{item.totalItens}
-                      </span>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+          <HistoricoTimeline registros={historico} onAbrir={(id) => router.push(`/checklist/${id}`)} />
 
-          {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 pt-6">
+          {pagination.page < pagination.totalPages && (
+            <div className="flex justify-center pt-4">
               <Button
-                variant="outline" size="sm"
-                onClick={() => loadHistorico(pagination.page - 1)}
-                disabled={pagination.page === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {pagination.page} / {pagination.totalPages}
-              </span>
-              <Button
-                variant="outline" size="sm"
+                variant="outline"
                 onClick={() => loadHistorico(pagination.page + 1)}
-                disabled={pagination.page === pagination.totalPages}
+                disabled={carregandoMais}
               >
-                <ChevronRight className="h-4 w-4" />
+                {carregandoMais ? 'Carregando...' : 'Carregar mais'}
               </Button>
             </div>
           )}
