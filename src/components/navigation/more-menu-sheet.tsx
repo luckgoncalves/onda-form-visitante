@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useId, useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, ChevronUp, LogOut, MoreHorizontal, Search, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp, LogOut, MoreHorizontal, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   buildNavMenu,
@@ -44,10 +44,6 @@ type MoreMenuSheetProps = {
 const STORAGE_PREFIX = 'onda:menu-departamentos:';
 const SECTION_LABEL = 'px-1 text-xs font-bold uppercase tracking-[0.06em] text-[#6B7280]';
 const STATUS_ABERTOS = ['PENDENTE', 'RECEBIDO', 'EM_ANDAMENTO'];
-
-function normalize(text: string) {
-  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-}
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -139,9 +135,7 @@ export function MoreMenuSheet({
 }: MoreMenuSheetProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchId = useId();
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
   // Menu "Mais opções" do rodapé: sempre começa fechado (não é salvo)
   const [opcoesAbertas, setOpcoesAbertas] = useState(false);
   const opcoesId = useId();
@@ -168,7 +162,6 @@ export function MoreMenuSheet({
   // Ao abrir: restaura o estado salvo e abre o departamento da página atual
   useEffect(() => {
     if (!open) {
-      setQuery('');
       setOpcoesAbertas(false);
       return;
     }
@@ -200,17 +193,9 @@ export function MoreMenuSheet({
 
   const badgeFor = (item: NavigationItem) => (item.href === '/chamados' ? chamadosAbertos : 0);
 
-  const searchTerm = normalize(query.trim());
-  const isSearching = searchTerm.length > 0;
-  const matches = (item: NavigationItem) => !isSearching || normalize(item.label).includes(searchTerm);
-  const general = menu.general.filter(matches);
-  const departments = menu.departments
-    .map((dep) => ({ ...dep, pages: dep.pages.filter(matches) }))
-    .filter((dep) => !isSearching || dep.pages.length > 0);
-  const nadaEncontrado = isSearching && general.length === 0 && departments.length === 0;
+  const { general, departments } = menu;
 
   const toggleDepartment = (id: string) => {
-    if (isSearching) return;
     setExpanded((prev) => {
       const next = { ...prev, [id]: !prev[id] };
       writeSavedState(userId, next);
@@ -290,117 +275,96 @@ export function MoreMenuSheet({
           </DrawerClose>
         </div>
 
-        {/* Busca */}
-        <div className="px-4 pb-3">
-          <label htmlFor={searchId} className="sr-only">Buscar página</label>
-          <div className="relative">
-            <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#5B6478]" />
-            <input
-              id={searchId}
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar página"
-              autoComplete="off"
-              className="h-11 w-full rounded-xl bg-[#F3F4F8] pl-10 pr-3 text-[15px] text-[#0E1024] placeholder:text-[#5B6478] focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-          </div>
-        </div>
-
         {/* Área rolável */}
         <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-4">
-          {nadaEncontrado ? (
-            <p className="py-10 text-center text-sm text-[#5B6478]">Nenhuma página encontrada</p>
-          ) : (
-            <div className="space-y-5">
-              {general.length > 0 && (
-                <section>
-                  <h3 className={cn(SECTION_LABEL, 'mb-2')}>Geral</h3>
-                  <ul className="space-y-0.5">
-                    {general.map((item) => (
-                      <li key={item.label}>
-                        <NavItemButton
-                          item={item}
-                          active={!!item.href && item.href === activeHref}
-                          badgeCount={badgeFor(item)}
-                          onSelect={handleNavigate}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
+          <div className="space-y-5">
+            {general.length > 0 && (
+              <section>
+                <h3 className={cn(SECTION_LABEL, 'mb-2')}>Geral</h3>
+                <ul className="space-y-0.5">
+                  {general.map((item) => (
+                    <li key={item.label}>
+                      <NavItemButton
+                        item={item}
+                        active={!!item.href && item.href === activeHref}
+                        badgeCount={badgeFor(item)}
+                        onSelect={handleNavigate}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
-              {departments.length > 0 && (
-                <section>
-                  <div className="mb-1 flex items-center gap-2">
-                    <h3 className={SECTION_LABEL}>Meus departamentos</h3>
-                    <span className="rounded-full bg-[#F3F4F8] px-2 py-0.5 text-xs font-semibold text-[#5B6478]">
-                      <span aria-hidden="true">{menu.departments.length}</span>
-                      <span className="sr-only">
-                        {menu.departments.length} {menu.departments.length === 1 ? 'departamento' : 'departamentos'}
-                      </span>
+            {departments.length > 0 && (
+              <section>
+                <div className="mb-1 flex items-center gap-2">
+                  <h3 className={SECTION_LABEL}>Meus departamentos</h3>
+                  <span className="rounded-full bg-[#F3F4F8] px-2 py-0.5 text-xs font-semibold text-[#5B6478]">
+                    <span aria-hidden="true">{menu.departments.length}</span>
+                    <span className="sr-only">
+                      {menu.departments.length} {menu.departments.length === 1 ? 'departamento' : 'departamentos'}
                     </span>
-                  </div>
+                  </span>
+                </div>
 
-                  <div className="space-y-0.5">
-                    {departments.map((dep) => {
-                      const isOpen = isSearching || !!expanded[dep.id];
-                      const pendencias = dep.pages.reduce((acc, page) => acc + badgeFor(page), 0);
-                      const color = dep.color || DEPARTMENT_FALLBACK_COLOR;
-                      const DepIcon = dep.icon;
-                      const listId = `menu-departamento-${dep.id}`;
+                <div className="space-y-0.5">
+                  {departments.map((dep) => {
+                    const isOpen = !!expanded[dep.id];
+                    const pendencias = dep.pages.reduce((acc, page) => acc + badgeFor(page), 0);
+                    const color = dep.color || DEPARTMENT_FALLBACK_COLOR;
+                    const DepIcon = dep.icon;
+                    const listId = `menu-departamento-${dep.id}`;
 
-                      return (
-                        <div key={dep.id}>
-                          <button
-                            type="button"
-                            aria-expanded={isOpen}
-                            aria-controls={listId}
-                            onClick={() => toggleDepartment(dep.id)}
-                            className="flex min-h-[52px] w-full items-center gap-3 rounded-xl px-2 text-left transition-colors hover:bg-[#F3F4F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    return (
+                      <div key={dep.id}>
+                        <button
+                          type="button"
+                          aria-expanded={isOpen}
+                          aria-controls={listId}
+                          onClick={() => toggleDepartment(dep.id)}
+                          className="flex min-h-[52px] w-full items-center gap-3 rounded-xl px-2 text-left transition-colors hover:bg-[#F3F4F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        >
+                          <span
+                            aria-hidden="true"
+                            className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px]"
+                            style={{ backgroundColor: color.bg, color: color.fg }}
                           >
-                            <span
-                              aria-hidden="true"
-                              className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px]"
-                              style={{ backgroundColor: color.bg, color: color.fg }}
-                            >
-                              <DepIcon className="h-[18px] w-[18px]" />
-                            </span>
-                            <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-[#0E1024]">
-                              {dep.name}
-                            </span>
-                            {!isOpen && pendencias > 0 && <CountBadge count={pendencias} tone="danger" />}
-                            <ChevronDown
-                              aria-hidden="true"
-                              className={cn(
-                                'h-5 w-5 shrink-0 text-[#5B6478] transition-transform duration-200',
-                                isOpen && 'rotate-180'
-                              )}
-                            />
-                          </button>
+                            <DepIcon className="h-[18px] w-[18px]" />
+                          </span>
+                          <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-[#0E1024]">
+                            {dep.name}
+                          </span>
+                          {!isOpen && pendencias > 0 && <CountBadge count={pendencias} tone="danger" />}
+                          <ChevronDown
+                            aria-hidden="true"
+                            className={cn(
+                              'h-5 w-5 shrink-0 text-[#5B6478] transition-transform duration-200',
+                              isOpen && 'rotate-180'
+                            )}
+                          />
+                        </button>
 
-                          <ul id={listId} hidden={!isOpen} className="space-y-0.5 pb-2 pl-[22px]">
-                            {dep.pages.map((item) => (
-                              <li key={item.label}>
-                                <NavItemButton
-                                  item={item}
-                                  active={!!item.href && item.href === activeHref}
-                                  badgeCount={badgeFor(item)}
-                                  inDepartment
-                                  onSelect={handleNavigate}
-                                />
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
-            </div>
-          )}
+                        <ul id={listId} hidden={!isOpen} className="space-y-0.5 pb-2 pl-[22px]">
+                          {dep.pages.map((item) => (
+                            <li key={item.label}>
+                              <NavItemButton
+                                item={item}
+                                active={!!item.href && item.href === activeHref}
+                                badgeCount={badgeFor(item)}
+                                inDepartment
+                                onSelect={handleNavigate}
+                              />
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </div>
         </div>
 
         {/* Rodapé: uma linha só; "Enviar feedback" e "Sair" ficam no menu "Mais opções" */}
