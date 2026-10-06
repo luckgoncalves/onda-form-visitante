@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useId, useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, LogOut, Search, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp, LogOut, MoreHorizontal, Search, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   buildNavMenu,
@@ -19,6 +19,13 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 type MoreMenuSheetProps = {
@@ -135,6 +142,9 @@ export function MoreMenuSheet({
   const searchId = useId();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  // Menu "Mais opções" do rodapé: sempre começa fechado (não é salvo)
+  const [opcoesAbertas, setOpcoesAbertas] = useState(false);
+  const opcoesId = useId();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [chamadosAbertos, setChamadosAbertos] = useState(0);
 
@@ -159,6 +169,7 @@ export function MoreMenuSheet({
   useEffect(() => {
     if (!open) {
       setQuery('');
+      setOpcoesAbertas(false);
       return;
     }
 
@@ -392,24 +403,48 @@ export function MoreMenuSheet({
           )}
         </div>
 
-        {/* Rodapé */}
-        <div className="border-t border-[#ECEDF3] px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2">
-          <button
-            type="button"
-            onClick={() => handleNavigate(feedbackItem)}
-            className="flex min-h-12 w-full items-center gap-3.5 rounded-xl px-3 text-left text-[15px] font-medium text-[#0E1024] transition-colors hover:bg-[#F3F4F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          >
-            <FeedbackIcon aria-hidden="true" className="h-[22px] w-[22px] shrink-0" />
-            Enviar feedback
-          </button>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex min-h-12 w-full items-center gap-3.5 rounded-xl px-3 text-left text-[15px] font-medium text-red-600 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
-          >
-            <LogOut aria-hidden="true" className="h-[22px] w-[22px] shrink-0" />
-            Sair
-          </button>
+        {/* Rodapé: uma linha só; "Enviar feedback" e "Sair" ficam no menu "Mais opções" */}
+        <div className="border-t border-[#ECEDF3] px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-2">
+          <DropdownMenu open={opcoesAbertas} onOpenChange={setOpcoesAbertas}>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-controls={opcoesId}
+                className="flex min-h-12 w-full items-center gap-3.5 rounded-xl px-3 text-left text-[15px] font-medium text-[#0E1024] transition-colors hover:bg-[#F3F4F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 data-[state=open]:bg-[#F3F4F8]"
+              >
+                <MoreHorizontal aria-hidden="true" className="h-[22px] w-[22px] shrink-0" />
+                <span className="flex-1">Mais opções</span>
+                {opcoesAbertas ? (
+                  <ChevronDown aria-hidden="true" className="h-5 w-5 shrink-0 text-[#5B6478]" />
+                ) : (
+                  <ChevronUp aria-hidden="true" className="h-5 w-5 shrink-0 text-[#5B6478]" />
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              id={opcoesId}
+              side="top"
+              align="start"
+              sideOffset={4}
+              className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-[14px] border-[#E3E6EF] p-1.5 shadow-[0_12px_32px_rgba(12,14,40,0.18)] duration-150 motion-reduce:animate-none"
+            >
+              <DropdownMenuItem
+                onSelect={() => handleNavigate(feedbackItem)}
+                className="min-h-12 cursor-pointer gap-3.5 rounded-[10px] px-3 text-[15px] font-medium text-[#0E1024]"
+              >
+                <FeedbackIcon aria-hidden="true" className="h-5 w-5 shrink-0" />
+                Enviar feedback
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="mx-2 my-1 bg-[#ECEDF3]" />
+              <DropdownMenuItem
+                onSelect={handleLogout}
+                className="min-h-12 cursor-pointer gap-3.5 rounded-[10px] px-3 text-[15px] font-semibold text-[#B42318] focus:bg-[#FEF3F2] focus:text-[#B42318]"
+              >
+                <LogOut aria-hidden="true" className="h-5 w-5 shrink-0" />
+                Sair
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </DrawerContent>
     </Drawer>
