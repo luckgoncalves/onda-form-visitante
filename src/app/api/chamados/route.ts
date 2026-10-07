@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 import { checkAuth } from '@/app/actions';
 import { z } from 'zod';
 import { sendPushToUsers } from '@/lib/push';
+import { lerFiltros, orderByChamados, whereChamados } from '@/lib/chamados-filtros';
 
 const CODIGO_CHARS = 'ABCDEFGHJKLMNPQRTUVWXY0123456789';
 
@@ -36,53 +36,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
-    const status = searchParams.get('status') || '';
-    const ministerioId = searchParams.get('ministerioId') || '';
-    const meus = searchParams.get('meus') === 'true';
-    const search = searchParams.get('search') || '';
     const skip = (page - 1) * limit;
 
-    const isAdmin = user.role === 'admin';
-
-    // Compõe filtros com AND para não sobrescrever condições de visibilidade
-    const andConditions: unknown[] = [];
-
-    if (isAdmin) {
-      if (user.campusId) andConditions.push({ campusId: user.campusId });
-    } else if (meus) {
-      andConditions.push({ abertoPorId: user.id });
-    } else {
-      andConditions.push({
-        OR: [
-          { abertoPorId: user.id },
-          {
-            ministerio: {
-              OR: [
-                { liderId: user.id },
-                { coLiderId: user.id },
-                { membros: { some: { userId: user.id } } },
-              ],
-            },
-          },
-        ],
-      });
-    }
-
-    if (status) andConditions.push({ status });
-    if (ministerioId) andConditions.push({ ministerioId });
-    if (search) {
-      andConditions.push({
-        OR: [
-          { titulo: { contains: search } },
-          { codigo: { contains: search } },
-          { abertoPor: { name: { contains: search } } },
-        ],
-      });
-    }
-
-    const where: Prisma.ChamadoWhereInput = andConditions.length === 1
-      ? andConditions[0] as Prisma.ChamadoWhereInput
-      : { AND: andConditions as Prisma.ChamadoWhereInput[] };
+    // Escopo, status, busca, prioridade e período (mesma regra das contagens)
+    const where = whereChamados(user, lerFiltros(searchParams));
 
     const [chamados, total] = await Promise.all([
       prisma.chamado.findMany({
@@ -102,7 +59,7 @@ export async function GET(request: NextRequest) {
           },
           _count: { select: { comentarios: true } },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: orderByChamados(searchParams.get('ordem')),
       }),
       prisma.chamado.count({ where }),
     ]);

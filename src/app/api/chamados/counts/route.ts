@@ -1,39 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 import { checkAuth } from '@/app/actions';
+import { lerFiltros, whereChamados } from '@/lib/chamados-filtros';
 
-// GET /api/chamados/counts?meus=true
+// GET /api/chamados/counts?escopo=meus|ministerio&search=&prioridade=&dias=
 export async function GET(request: NextRequest) {
   try {
     const { user } = await checkAuth();
     if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
 
-    const meus = new URL(request.url).searchParams.get('meus') === 'true';
-    const isAdmin = user.role === 'admin';
-
-    let where: Prisma.ChamadoWhereInput;
-
-    if (isAdmin) {
-      where = user.campusId ? { campusId: user.campusId } : {};
-    } else if (meus) {
-      where = { abertoPorId: user.id };
-    } else {
-      where = {
-        OR: [
-          { abertoPorId: user.id },
-          {
-            ministerio: {
-              OR: [
-                { liderId: user.id },
-                { coLiderId: user.id },
-                { membros: { some: { userId: user.id } } },
-              ],
-            },
-          },
-        ],
-      };
-    }
+    // Contagem por status: respeita escopo, busca e filtros, mas não o próprio status
+    const where = whereChamados(user, lerFiltros(new URL(request.url).searchParams), false);
 
     const groups = await prisma.chamado.groupBy({
       by: ['status'],

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { checkAuth } from '@/app/actions';
+import { marcarVisitaAoDetalhe } from '@/lib/chamados-lista-estado';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -161,6 +162,11 @@ export default function ChamadoDetailPage() {
       setIsLoading(false);
     }
   };
+
+  // Ao voltar para a lista, os filtros dela são mantidos
+  useEffect(() => {
+    marcarVisitaAoDetalhe();
+  }, []);
 
   useEffect(() => {
     checkAuth().then(({ user }) => {
