@@ -46,8 +46,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       where: { id: params.id },
       include: {
         ministerio: { select: { id: true, nome: true } },
-        abertoPor: { select: { id: true, name: true, email: true } },
-        responsavel: { select: { id: true, name: true } },
+        abertoPor: { select: { id: true, name: true, email: true, profileImageUrl: true } },
+        responsavel: { select: { id: true, name: true, profileImageUrl: true } },
         respostas: {
           include: { campo: { select: { id: true, label: true, tipo: true, ordem: true } } },
           orderBy: { campo: { ordem: 'asc' } },
@@ -97,6 +97,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         status: true,
         prioridade: true,
         responsavelId: true,
+        previsaoConclusao: true,
         responsavel: { select: { name: true } },
       },
     });
@@ -118,7 +119,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     type HistoricoEntry = {
       chamadoId: string;
       autorId: string;
-      tipo: 'STATUS_ALTERADO' | 'PRIORIDADE_ALTERADA' | 'RESPONSAVEL_ATRIBUIDO' | 'RESPONSAVEL_REMOVIDO';
+      tipo:
+        | 'STATUS_ALTERADO'
+        | 'PRIORIDADE_ALTERADA'
+        | 'RESPONSAVEL_ATRIBUIDO'
+        | 'RESPONSAVEL_REMOVIDO'
+        | 'PREVISAO_DEFINIDA'
+        | 'PREVISAO_REMOVIDA';
       detalhe: Record<string, string>;
     };
     const historicos: HistoricoEntry[] = [];
@@ -158,8 +165,23 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           chamadoId: params.id,
           autorId: user.id,
           tipo: 'RESPONSAVEL_ATRIBUIDO',
-          detalhe: { responsavel: novoResp?.name ?? '' },
+          // responsavelId permite mostrar "assumiu como responsável" quando a pessoa designa a si mesma
+          detalhe: { responsavel: novoResp?.name ?? '', responsavelId: validated.responsavelId },
         });
+      }
+    }
+
+    // Previsão de conclusão (compara só a data)
+    if (validated.previsaoConclusao !== undefined) {
+      const dia = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : null);
+      const anterior = dia(current.previsaoConclusao);
+      const nova = dia(validated.previsaoConclusao);
+      if (anterior !== nova) {
+        historicos.push(
+          nova
+            ? { chamadoId: params.id, autorId: user.id, tipo: 'PREVISAO_DEFINIDA', detalhe: { para: nova } }
+            : { chamadoId: params.id, autorId: user.id, tipo: 'PREVISAO_REMOVIDA', detalhe: { de: anterior ?? '' } }
+        );
       }
     }
 
