@@ -337,9 +337,10 @@ export default function ChamadosPage() {
         )}
       </div>
 
-      {/* 4. Contagem + ordenação */}
-      <div className="mt-3 flex h-6 items-center justify-between">
-        <p aria-live="polite" className="text-[13px] text-[#5B6478]">
+      {/* 4. Ordenação */}
+      {/* A contagem já aparece no chip de status; fica só para leitor de tela */}
+      <div className="mt-3 flex h-6 items-center justify-end">
+        <p aria-live="polite" className="sr-only">
           {lista === 'pronto' && `${total} ${total === 1 ? singular : pluralTexto}`}
         </p>
         <button
