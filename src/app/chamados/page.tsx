@@ -430,10 +430,11 @@ export default function ChamadosPage() {
         <button
           type="button"
           onClick={novoChamado}
+          aria-label="Novo chamado"
           className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-4 z-40 inline-flex h-[52px] items-center gap-2 rounded-[26px] bg-onda-blue px-5 text-[15px] font-semibold text-white shadow-[0_8px_20px_rgba(12,14,40,0.24)] transition-colors hover:bg-onda-navy md:bottom-6 md:right-6"
         >
           <Plus aria-hidden="true" className="h-5 w-5" />
-          Novo chamado
+          Chamado
         </button>
       )}
 
