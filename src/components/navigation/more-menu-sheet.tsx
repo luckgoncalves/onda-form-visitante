@@ -140,7 +140,8 @@ export function MoreMenuSheet({
   const [opcoesAbertas, setOpcoesAbertas] = useState(false);
   const opcoesId = useId();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [chamadosAbertos, setChamadosAbertos] = useState(0);
+  // Chamados em aberto por departamento ('geral' e 'gestao' = total visível ao usuário)
+  const [chamadosAbertos, setChamadosAbertos] = useState<Record<string, number>>({});
 
   const menu = useMemo(() => {
     const base = buildNavMenu(isAdmin, navConfig?.paginasHabilitadas, ministerios);
@@ -179,19 +180,34 @@ export function MoreMenuSheet({
   useEffect(() => {
     if (!open || !temChamados || (!isAdmin && !ministerios?.length)) return;
     let ativo = true;
-    fetch('/api/chamados/counts')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((counts: Record<string, number> | null) => {
-        if (!ativo || !counts) return;
-        setChamadosAbertos(STATUS_ABERTOS.reduce((acc, status) => acc + (counts[status] || 0), 0));
-      })
-      .catch(() => {});
+    const abertos = (counts: Record<string, number>) =>
+      STATUS_ABERTOS.reduce((acc, status) => acc + (counts[status] || 0), 0);
+    const contar = (ministerioId?: string) =>
+      fetch(`/api/chamados/counts${ministerioId ? `?ministerioId=${encodeURIComponent(ministerioId)}` : ''}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((counts: Record<string, number> | null) => (counts ? abertos(counts) : 0))
+        .catch(() => 0);
+
+    // Cada departamento conta só os chamados do próprio ministério
+    const departamentosComChamados = menu.departments.filter(
+      (d) => d.id !== 'gestao' && d.pages.some((p) => p.href === '/chamados')
+    );
+    Promise.all([contar(), ...departamentosComChamados.map((d) => contar(d.id))]).then(([total, ...porDep]) => {
+      if (!ativo) return;
+      const mapa: Record<string, number> = { geral: total, gestao: total };
+      departamentosComChamados.forEach((d, i) => {
+        mapa[d.id] = porDep[i];
+      });
+      setChamadosAbertos(mapa);
+    });
     return () => {
       ativo = false;
     };
-  }, [open, temChamados, isAdmin, ministerios]);
+  }, [open, temChamados, isAdmin, ministerios, menu]);
 
-  const badgeFor = (item: NavigationItem) => (item.href === '/chamados' ? chamadosAbertos : 0);
+  /** Badge de pendências do item no contexto onde aparece (Geral ou um departamento) */
+  const badgeFor = (item: NavigationItem, contexto: string) =>
+    item.href === '/chamados' ? chamadosAbertos[contexto] ?? 0 : 0;
 
   const { general, departments } = menu;
 
@@ -287,7 +303,7 @@ export function MoreMenuSheet({
                       <NavItemButton
                         item={item}
                         active={!!item.href && item.href === activeHref}
-                        badgeCount={badgeFor(item)}
+                        badgeCount={badgeFor(item, 'geral')}
                         onSelect={handleNavigate}
                       />
                     </li>
@@ -311,7 +327,7 @@ export function MoreMenuSheet({
                 <div className="space-y-0.5">
                   {departments.map((dep) => {
                     const isOpen = !!expanded[dep.id];
-                    const pendencias = dep.pages.reduce((acc, page) => acc + badgeFor(page), 0);
+                    const pendencias = dep.pages.reduce((acc, page) => acc + badgeFor(page, dep.id), 0);
                     const color = dep.color || DEPARTMENT_FALLBACK_COLOR;
                     const DepIcon = dep.icon;
                     const listId = `menu-departamento-${dep.id}`;
@@ -351,7 +367,7 @@ export function MoreMenuSheet({
                               <NavItemButton
                                 item={item}
                                 active={!!item.href && item.href === activeHref}
-                                badgeCount={badgeFor(item)}
+                                badgeCount={badgeFor(item, dep.id)}
                                 inDepartment
                                 onSelect={handleNavigate}
                               />
