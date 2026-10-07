@@ -36,8 +36,14 @@ export function marcarVisitaAoDetalhe() {
   voltandoDoDetalhe = true;
 }
 
-export function estadoInicialLista(): EstadoListaChamados {
+/**
+ * Estado ao abrir a lista: restaura os filtros na volta do detalhe; senão, o padrão.
+ * Com `ministerioId` (link do ministério no menu), abre no escopo "Do ministério" filtrado por ele.
+ */
+export function estadoInicialLista(ministerioId?: string | null): EstadoListaChamados {
   const restaurar = voltandoDoDetalhe && ultimoEstado;
   voltandoDoDetalhe = false;
-  return restaurar ? ultimoEstado! : ESTADO_PADRAO;
+  if (restaurar) return ultimoEstado!;
+  if (ministerioId) return { ...ESTADO_PADRAO, escopo: 'ministerio', ministerioId };
+  return ESTADO_PADRAO;
 }

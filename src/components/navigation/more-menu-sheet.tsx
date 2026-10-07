@@ -369,7 +369,14 @@ export function MoreMenuSheet({
                                 active={!!item.href && item.href === activeHref}
                                 badgeCount={badgeFor(item, dep.id)}
                                 inDepartment
-                                onSelect={handleNavigate}
+                                // "Chamados" dentro de um ministério abre a lista já filtrada por ele
+                                onSelect={(i) =>
+                                  handleNavigate(
+                                    i.href === '/chamados' && dep.id !== 'gestao'
+                                      ? { href: `/chamados?ministerio=${encodeURIComponent(dep.id)}` }
+                                      : i
+                                  )
+                                }
                               />
                             </li>
                           ))}

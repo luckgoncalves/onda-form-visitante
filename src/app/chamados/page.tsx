@@ -50,7 +50,8 @@ function paramsDe(estado: EstadoListaChamados, busca: string, opcoes?: OpcoesFol
 
 export default function ChamadosPage() {
   const router = useRouter();
-  const [estado, setEstado] = useState<EstadoListaChamados>(estadoInicialLista);
+  // Começa no padrão (igual ao HTML do servidor); o estado real é aplicado logo após montar
+  const [estado, setEstado] = useState<EstadoListaChamados>(ESTADO_PADRAO);
   const [buscaDebounced, setBuscaDebounced] = useState(estado.busca);
   const [usuario, setUsuario] = useState<{ isAdmin: boolean; podeVerMinisterio: boolean } | null>(null);
 
@@ -77,6 +78,22 @@ export default function ChamadosPage() {
   const [atualizando, setAtualizando] = useState(false);
 
   const atualizar = (parcial: Partial<EstadoListaChamados>) => setEstado((e) => ({ ...e, ...parcial }));
+
+  // Restaura os filtros na volta do detalhe, ou aplica /chamados?ministerio={id}
+  // (vindo do "Chamados" de um ministério no menu lateral)
+  const estadoAplicadoRef = useRef(false);
+  useEffect(() => {
+    if (estadoAplicadoRef.current) return; // efeitos rodam 2x no modo de desenvolvimento
+    estadoAplicadoRef.current = true;
+    const url = new URL(window.location.href);
+    const inicial = estadoInicialLista(url.searchParams.get('ministerio'));
+    setEstado(inicial);
+    setBuscaDebounced(inicial.busca);
+    if (url.searchParams.has('ministerio')) {
+      url.searchParams.delete('ministerio');
+      window.history.replaceState(window.history.state, '', url.pathname + url.search);
+    }
+  }, []);
 
   useEffect(() => {
     salvarEstadoLista(estado);
