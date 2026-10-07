@@ -44,6 +44,7 @@ function paramsDe(estado: EstadoListaChamados, busca: string, opcoes?: OpcoesFol
   if (busca.trim()) params.set('search', busca.trim());
   if (o.prioridades.length) params.set('prioridade', o.prioridades.join(','));
   if (o.dias) params.set('dias', String(o.dias));
+  if (o.ministerioId) params.set('ministerioId', o.ministerioId);
   return params;
 }
 
@@ -59,6 +60,8 @@ export default function ChamadosPage() {
   const [pagina, setPagina] = useState({ page: 1, totalPages: 1 });
   const [carregandoMais, setCarregandoMais] = useState(false);
   const [counts, setCounts] = useState<Record<string, number>>({});
+  // Ministérios do filtro (a seção só aparece na folha com 2 ou mais)
+  const [ministerios, setMinisterios] = useState<{ id: string; nome: string }[]>([]);
 
   const [folhaAberta, setFolhaAberta] = useState(false);
   const origemFolhaRef = useRef<HTMLButtonElement | null>(null);
@@ -90,6 +93,10 @@ export default function ChamadosPage() {
       if (!podeVerMinisterio) setEstado((e) => ({ ...e, escopo: 'meus' }));
       setUsuario({ isAdmin, podeVerMinisterio });
     });
+    fetch('/api/chamados/ministerios')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setMinisterios(data.ministerios))
+      .catch(() => {});
   }, [router]);
 
   // Busca: espera 300ms depois da digitação
@@ -131,7 +138,7 @@ export default function ChamadosPage() {
   useEffect(() => {
     if (usuario) carregar(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usuario, estado.escopo, estado.status, estado.ordem, estado.prioridades, estado.dias, buscaDebounced]);
+  }, [usuario, estado.escopo, estado.status, estado.ordem, estado.prioridades, estado.dias, estado.ministerioId, buscaDebounced]);
 
   // Total da combinação escolhida na folha (para "Ver N chamados")
   const contarFolha = useCallback(
@@ -197,14 +204,17 @@ export default function ChamadosPage() {
   };
 
   const filtrosFolhaAtivos =
-    estado.prioridades.length > 0 || estado.dias !== 0 || estado.ordem !== OPCOES_PADRAO.ordem;
-  const semFiltros = !estado.busca && estado.prioridades.length === 0 && estado.dias === 0;
+    estado.prioridades.length > 0 ||
+    estado.dias !== 0 ||
+    estado.ordem !== OPCOES_PADRAO.ordem ||
+    !!estado.ministerioId;
+  const semFiltros = !estado.busca && estado.prioridades.length === 0 && estado.dias === 0 && !estado.ministerioId;
   const semChamadosNoEscopo = lista === 'pronto' && semFiltros && (counts[''] ?? 0) === 0;
   const [singular, pluralTexto] = STATUS_PLURAL[estado.status] ?? STATUS_PLURAL[''];
   const escopoMinisterio = estado.escopo === 'ministerio';
 
   const limparFiltros = () =>
-    atualizar({ status: '', busca: '', ordem: ESTADO_PADRAO.ordem, prioridades: [], dias: 0 });
+    atualizar({ status: '', busca: '', ordem: ESTADO_PADRAO.ordem, prioridades: [], dias: 0, ministerioId: '' });
 
   const novoChamado = () => router.push('/chamados/novo');
 
@@ -225,7 +235,7 @@ export default function ChamadosPage() {
             {(
               [
                 { valor: 'meus', label: 'Meus' },
-                { valor: 'ministerio', label: 'Do ministério' },
+                { valor: 'ministerio', label: ministerios.length >= 2 ? 'Dos ministérios' : 'Do ministério' },
               ] as const
             ).map((op) => {
               const ativo = estado.escopo === op.valor;
@@ -258,9 +268,13 @@ export default function ChamadosPage() {
             type="search"
             value={estado.busca}
             onChange={(e) => atualizar({ busca: e.target.value })}
-            placeholder={escopoMinisterio ? 'Buscar por título, código ou solicitante' : 'Buscar por título ou código'}
+            // Precisa caber inteiro em 360px de largura
+            placeholder={escopoMinisterio ? 'Título, código ou pessoa' : 'Buscar por título ou código'}
             autoComplete="off"
-            className="h-11 w-full rounded-xl border border-[#E3E6EF] bg-[#F8F9FC] pl-10 pr-11 text-base text-[#0E1024] placeholder:text-[15px] placeholder:text-[#5B6478] focus:border-onda-blue focus:outline-none focus:ring-2 focus:ring-onda-blue/20 [&::-webkit-search-cancel-button]:hidden"
+            className={cn(
+              'h-11 w-full rounded-xl border border-[#E3E6EF] bg-[#F8F9FC] pl-10 text-base text-[#0E1024] placeholder:text-[15px] placeholder:text-[#5B6478] focus:border-onda-blue focus:outline-none focus:ring-2 focus:ring-onda-blue/20 [&::-webkit-search-cancel-button]:hidden',
+              estado.busca ? 'pr-11' : 'pr-3'
+            )}
           />
           {estado.busca && (
             <button
@@ -426,7 +440,8 @@ export default function ChamadosPage() {
       <FiltrarOrdenarSheet
         aberta={folhaAberta}
         onAbertaChange={setFolhaAberta}
-        aplicadas={{ ordem: estado.ordem, prioridades: estado.prioridades, dias: estado.dias }}
+        aplicadas={{ ordem: estado.ordem, prioridades: estado.prioridades, dias: estado.dias, ministerioId: estado.ministerioId }}
+        ministerios={ministerios}
         onAplicar={(opcoes) => {
           atualizar(opcoes);
           setFolhaAberta(false);

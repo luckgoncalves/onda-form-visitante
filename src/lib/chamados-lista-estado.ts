@@ -11,6 +11,7 @@ export type EstadoListaChamados = {
   ordem: OrdemLista;
   prioridades: string[];
   dias: PeriodoLista;
+  ministerioId: string; // '' = todos os ministérios
 };
 
 export const ESTADO_PADRAO: EstadoListaChamados = {
@@ -20,6 +21,7 @@ export const ESTADO_PADRAO: EstadoListaChamados = {
   ordem: 'prioridade',
   prioridades: [],
   dias: 0,
+  ministerioId: '',
 };
 
 let ultimoEstado: EstadoListaChamados | null = null;

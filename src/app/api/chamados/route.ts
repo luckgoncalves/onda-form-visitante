@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         include: {
           ministerio: { select: { id: true, nome: true } },
-          abertoPor: { select: { id: true, name: true, email: true } },
+          abertoPor: { select: { id: true, name: true, email: true, profileImageUrl: true } },
           respostas: {
             include: { campo: { select: { id: true, label: true, tipo: true } } },
           },
